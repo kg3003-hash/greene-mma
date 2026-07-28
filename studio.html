@@ -121,6 +121,14 @@
           <select id="a_utah"><option value="no">No</option><option value="yes">Yes</option></select>
         </div>
       </div>
+      <label>Tags (used by the News filters)</label>
+      <div class="chips" id="a_tags">
+        <div class="chip" data-t="UFC">UFC</div>
+        <div class="chip" data-t="Utah">Utah</div>
+        <div class="chip" data-t="Regional">Regional</div>
+        <div class="chip" data-t="Interview">Interview</div>
+        <div class="chip" data-t="Opinion">Opinion</div>
+      </div>
       <button class="btn" id="a_pub">Publish article</button>
       <div id="a_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
     </div>
@@ -261,7 +269,9 @@
   /* ---- article ---- */
   $('a_pub').addEventListener('click',async()=>{
     const st=$('a_status');
+    const tags=[...document.querySelectorAll('#a_tags .chip.on')].map(c=>c.dataset.t);
     const article={
+      tags,
       headline:$('a_head').value.trim(),
       summary:$('a_sum').value.trim(),
       body:$('a_body').value.trim(),
@@ -275,6 +285,10 @@
       say(st,'✓ Published — live at /story.html?id='+out.id,'ok');
       $('a_head').value='';$('a_sum').value='';$('a_body').value='';
     } else say(st,'✗ '+(out.error||'Failed'),'bad');
+  });
+
+  document.getElementById('a_tags').addEventListener('click',e=>{
+    const c=e.target.closest('.chip'); if(!c) return; c.classList.toggle('on');
   });
 
   /* ---- newsletter ---- */
@@ -392,6 +406,18 @@
         '<div><label>City</label><input class="e_city" type="text" value="'+(f.city||'')+'"></div></div>'+
         '<label>Next fight</label><input class="e_next" type="text" value="'+(f.next||'')+'">'+
         '<label>Note</label><input class="e_note" type="text" value="'+(f.note||'')+'">'+
+        '<div class="row2"><div><label>Height</label><input class="e_ht" type="text" value="'+(f.height||'')+'"></div>'+
+        '<div><label>Reach</label><input class="e_reach" type="text" value="'+(f.reach||'')+'"></div></div>'+
+        '<div class="row2"><div><label>Age</label><input class="e_age" type="text" value="'+(f.age||'')+'"></div>'+
+        '<div><label>Stance</label><input class="e_stance" type="text" value="'+(f.stance||'')+'"></div></div>'+
+        '<div class="row2"><div><label>Str. landed/min</label><input class="e_slpm" type="text" value="'+(f.slpm||'')+'"></div>'+
+        '<div><label>Str. accuracy</label><input class="e_stracc" type="text" value="'+(f.strAcc||'')+'"></div></div>'+
+        '<div class="row2"><div><label>Str. absorbed/min</label><input class="e_sapm" type="text" value="'+(f.sapm||'')+'"></div>'+
+        '<div><label>Str. defence</label><input class="e_strdef" type="text" value="'+(f.strDef||'')+'"></div></div>'+
+        '<div class="row2"><div><label>Takedowns/15min</label><input class="e_tdavg" type="text" value="'+(f.tdAvg||'')+'"></div>'+
+        '<div><label>TD accuracy</label><input class="e_tdacc" type="text" value="'+(f.tdAcc||'')+'"></div></div>'+
+        '<div class="row2"><div><label>TD defence</label><input class="e_tddef" type="text" value="'+(f.tdDef||'')+'"></div>'+
+        '<div><label>Subs/15min</label><input class="e_subavg" type="text" value="'+(f.subAvg||'')+'"></div></div>'+
         '<div class="row2"><div><label>Status</label><select class="e_stat">'+
           ['Active','Injured','Booked','Debut','On a streak'].map(x=>'<option'+(f.status===x?' selected':'')+'>'+x+'</option>').join('')+
         '</select></div><div><label>Level</label><select class="e_pro">'+
@@ -426,6 +452,12 @@
     f.record=g('e_rec').trim(); f.weight=g('e_wt').trim(); f.gym=g('e_gym').trim();
     f.city=g('e_city').trim(); f.next=g('e_next').trim(); f.note=g('e_note').trim();
     f.status=g('e_stat'); f.pro=g('e_pro')==='pro';
+    f.height=(g('e_ht')||'').trim(); f.reach=(g('e_reach')||'').trim();
+    f.age=(g('e_age')||'').trim(); f.stance=(g('e_stance')||'').trim();
+    f.slpm=(g('e_slpm')||'').trim(); f.strAcc=(g('e_stracc')||'').trim();
+    f.sapm=(g('e_sapm')||'').trim(); f.strDef=(g('e_strdef')||'').trim();
+    f.tdAvg=(g('e_tdavg')||'').trim(); f.tdAcc=(g('e_tdacc')||'').trim();
+    f.tdDef=(g('e_tddef')||'').trim(); f.subAvg=(g('e_subavg')||'').trim();
   }
 
   $('ft_search').addEventListener('input',()=>{commitOpen();openIdx=-1;renderRoster();});
