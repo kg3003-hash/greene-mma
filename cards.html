@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Greene MMA — Card Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{--black:#0C0E0A;--black-2:#13160F;--volt:#C9F73A;--bone:#F2F0E9;--steel:#9AA194;--red:#FF4B3E;--hair:rgba(242,240,233,.14);}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--black);color:var(--bone);font-family:'Barlow',sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1280px;margin:0 auto;padding:0 20px;}
+  .top{border-bottom:1px solid var(--hair);}
+  .top .wrap{display:flex;align-items:center;gap:12px;height:62px;}
+  .top svg{width:30px;height:30px;}
+  .top .name{font-family:'Anton',sans-serif;font-size:19px;text-transform:uppercase;}
+  .top .name span{color:var(--volt);}
+  .top .tool{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);}
+  .app{display:grid;grid-template-columns:400px 1fr;gap:26px;padding:26px 0 70px;}
+  @media(max-width:960px){.app{grid-template-columns:1fr;}.stage{position:static!important;}}
+  .panel{border:1px solid var(--hair);background:var(--black-2);padding:20px;}
+  .panel+.panel{margin-top:14px;}
+  .panel h2{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:19px;margin-bottom:12px;}
+  label{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);margin:12px 0 5px;}
+  input[type=text],textarea,select{width:100%;padding:10px 11px;background:var(--black);border:1px solid var(--hair);color:var(--bone);font-family:'Barlow',sans-serif;font-size:14.5px;}
+  input:focus,textarea:focus,select:focus{outline:2px solid var(--volt);outline-offset:1px;border-color:transparent;}
+  textarea{resize:vertical;min-height:56px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+  input[type=range]{width:100%;accent-color:var(--volt);margin-top:2px;}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px;}
+  .chip{padding:8px 12px;border:1px solid var(--hair);background:var(--black);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);}
+  .chip:hover{border-color:var(--volt);color:var(--volt);}
+  .chip.on{background:var(--volt);border-color:var(--volt);color:var(--black);font-weight:700;}
+  .drop{border:2px dashed var(--hair);padding:18px 12px;text-align:center;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);transition:border-color .15s,color .15s;}
+  .drop:hover,.drop.over{border-color:var(--volt);color:var(--volt);}
+  .drop b{display:block;color:var(--bone);font-size:12px;margin-bottom:4px;letter-spacing:.05em;}
+  .drop.has{border-style:solid;border-color:rgba(201,247,58,.45);color:var(--volt);}
+  .btn{display:block;width:100%;margin-top:16px;padding:14px;background:var(--volt);color:var(--black);border:none;cursor:pointer;font-family:'Barlow',sans-serif;font-weight:700;font-size:13.5px;letter-spacing:.1em;text-transform:uppercase;}
+  .btn:hover{background:var(--bone);}
+  .btn.ghost{background:transparent;color:var(--volt);border:2px solid var(--volt);margin-top:8px;}
+  .btn.ghost:hover{background:var(--volt);color:var(--black);}
+  .hint{margin-top:10px;font-size:12.5px;color:var(--steel);}
+  .hint a{color:var(--volt);}
+  .stage{display:flex;flex-direction:column;align-items:center;gap:12px;position:sticky;top:18px;align-self:start;}
+  .stage .frame{border:1px solid var(--hair);line-height:0;max-width:100%;background:#000;}
+  canvas{max-width:100%;height:auto;display:block;}
+  .cap{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--steel);text-align:center;}
+  .fighterbox{border:1px solid var(--hair);padding:16px;margin-top:12px;}
+  .fighterbox .h{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--volt);font-weight:700;margin-bottom:4px;}
+  .tabs{display:flex;gap:0;border:1px solid var(--hair);margin-bottom:14px;}
+  .tab{flex:1;padding:13px 8px;text-align:center;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--steel);background:var(--black);}
+  .tab+.tab{border-left:1px solid var(--hair);}
+  .tab.on{background:var(--volt);color:var(--black);font-weight:700;}
+  .hide{display:none;}
+
+  #gate{position:fixed;inset:0;background:var(--black);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;}
+  #gate .box{width:100%;max-width:340px;text-align:center;}
+  #gate svg{width:70px;height:70px;margin:0 auto 24px;display:block;}
+  #gate h1{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:28px;margin-bottom:4px;}
+  #gate h1 span{color:var(--volt);}
+  #gate p{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel);margin-bottom:22px;}
+  #gate input{width:100%;padding:13px;background:var(--black-2);border:1px solid var(--hair);color:var(--bone);font-family:'JetBrains Mono',monospace;font-size:14px;text-align:center;letter-spacing:.2em;}
+  #gate button{width:100%;margin-top:10px;padding:13px;background:var(--volt);color:var(--black);border:none;cursor:pointer;font-weight:700;font-size:13px;letter-spacing:.1em;text-transform:uppercase;}
+  #gate .err{color:#FF4B3E;font-size:12.5px;margin-top:10px;min-height:18px;font-family:'Barlow',sans-serif;letter-spacing:0;text-transform:none;}
+
+  .targets{display:flex;flex-direction:column;gap:9px;margin-top:8px;}
+  .tgt{display:flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);}
+  .tgt input{accent-color:var(--volt);width:16px;height:16px;}
+  .tgt small{display:block;text-transform:none;letter-spacing:0;font-family:'Barlow',sans-serif;font-size:12.5px;color:var(--steel);opacity:.85;}
+  #status{margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.04em;line-height:1.9;white-space:pre-wrap;}
+  .ok{color:var(--volt);} .bad{color:#FF4B3E;}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="box">
+    <svg viewBox="0 0 120 120"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>
+    <h1>Card <span>Studio</span></h1>
+    <p>Staff only</p>
+    <input type="password" id="gatepass" placeholder="PASSCODE" autocomplete="off">
+    <button id="gatego">Enter</button>
+    <div class="err" id="gateerr"></div>
+  </div>
+</div>
+
+<div class="top"><div class="wrap">
+  <svg viewBox="0 0 120 120"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>
+  <div class="name">Greene <span>MMA</span></div>
+  <a class="tool" href="/studio.html" style="color:#C9F73A">&larr; Studio</a>
+</div></div>
+
+<div class="wrap"><div class="app">
+  <div>
+    <div class="tabs">
+      <div class="tab on" data-mode="vs">Head to head</div>
+      <div class="tab" data-mode="solo">Single fighter</div>
+    </div>
+
+    <div class="panel">
+      <h2>Load a bout</h2>
+      <p class="hint" style="margin-top:0">Pulls from the card you imported in the Studio. Fills both fighters in one click.</p>
+      <select id="boutpick"><option value="">— no card loaded —</option></select>
+      <button class="btn ghost" id="boutload">Fill both corners</button>
+      <div id="bout_status" style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--steel);"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Template</h2>
+      <div class="chips" id="templates"></div>
+      <label>Format</label>
+      <select id="format">
+        <option value="post">Post · 1080 × 1350</option>
+        <option value="square">Square · 1080 × 1080</option>
+        <option value="story">Story · 1080 × 1920</option>
+      </select>
+    </div>
+
+    <!-- FIGHTER A -->
+    <div class="panel">
+      <h2 id="hA">Red corner</h2>
+      <div class="drop" id="dropA"><b>Upload photo</b>drag or tap · JPG/PNG</div>
+      <input type="file" id="fileA" accept="image/*" style="display:none">
+      <div class="row2">
+        <div><label>First name</label><input type="text" id="a_first" value="Dusty"></div>
+        <div><label>Last name</label><input type="text" id="a_last" value="Marks"></div>
+      </div>
+      <label>Nickname</label><input type="text" id="a_nick" value="The Landlord">
+      <div class="row3">
+        <div><label>Record</label><input type="text" id="a_rec" value="12-2-0"></div>
+        <div><label>Odds</label><input type="text" id="a_odds" value="+340"></div>
+        <div><label>KO/Sub</label><input type="text" id="a_fin" value="8 KO"></div>
+      </div>
+      <div class="row3">
+        <div><label>Height</label><input type="text" id="a_ht" value="5'11&quot;"></div>
+        <div><label>Reach</label><input type="text" id="a_reach" value="74&quot;"></div>
+        <div><label>Age</label><input type="text" id="a_age" value="29"></div>
+      </div>
+      <label>Camp / city</label><input type="text" id="a_gym" value="Riverton, Utah">
+      <label>Photo tuning</label>
+      <div class="row3">
+        <div><label style="margin-top:2px">Zoom</label><input type="range" id="a_zoom" min="100" max="280" value="125"></div>
+        <div><label style="margin-top:2px">↔</label><input type="range" id="a_px" min="0" max="100" value="50"></div>
+        <div><label style="margin-top:2px">↕</label><input type="range" id="a_py" min="0" max="100" value="24"></div>
+      </div>
+      <div class="row2">
+        <div><label style="margin-top:2px">Brightness</label><input type="range" id="a_bri" min="50" max="180" value="100"></div>
+        <div><label style="margin-top:2px">Contrast</label><input type="range" id="a_con" min="50" max="200" value="115"></div>
+      </div>
+    </div>
+
+    <!-- FIGHTER B -->
+    <div class="panel" id="panelB">
+      <h2>Blue corner</h2>
+      <div class="drop" id="dropB"><b>Upload photo</b>drag or tap · JPG/PNG</div>
+      <input type="file" id="fileB" accept="image/*" style="display:none">
+      <div class="row2">
+        <div><label>First name</label><input type="text" id="b_first" value="Marcus"></div>
+        <div><label>Last name</label><input type="text" id="b_last" value="Reyes"></div>
+      </div>
+      <label>Nickname</label><input type="text" id="b_nick" value="The Problem">
+      <div class="row3">
+        <div><label>Record</label><input type="text" id="b_rec" value="15-1-0"></div>
+        <div><label>Odds</label><input type="text" id="b_odds" value="-410"></div>
+        <div><label>KO/Sub</label><input type="text" id="b_fin" value="11 KO"></div>
+      </div>
+      <div class="row3">
+        <div><label>Height</label><input type="text" id="b_ht" value="6'1&quot;"></div>
+        <div><label>Reach</label><input type="text" id="b_reach" value="77&quot;"></div>
+        <div><label>Age</label><input type="text" id="b_age" value="31"></div>
+      </div>
+      <label>Camp / city</label><input type="text" id="b_gym" value="Las Vegas, NV">
+      <label>Photo tuning</label>
+      <div class="row3">
+        <div><label style="margin-top:2px">Zoom</label><input type="range" id="b_zoom" min="100" max="280" value="125"></div>
+        <div><label style="margin-top:2px">↔</label><input type="range" id="b_px" min="0" max="100" value="50"></div>
+        <div><label style="margin-top:2px">↕</label><input type="range" id="b_py" min="0" max="100" value="24"></div>
+      </div>
+      <div class="row2">
+        <div><label style="margin-top:2px">Brightness</label><input type="range" id="b_bri" min="50" max="180" value="100"></div>
+        <div><label style="margin-top:2px">Contrast</label><input type="range" id="b_con" min="50" max="200" value="115"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>The event</h2>
+      <div class="row2">
+        <div><label>Event / promotion</label><input type="text" id="e_name" value="SteelFist Fight Night"></div>
+        <div><label>Date</label><input type="text" id="e_date" value="AUG 15"></div>
+      </div>
+      <label>Venue</label><input type="text" id="e_venue" value="Union Event Center · SLC">
+      <label>Bout label</label><input type="text" id="e_bout" value="Main Event · 155 LB">
+      <label>Story line (solo cards)</label>
+      <textarea id="e_story">Took the biggest fight of his life on six days' notice. Never blinked.</textarea>
+      <label>Corner label</label>
+      <div class="chips" id="cornerlbl">
+        <div class="chip on" data-l="UNDERCARD HYPE">Undercard hype</div>
+        <div class="chip" data-l="FIGHT WEEK">Fight week</div>
+        <div class="chip" data-l="TALE OF THE TAPE">Tale of the tape</div>
+        <div class="chip" data-l="">None</div>
+      </div>
+      <label>Photo treatment</label>
+      <div class="chips" id="treatments">
+        <div class="chip on" data-t="duo">Volt / Bone split</div>
+        <div class="chip" data-t="duotone">Volt duotone</div>
+        <div class="chip" data-t="bw">High-contrast B&amp;W</div>
+        <div class="chip" data-t="graded">Dark graded</div>
+      </div>
+      <button class="btn" id="dl">Download PNG</button>
+      <button class="btn ghost" id="dlall">Download every template</button>
+      <p class="hint">Cleanest results: cut backgrounds first with <a href="https://www.remove.bg" target="_blank" rel="noopener">remove.bg</a> and upload transparent PNGs.</p>
+    </div>
+
+    <div class="panel">
+      <h2>Publish</h2>
+      <div class="row2">
+        <div><label>X handle</label><input type="text" id="xhandle" placeholder="@fighter"></div>
+        <div><label>IG handle</label><input type="text" id="ighandle" placeholder="@fighter"></div>
+      </div>
+      <label>Caption</label>
+      <textarea id="caption">In the Greene corner this Saturday. Made you something.</textarea>
+      <label>Post to</label>
+      <div class="targets">
+        <label class="tgt"><input type="checkbox" id="t_x" checked><span>X post<small>Card + caption, fighter tagged</small></span></label>
+        <label class="tgt"><input type="checkbox" id="t_igfeed"><span>Instagram feed<small>Card + caption, fighter tagged</small></span></label>
+        <label class="tgt"><input type="checkbox" id="t_igstory"><span>Instagram story<small>Story format · mention sticker must be added by hand</small></span></label>
+      </div>
+      <button class="btn" id="publish">Publish now</button>
+      <div id="status"></div>
+  </div>
+
+  <div class="stage">
+    <div class="frame"><canvas id="card" width="1080" height="1350"></canvas></div>
+    <div class="cap" id="cap">1080 × 1350</div>
+  </div>
+</div></div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const cv=$('card'), ctx=cv.getContext('2d');
+const C={bg:'#0C0E0A',ink:'#F2F0E9',volt:'#C9F73A',dim:'#9AA194',hair:'rgba(242,240,233,.20)',red:'#FF4B3E'};
+
+let mode='vs', tpl='tape', treat='duo', corner='UNDERCARD HYPE';
+const IMG={A:null,B:null}, CACHE={A:{},B:{}};
+
+const TPLS={
+  vs:[['tape','Tale of the tape'],['clash','Clash poster'],['spine','Center spine'],['ticket','Fight ticket']],
+  solo:[['poster','Poster'],['octagon','Octagon'],['odds','Odds drop'],['stat','Stat block']]
+};
+
+/* ---------------- geometry ---------------- */
+const PTS=[[104.35,41.63],[78.37,15.65],[41.63,15.65],[15.65,41.63],[15.65,78.37],
+           [41.63,104.35],[78.37,104.35],[104.35,78.37],[104.35,64],[71,64]];
+function logo(x,y,size,w,color,alpha){
+  const s=size/120;
+  ctx.save(); ctx.globalAlpha=alpha===undefined?1:alpha;
+  ctx.beginPath();
+  PTS.forEach((p,i)=>i?ctx.lineTo(x+p[0]*s,y+p[1]*s):ctx.moveTo(x+p[0]*s,y+p[1]*s));
+  ctx.strokeStyle=color; ctx.lineWidth=w*s; ctx.lineJoin='miter'; ctx.stroke(); ctx.restore();
+}
+function octPath(cx,cy,r){
+  ctx.beginPath();
+  for(let i=0;i<8;i++){const a=Math.PI/8+i*Math.PI/4;
+    const x=cx+r*Math.cos(a),y=cy+r*Math.sin(a); i?ctx.lineTo(x,y):ctx.moveTo(x,y);}
+  ctx.closePath();
+}
+
+/* ---------------- photo pipeline ---------------- */
+function tuned(side){
+  const img=IMG[side]; if(!img) return null;
+  const bri=+$(side.toLowerCase()+'_bri').value/100;
+  const con=+$(side.toLowerCase()+'_con').value/100;
+  const tone = treat==='duo' ? (side==='A'?'volt':'bone') : treat;
+  const key=tone+'|'+bri+'|'+con;
+  if(CACHE[side].key===key) return CACHE[side].canvas;
+
+  const off=document.createElement('canvas');
+  off.width=img.width; off.height=img.height;
+  const o=off.getContext('2d'); o.drawImage(img,0,0);
+  const d=o.getImageData(0,0,off.width,off.height), p=d.data;
+  for(let i=0;i<p.length;i+=4){
+    if(p[i+3]===0) continue;
+    let lum=(p[i]*.299+p[i+1]*.587+p[i+2]*.114)/255;
+    lum=Math.min(1,Math.max(0,(lum-0.5)*con+0.5))*bri;
+    lum=Math.min(1,Math.max(0,lum));
+    if(tone==='volt'||tone==='duotone'){
+      const t=(()=>{const v=Math.min(1,Math.max(0,(lum-.10)*1.42));return v*v*(3-2*v);})();
+      p[i]=12+(201-12)*t; p[i+1]=14+(247-14)*t; p[i+2]=10+(58-10)*t;
+    } else if(tone==='bone'){
+      const t=(()=>{const v=Math.min(1,Math.max(0,(lum-.10)*1.42));return v*v*(3-2*v);})();
+      p[i]=14+(242-14)*t; p[i+1]=16+(240-16)*t; p[i+2]=12+(233-12)*t;
+    } else if(tone==='bw'){
+      const v=(()=>{const q=Math.min(1,Math.max(0,(lum-.14)*1.55));return q*q*(3-2*q);})();
+      const g=16+236*v; p[i]=g;p[i+1]=g;p[i+2]=g;
+    } else {
+      p[i]=Math.min(255,255*lum*0.86); p[i+1]=Math.min(255,255*lum*0.95); p[i+2]=Math.min(255,255*lum*0.78);
+    }
+  }
+  o.putImageData(d,0,0);
+  CACHE[side]={key,canvas:off};
+  return off;
+}
+function drawPhoto(side,box,clip){
+  const src=tuned(side); if(!src) return false;
+  const k=side.toLowerCase();
+  const zoom=+$(k+'_zoom').value/100;
+  const sc=Math.max(box.w/src.width,box.h/src.height)*zoom;
+  const dw=src.width*sc, dh=src.height*sc;
+  const dx=box.x+(box.w-dw)*(+$(k+'_px').value/100);
+  const dy=box.y+(box.h-dh)*(+$(k+'_py').value/100);
+  ctx.save();
+  if(clip){clip();}else{ctx.beginPath();ctx.rect(box.x,box.y,box.w,box.h);}
+  ctx.clip(); ctx.drawImage(src,dx,dy,dw,dh); ctx.restore();
+  return true;
+}
+function ghostBox(box,color){
+  ctx.save();
+  const g=ctx.createLinearGradient(box.x,box.y,box.x,box.y+box.h);
+  g.addColorStop(0,'rgba(255,255,255,.035)'); g.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=g; ctx.fillRect(box.x,box.y,box.w,box.h);
+  logo(box.x+box.w/2-box.w*0.3, box.y+box.h/2-box.w*0.3, box.w*0.6, 11, color, .12);
+  ctx.restore();
+}
+
+/* ---------------- text ---------------- */
+function fit(text,font,max,maxW,min){
+  let s=max; do{ctx.font=s+'px '+font; if(ctx.measureText(text).width<=maxW)break; s-=3;}while(s>(min||22));
+  return s;
+}
+function wrapT(t,maxW,max){
+  const w=t.split(/\s+/),l=[];let c='';
+  for(const x of w){const q=c?c+' '+x:x;
+    if(ctx.measureText(q).width>maxW&&c){l.push(c);c=x;}else c=q;}
+  if(c)l.push(c); return l.slice(0,max||3);
+}
+const V=k=>($(k)?$(k).value.trim():'');
+const UC=k=>V(k).toUpperCase();
+
+/* ---------------- chrome ---------------- */
+function header(W,M,y){
+  logo(M,y,52,13,C.volt);
+  ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+  ctx.fillStyle=C.ink; ctx.font='32px Anton';
+  ctx.fillText('GREENE ',M+70,y+39);
+  const gw=ctx.measureText('GREENE ').width;
+  ctx.fillStyle=C.volt; ctx.fillText('MMA',M+70+gw,y+39);
+  if(corner){
+    ctx.fillStyle=C.dim; ctx.font='700 17px "JetBrains Mono"';
+    ctx.textAlign='right'; ctx.fillText(corner,W-M,y+36); ctx.textAlign='left';
+  }
+}
+function footer(W,H,M){
+  const fy=H-70;
+  ctx.fillStyle=C.hair; ctx.fillRect(M,fy-42,W-M*2,2);
+  ctx.textAlign='left'; ctx.fillStyle=C.dim; ctx.font='700 19px "JetBrains Mono"';
+  const bits=[UC('e_name'),UC('e_date'),UC('e_venue')].filter(Boolean);
+  ctx.fillText(bits.join('  ·  ').slice(0,68),M,fy);
+  ctx.fillStyle=C.volt; ctx.textAlign='right'; ctx.fillText('MMA.GREENE.BET',W-M,fy); ctx.textAlign='left';
+}
+
+/* ---------------- TALE OF THE TAPE (hero template) ---------------- */
+function tplTape(W,H,M){
+  const photoH=Math.round(H*0.40);
+  const mid=W/2;
+
+  // two photo panels, hard volt divider
+  const boxA={x:0,y:0,w:mid-2,h:photoH};
+  const boxB={x:mid+2,y:0,w:mid-2,h:photoH};
+  if(!drawPhoto('A',boxA)) ghostBox(boxA,C.volt);
+  if(!drawPhoto('B',boxB)) ghostBox(boxB,C.ink);
+
+  // scrims so names read
+  [boxA,boxB].forEach(b=>{
+    const g=ctx.createLinearGradient(0,b.h*0.35,0,b.h);
+    g.addColorStop(0,'rgba(12,14,10,0)'); g.addColorStop(1,'rgba(12,14,10,.96)');
+    ctx.fillStyle=g; ctx.fillRect(b.x,0,b.w,b.h);
+  });
+  const gt=ctx.createLinearGradient(0,0,0,180);
+  gt.addColorStop(0,'rgba(12,14,10,.9)'); gt.addColorStop(1,'rgba(12,14,10,0)');
+  ctx.fillStyle=gt; ctx.fillRect(0,0,W,180);
+
+  ctx.fillStyle=C.volt; ctx.fillRect(mid-2,0,4,photoH);
+
+  header(W,M,54);
+
+  // names under each photo
+  const half=mid-M-20;
+  ctx.textAlign='center';
+  [['A',mid/2],['B',mid+mid/2]].forEach(([s,cx])=>{
+    const k=s.toLowerCase();
+    let y=photoH-104;
+    if(V(k+'_nick')){
+      ctx.fillStyle=C.dim; ctx.font='22px "JetBrains Mono"';
+      ctx.fillText('"'+UC(k+'_nick')+'"',cx,y);
+    }
+    y+=46;
+    const fs=fit(UC(k+'_first'),'Anton',40,half,18);
+    ctx.fillStyle=C.dim; ctx.font=fs+'px Anton'; ctx.fillText(UC(k+'_first'),cx,y);
+    y+=52;
+    const ls=fit(UC(k+'_last'),'Anton',62,half,22);
+    ctx.fillStyle=s==='A'?C.volt:C.ink; ctx.font=ls+'px Anton'; ctx.fillText(UC(k+'_last'),cx,y);
+  });
+
+  // VS badge on the seam
+  const vy=photoH;
+  ctx.save();
+  octPath(mid,vy,46); ctx.fillStyle=C.bg; ctx.fill();
+  ctx.strokeStyle=C.volt; ctx.lineWidth=3; ctx.stroke();
+  ctx.restore();
+  ctx.fillStyle=C.volt; ctx.font='30px Anton'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('VS',mid,vy+2); ctx.textBaseline='alphabetic';
+
+  // bout label
+  let y=photoH+92;
+  if(V('e_bout')){
+    ctx.fillStyle=C.dim; ctx.font='700 19px "JetBrains Mono"'; ctx.textAlign='center';
+    ctx.fillText(UC('e_bout'),W/2,y);
+  }
+
+  // the tape
+  y+=44;
+  const rows=[
+    ['RECORD','a_rec','b_rec'],['ODDS','a_odds','b_odds'],['FINISHES','a_fin','b_fin'],
+    ['HEIGHT','a_ht','b_ht'],['REACH','a_reach','b_reach'],['AGE','a_age','b_age'],
+    ['CAMP','a_gym','b_gym']
+  ].filter(r=>V(r[1])||V(r[2]));
+  const avail=(H-70-42)-y-14;
+  const rowH=Math.max(46,Math.min(70,Math.floor(avail/Math.max(rows.length,1))));
+  rows.forEach(([label,ka,kb])=>{
+    ctx.fillStyle=C.hair; ctx.fillRect(M,y,W-M*2,1.5);
+    const cy=y+rowH*0.66;
+    // center label
+    ctx.textAlign='center'; ctx.fillStyle=C.dim; ctx.font='700 15px "JetBrains Mono"';
+    ctx.fillText(label,mid,y+rowH*0.42);
+    // values
+    const vf=Math.min(30, rowH*0.48);
+    ctx.textAlign='right'; ctx.fillStyle=C.volt; ctx.font='700 '+vf+'px "JetBrains Mono"';
+    ctx.fillText(UC(ka).slice(0,18),mid-70,cy);
+    ctx.textAlign='left'; ctx.fillStyle=C.ink;
+    ctx.fillText(UC(kb).slice(0,18),mid+70,cy);
+    y+=rowH;
+  });
+  ctx.fillStyle=C.hair; ctx.fillRect(M,y,W-M*2,1.5);
+  ctx.textAlign='left';
+  footer(W,H,M);
+}
+
+/* ---------------- CLASH POSTER (diagonal) ---------------- */
+function tplClash(W,H,M){
+  const skew=W*0.16;
+  // left wedge
+  ctx.save(); ctx.beginPath();
+  ctx.moveTo(0,0); ctx.lineTo(W/2+skew,0); ctx.lineTo(W/2-skew,H); ctx.lineTo(0,H); ctx.closePath();
+  ctx.clip();
+  if(!drawPhoto('A',{x:-40,y:0,w:W*0.78,h:H})) { ctx.fillStyle='#11150D'; ctx.fillRect(0,0,W,H); logo(W*0.1,H*0.3,420,11,C.volt,.10); }
+  const g1=ctx.createLinearGradient(0,H*0.35,0,H);
+  g1.addColorStop(0,'rgba(12,14,10,.1)'); g1.addColorStop(1,'rgba(12,14,10,.95)');
+  ctx.fillStyle=g1; ctx.fillRect(0,0,W,H);
+  ctx.restore();
+  // right wedge
+  ctx.save(); ctx.beginPath();
+  ctx.moveTo(W/2+skew,0); ctx.lineTo(W,0); ctx.lineTo(W,H); ctx.lineTo(W/2-skew,H); ctx.closePath();
+  ctx.clip();
+  if(!drawPhoto('B',{x:W*0.24,y:0,w:W*0.80,h:H})) { ctx.fillStyle='#0E1109'; ctx.fillRect(0,0,W,H); logo(W*0.52,H*0.3,420,11,C.ink,.08); }
+  const g2=ctx.createLinearGradient(0,H*0.35,0,H);
+  g2.addColorStop(0,'rgba(12,14,10,.1)'); g2.addColorStop(1,'rgba(12,14,10,.95)');
+  ctx.fillStyle=g2; ctx.fillRect(0,0,W,H);
+  ctx.restore();
+  // seam
+  ctx.save(); ctx.strokeStyle=C.volt; ctx.lineWidth=5;
+  ctx.beginPath(); ctx.moveTo(W/2+skew,0); ctx.lineTo(W/2-skew,H); ctx.stroke(); ctx.restore();
+  const gt=ctx.createLinearGradient(0,0,0,200);
+  gt.addColorStop(0,'rgba(12,14,10,.86)'); gt.addColorStop(1,'rgba(12,14,10,0)');
+  ctx.fillStyle=gt; ctx.fillRect(0,0,W,200);
+
+  header(W,M,54);
+
+  // stacked names bottom-left / right
+  const CW=W-M*2;
+  let y=H-250;
+  ctx.textAlign='left';
+  const aL=fit(UC('a_last'),'Anton',96,CW*0.72,30);
+  ctx.fillStyle=C.volt; ctx.font=aL+'px Anton'; ctx.fillText(UC('a_last'),M,y);
+  ctx.fillStyle=C.dim; ctx.font='30px Anton'; ctx.fillText(UC('a_first'),M,y-aL*0.82);
+
+  ctx.textAlign='center'; ctx.fillStyle=C.ink; ctx.font='34px Anton';
+  ctx.fillText('VS',W/2,y+52);
+
+  ctx.textAlign='right';
+  const bL=fit(UC('b_last'),'Anton',96,CW*0.72,30);
+  ctx.fillStyle=C.ink; ctx.font=bL+'px Anton'; ctx.fillText(UC('b_last'),W-M,y+128);
+  ctx.fillStyle=C.dim; ctx.font='30px Anton'; ctx.fillText(UC('b_first'),W-M,y+128-bL*0.82);
+
+  // odds strip
+  ctx.textAlign='left'; ctx.fillStyle=C.hair; ctx.fillRect(M,H-160,CW,1.5);
+  ctx.fillStyle=C.volt; ctx.font='700 26px "JetBrains Mono"';
+  ctx.fillText(UC('a_odds'),M,H-124);
+  ctx.textAlign='center'; ctx.fillStyle=C.dim; ctx.font='700 14px "JetBrains Mono"';
+  ctx.fillText(UC('e_bout').slice(0,34),W/2,H-126);
+  ctx.textAlign='right'; ctx.fillStyle=C.ink; ctx.font='700 26px "JetBrains Mono"';
+  ctx.fillText(UC('b_odds'),W-M,H-124);
+  ctx.textAlign='left';
+  footer(W,H,M);
+}
+
+/* ---------------- CENTER SPINE ---------------- */
+function tplSpine(W,H,M){
+  ctx.fillStyle=C.bg; ctx.fillRect(0,0,W,H);
+  const colW=W*0.42, top=H*0.16, ph=H*0.30;
+  const bA={x:M-10,y:top,w:colW,h:ph}, bB={x:W-M-colW+10,y:top,w:colW,h:ph};
+  if(!drawPhoto('A',bA,()=>octPath(bA.x+bA.w/2,bA.y+bA.h/2,Math.min(bA.w,bA.h)/2))) ghostBox(bA,C.volt);
+  if(!drawPhoto('B',bB,()=>octPath(bB.x+bB.w/2,bB.y+bB.h/2,Math.min(bB.w,bB.h)/2))) ghostBox(bB,C.ink);
+  ctx.save(); octPath(bA.x+bA.w/2,bA.y+bA.h/2,Math.min(bA.w,bA.h)/2); ctx.strokeStyle=C.volt; ctx.lineWidth=3; ctx.stroke();
+  octPath(bB.x+bB.w/2,bB.y+bB.h/2,Math.min(bB.w,bB.h)/2); ctx.strokeStyle=C.hair; ctx.lineWidth=3; ctx.stroke(); ctx.restore();
+
+  header(W,M,54);
+  ctx.textAlign='center';
+  ctx.fillStyle=C.volt; ctx.font='36px Anton';
+  ctx.fillText('VS',W/2,top+ph/2+12);
+
+  let y=top+ph+70;
+  [['A',W*0.27],['B',W*0.73]].forEach(([s,cx])=>{
+    const k=s.toLowerCase();
+    const ls=fit(UC(k+'_last'),'Anton',46,W*0.42,20);
+    ctx.fillStyle=s==='A'?C.volt:C.ink; ctx.font=ls+'px Anton';
+    ctx.fillText(UC(k+'_last'),cx,y);
+    ctx.fillStyle=C.dim; ctx.font='20px "JetBrains Mono"';
+    ctx.fillText(UC(k+'_first'),cx,y+30);
+  });
+
+  y+=88;
+  const rows=[['RECORD','a_rec','b_rec'],['ODDS','a_odds','b_odds'],['REACH','a_reach','b_reach'],
+              ['HEIGHT','a_ht','b_ht'],['AGE','a_age','b_age'],['CAMP','a_gym','b_gym']]
+             .filter(r=>V(r[1])||V(r[2]));
+  const avail=(H-70-42)-y-10;
+  const rowH=Math.max(46,Math.min(76,Math.floor(avail/Math.max(rows.length,1))));
+  rows.forEach(([l,ka,kb])=>{
+    ctx.fillStyle=C.hair; ctx.fillRect(M,y,W-M*2,1.5);
+    ctx.textAlign='center'; ctx.fillStyle=C.dim; ctx.font='700 14px "JetBrains Mono"';
+    ctx.fillText(l,W/2,y+rowH*0.42);
+    const vf=Math.min(28,rowH*0.44);
+    ctx.textAlign='left'; ctx.fillStyle=C.volt; ctx.font='700 '+vf+'px "JetBrains Mono"';
+    ctx.fillText(UC(ka).slice(0,16),M,y+rowH*0.70);
+    ctx.textAlign='right'; ctx.fillStyle=C.ink;
+    ctx.fillText(UC(kb).slice(0,16),W-M,y+rowH*0.70);
+    y+=rowH;
+  });
+  ctx.fillStyle=C.hair; ctx.fillRect(M,y,W-M*2,1.5);
+  ctx.textAlign='left';
+  footer(W,H,M);
+}
+
+/* ---------------- FIGHT TICKET ---------------- */
+function tplTicket(W,H,M){
+  const band=Math.round(H*0.44), mid=W/2;
+  const bA={x:0,y:0,w:mid-1,h:band}, bB={x:mid+1,y:0,w:mid-1,h:band};
+  if(!drawPhoto('A',bA)) ghostBox(bA,C.volt);
+  if(!drawPhoto('B',bB)) ghostBox(bB,C.ink);
+  [bA,bB].forEach(b=>{
+    const g=ctx.createLinearGradient(0,b.h*0.4,0,b.h);
+    g.addColorStop(0,'rgba(12,14,10,0)'); g.addColorStop(1,'rgba(12,14,10,.97)');
+    ctx.fillStyle=g; ctx.fillRect(b.x,0,b.w,b.h);
+  });
+  ctx.fillStyle=C.volt; ctx.fillRect(mid-1.5,0,3,band);
+  const gt=ctx.createLinearGradient(0,0,0,170);
+  gt.addColorStop(0,'rgba(12,14,10,.88)'); gt.addColorStop(1,'rgba(12,14,10,0)');
+  ctx.fillStyle=gt; ctx.fillRect(0,0,W,170);
+  header(W,M,54);
+
+  ctx.textAlign='center';
+  [['A',mid/2],['B',mid+mid/2]].forEach(([s,cx])=>{
+    const k=s.toLowerCase();
+    const ls=fit(UC(k+'_last'),'Anton',56,mid-60,22);
+    ctx.fillStyle=s==='A'?C.volt:C.ink; ctx.font=ls+'px Anton';
+    ctx.fillText(UC(k+'_last'),cx,band-56);
+    ctx.fillStyle=C.dim; ctx.font='700 17px "JetBrains Mono"';
+    ctx.fillText(UC(k+'_rec'),cx,band-26);
+  });
+
+  // perforation
+  ctx.save(); ctx.strokeStyle=C.volt; ctx.lineWidth=3; ctx.setLineDash([16,13]);
+  ctx.beginPath(); ctx.moveTo(0,band); ctx.lineTo(W,band); ctx.stroke(); ctx.restore();
+  ctx.fillStyle=C.bg;
+  ctx.beginPath(); ctx.arc(0,band,24,0,7); ctx.fill();
+  ctx.beginPath(); ctx.arc(W,band,24,0,7); ctx.fill();
+
+  let y=band+82;
+  ctx.textAlign='center'; ctx.fillStyle=C.volt; ctx.font='700 20px "JetBrains Mono"';
+  ctx.fillText(UC('e_bout'),W/2,y);
+  y+=64;
+  const es=fit(UC('e_name'),'Anton',54,W-M*2,22);
+  ctx.fillStyle=C.ink; ctx.font=es+'px Anton'; ctx.fillText(UC('e_name'),W/2,y);
+  y+=46;
+  ctx.fillStyle=C.dim; ctx.font='700 18px "JetBrains Mono"';
+  ctx.fillText([UC('e_date'),UC('e_venue')].filter(Boolean).join('  ·  '),W/2,y);
+
+  y+=54;
+  const rows=[['ODDS','a_odds','b_odds'],['REACH','a_reach','b_reach'],['FINISHES','a_fin','b_fin']]
+             .filter(r=>V(r[1])||V(r[2]));
+  const avail=(H-70-42)-y-10;
+  const rowH=Math.max(46,Math.min(74,Math.floor(avail/Math.max(rows.length,1))));
+  rows.forEach(([l,ka,kb])=>{
+    ctx.fillStyle=C.hair; ctx.fillRect(M,y,W-M*2,1.5);
+    ctx.textAlign='center'; ctx.fillStyle=C.dim; ctx.font='700 14px "JetBrains Mono"';
+    ctx.fillText(l,W/2,y+rowH*0.42);
+    ctx.textAlign='left'; ctx.fillStyle=C.volt; ctx.font='700 26px "JetBrains Mono"';
+    ctx.fillText(UC(ka).slice(0,16),M,y+rowH*0.72);
+    ctx.textAlign='right'; ctx.fillStyle=C.ink;
+    ctx.fillText(UC(kb).slice(0,16),W-M,y+rowH*0.72);
+    y+=rowH;
+  });
+  ctx.textAlign='left';
+  footer(W,H,M);
+}
+
+/* ---------------- SOLO TEMPLATES ---------------- */
+function soloRows(){
+  return [['RECORD','a_rec'],['ODDS','a_odds'],['REACH','a_reach'],['HEIGHT','a_ht'],
+          ['FINISHES','a_fin'],['CAMP','a_gym']].filter(r=>V(r[1]));
+}
+function tplPoster(W,H,M){
+  if(!drawPhoto('A',{x:0,y:0,w:W,h:H})) ghostBox({x:0,y:0,w:W,h:H},C.volt);
+  let g=ctx.createLinearGradient(0,H*0.2,0,H);
+  g.addColorStop(0,'rgba(12,14,10,0)'); g.addColorStop(.45,'rgba(12,14,10,.74)'); g.addColorStop(1,'rgba(12,14,10,.98)');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  g=ctx.createLinearGradient(0,0,0,190);
+  g.addColorStop(0,'rgba(12,14,10,.86)'); g.addColorStop(1,'rgba(12,14,10,0)');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,190);
+  header(W,M,54);
+  const CW=W-M*2;
+  ctx.textAlign='left';
+  ctx.font='600 31px Barlow';
+  const sl=wrapT(V('e_story'),CW,3);
+  const rows=soloRows(), rowH=66;
+  let storyTop=H-70-42-70-(sl.length-1)*42;
+  let tapeTop=storyTop-38-rows.length*rowH;
+  const lastS=fit(UC('a_last'),'Anton',150,CW,34);
+  const firstS=fit(UC('a_first'),'Anton',66,CW,24);
+  const base=tapeTop-40;
+  ctx.fillStyle=C.volt; ctx.font=lastS+'px Anton'; ctx.fillText(UC('a_last'),M,base);
+  ctx.fillStyle=C.ink; ctx.font=firstS+'px Anton'; ctx.fillText(UC('a_first'),M,base-lastS*0.84);
+  let ny=base-lastS*0.84-firstS*1.05-20;
+  if(V('a_nick')){ ctx.fillStyle=C.dim; ctx.font='26px "JetBrains Mono"';
+    ctx.fillText('"'+UC('a_nick')+'"',M,ny); ny-=44; }
+  ctx.fillStyle=C.volt; ctx.font='700 20px "JetBrains Mono"';
+  ctx.fillText('IN THE GREENE CORNER',M,ny);
+  let y=tapeTop;
+  rows.forEach(([l,k])=>{
+    ctx.fillStyle=C.hair; ctx.fillRect(M,y,CW,1.5);
+    ctx.fillStyle=C.dim; ctx.font='700 17px "JetBrains Mono"'; ctx.fillText(l,M,y+rowH*0.6);
+    ctx.textAlign='right'; ctx.fillStyle=C.volt; ctx.font='700 28px "JetBrains Mono"';
+    ctx.fillText(UC(k).slice(0,20),W-M,y+rowH*0.62); ctx.textAlign='left';
+    y+=rowH;
+  });
+  ctx.fillStyle=C.hair; ctx.fillRect(M,y,CW,1.5);
+  y=storyTop; ctx.fillStyle=C.ink; ctx.font='600 31px Barlow';
+  sl.forEach(l=>{ctx.fillText(l,M,y);y+=42;});
+  footer(W,H,M);
+}
+function tplOctagon(W,H,M){
+  ctx.fillStyle=C.bg; ctx.fillRect(0,0,W,H);
+  header(W,M,54);
+  const cx=W/2, r=Math.min(W*0.38,H*0.25), cy=H*0.33;
+  ctx.save(); octPath(cx,cy,r+14); ctx.strokeStyle=C.volt; ctx.lineWidth=4; ctx.stroke(); ctx.restore();
+  if(!drawPhoto('A',{x:cx-r,y:cy-r,w:r*2,h:r*2},()=>octPath(cx,cy,r))){ octPath(cx,cy,r); ctx.fillStyle='rgba(201,247,58,.05)'; ctx.fill(); }
+  ctx.textAlign='center';
+  let y=cy+r+76;
+  ctx.fillStyle=C.volt; ctx.font='700 19px "JetBrains Mono"';
+  ctx.fillText('IN THE GREENE CORNER',cx,y); y+=48;
+  if(V('a_nick')){ ctx.fillStyle=C.dim; ctx.font='24px "JetBrains Mono"';
+    ctx.fillText('"'+UC('a_nick')+'"',cx,y); y+=48; }
+  const CW=W-M*2;
+  ctx.fillStyle=C.ink; ctx.font=fit(UC('a_first'),'Anton',58,CW,22)+'px Anton';
+  ctx.fillText(UC('a_first'),cx,y); y+=96;
+  ctx.fillStyle=C.volt; ctx.font=fit(UC('a_last'),'Anton',116,CW,30)+'px Anton';
+  ctx.fillText(UC('a_last'),cx,y); y+=58;
+  const rows=soloRows().slice(0,4);
+  ctx.fillStyle=C.hair; ctx.fillRect(M,y,CW,1.5); y+=42;
+  const cw=CW/Math.max(rows.length,1);
+  rows.forEach((r2,i)=>{
+    const x=M+cw*i+cw/2;
+    ctx.fillStyle=C.dim; ctx.font='700 14px "JetBrains Mono"'; ctx.fillText(r2[0],x,y);
+    ctx.fillStyle=C.volt; ctx.font='700 24px "JetBrains Mono"'; ctx.fillText(UC(r2[1]).slice(0,14),x,y+34);
+  });
+  y+=66; ctx.fillStyle=C.hair; ctx.fillRect(M,y,CW,1.5); y+=54;
+  ctx.fillStyle=C.ink; ctx.font='600 28px Barlow';
+  wrapT(V('e_story'),CW-40,3).forEach(l=>{ctx.fillText(l,cx,y);y+=38;});
+  ctx.textAlign='left';
+  footer(W,H,M);
+}
+function tplOdds(W,H,M){
+  if(!drawPhoto('A',{x:0,y:0,w:W,h:H})) ghostBox({x:0,y:0,w:W,h:H},C.volt);
+  ctx.fillStyle='rgba(12,14,10,.74)'; ctx.fillRect(0,0,W,H);
+  const g=ctx.createLinearGradient(0,H*0.3,0,H);
+  g.addColorStop(0,'rgba(12,14,10,0)'); g.addColorStop(1,'rgba(12,14,10,.96)');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  header(W,M,54);
+  const cx=W/2, CW=W-M*2;
+  ctx.textAlign='center';
+  let y=H*0.40;
+  ctx.fillStyle=C.dim; ctx.font='700 22px "JetBrains Mono"';
+  ctx.fillText('C U R R E N T   L I N E',cx,y-130);
+  ctx.fillStyle=C.volt; ctx.font=fit(V('a_odds')||'+000','Anton',260,CW,60)+'px Anton';
+  ctx.fillText(V('a_odds')||'+000',cx,y);
+  ctx.fillStyle=C.volt; ctx.fillRect(cx-CW*0.32,y+30,CW*0.64,4);
+  y+=104; ctx.fillStyle=C.ink; ctx.font='600 28px Barlow'; ctx.fillText('LIVE DOG',cx,y);
+  y+=92; ctx.fillStyle=C.dim; ctx.font=fit(UC('a_first'),'Anton',52,CW,20)+'px Anton';
+  ctx.fillText(UC('a_first'),cx,y);
+  y+=94; ctx.fillStyle=C.ink; ctx.font=fit(UC('a_last'),'Anton',110,CW,30)+'px Anton';
+  ctx.fillText(UC('a_last'),cx,y);
+  y+=56; ctx.fillStyle=C.dim; ctx.font='700 20px "JetBrains Mono"';
+  ctx.fillText([UC('a_rec'),UC('a_reach'),UC('a_gym')].filter(Boolean).join('  ·  ').slice(0,52),cx,y);
+  y+=58; ctx.fillStyle=C.ink; ctx.font='600 27px Barlow';
+  wrapT(V('e_story'),CW-40,2).forEach(l=>{ctx.fillText(l,cx,y);y+=38;});
+  ctx.textAlign='left';
+  footer(W,H,M);
+}
+function tplStat(W,H,M){
+  const ph=Math.round(H*0.46);
+  if(!drawPhoto('A',{x:0,y:0,w:W,h:ph})) ghostBox({x:0,y:0,w:W,h:ph},C.volt);
+  const g=ctx.createLinearGradient(0,ph*0.45,0,ph);
+  g.addColorStop(0,'rgba(12,14,10,0)'); g.addColorStop(1,'rgba(12,14,10,.97)');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,ph);
+  const gt=ctx.createLinearGradient(0,0,0,170);
+  gt.addColorStop(0,'rgba(12,14,10,.88)'); gt.addColorStop(1,'rgba(12,14,10,0)');
+  ctx.fillStyle=gt; ctx.fillRect(0,0,W,170);
+  header(W,M,54);
+  const CW=W-M*2;
+  ctx.textAlign='left';
+  ctx.fillStyle=C.volt; ctx.font=fit(UC('a_last'),'Anton',122,CW,32)+'px Anton';
+  ctx.fillText(UC('a_last'),M,ph-52);
+  ctx.fillStyle=C.ink; ctx.font='52px Anton';
+  ctx.fillText(UC('a_first'),M,ph-52-Math.min(122,fit(UC('a_last'),'Anton',122,CW,32))*0.84);
+  ctx.fillStyle=C.volt; ctx.fillRect(0,ph,W,4);
+  // 2x3 stat grid
+  const rows=soloRows().slice(0,6);
+  const cols=2, cellW=CW/cols, cellH=(H-70-42-ph-70)/Math.ceil(rows.length/cols);
+  rows.forEach((r,i)=>{
+    const cxx=M+(i%cols)*cellW, cyy=ph+40+Math.floor(i/cols)*cellH;
+    ctx.fillStyle=C.hair; ctx.fillRect(cxx,cyy,cellW-16,1.5);
+    ctx.fillStyle=C.dim; ctx.font='700 14px "JetBrains Mono"'; ctx.fillText(r[0],cxx,cyy+30);
+    ctx.fillStyle=C.volt; ctx.font='700 30px "JetBrains Mono"'; ctx.fillText(UC(r[1]).slice(0,16),cxx,cyy+68);
+  });
+  footer(W,H,M);
+}
+
+const RENDER={tape:tplTape,clash:tplClash,spine:tplSpine,ticket:tplTicket,
+               poster:tplPoster,octagon:tplOctagon,odds:tplOdds,stat:tplStat};
+
+/* ---------------- draw ---------------- */
+function draw(){
+  const f=$('format').value;
+  const W=1080, H=f==='story'?1920:(f==='square'?1080:1350);
+  cv.width=W; cv.height=H;
+  ctx.fillStyle=C.bg; ctx.fillRect(0,0,W,H);
+  ctx.textBaseline='alphabetic';
+  (RENDER[tpl]||tplTape)(W,H,72);
+  $('cap').textContent=W+' × '+H+' · '+tpl;
+}
+
+/* ---------------- ui ---------------- */
+function buildTemplates(){
+  $('templates').innerHTML=TPLS[mode].map(([k,n],i)=>
+    '<div class="chip'+((k===tpl)?' on':'')+'" data-t="'+k+'">'+n+'</div>').join('');
+  $('templates').querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{
+    tpl=c.dataset.t; buildTemplates(); draw();
+  }));
+}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on'); mode=t.dataset.mode;
+  tpl=TPLS[mode][0][0];
+  $('panelB').classList.toggle('hide',mode==='solo');
+  $('hA').textContent = mode==='solo' ? 'The fighter' : 'Red corner';
+  buildTemplates(); draw();
+}));
+$('treatments').addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;
+  $('treatments').querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+  c.classList.add('on'); treat=c.dataset.t; CACHE.A={};CACHE.B={}; draw();});
+$('cornerlbl').addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;
+  $('cornerlbl').querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+  c.classList.add('on'); corner=c.dataset.l; draw();});
+
+function wireDrop(side){
+  const drop=$('drop'+side), file=$('file'+side);
+  const load=f=>{
+    if(!f||!/^image\//.test(f.type))return;
+    const r=new FileReader();
+    r.onload=e=>{const i=new Image();i.onload=()=>{IMG[side]=i;CACHE[side]={};
+      drop.classList.add('has'); drop.innerHTML='<b>Photo loaded</b>tap to replace'; draw();};i.src=e.target.result;};
+    r.readAsDataURL(f);
+  };
+  drop.addEventListener('click',()=>file.click());
+  file.addEventListener('change',e=>load(e.target.files[0]));
+  ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('over');}));
+  ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('over');}));
+  drop.addEventListener('drop',e=>load(e.dataTransfer.files[0]));
+}
+wireDrop('A'); wireDrop('B');
+
+document.querySelectorAll('input,textarea,select').forEach(el=>el.addEventListener('input',()=>{
+  if(/_bri|_con/.test(el.id)){CACHE.A={};CACHE.B={};}
+  draw();
+}));
+
+function save(tag){
+  const n=(V('a_last')+(mode==='vs'?'-vs-'+V('b_last'):'')).toLowerCase().replace(/[^a-z0-9]+/g,'-');
+  cv.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);
+    a.download='greene-'+(n||'card')+'-'+(tag||tpl)+'.png';a.click();URL.revokeObjectURL(a.href);});
+}
+$('dl').addEventListener('click',()=>save());
+$('dlall').addEventListener('click',()=>{
+  const orig=tpl, keys=TPLS[mode].map(t=>t[0]);
+  keys.forEach((k,i)=>setTimeout(()=>{
+    tpl=k; draw(); save(k);
+    if(i===keys.length-1) setTimeout(()=>{tpl=orig;buildTemplates();draw();},500);
+  },i*700));
+});
+
+buildTemplates();
+Promise.all([document.fonts.load('100px Anton'),
+  document.fonts.load('700 30px "JetBrains Mono"'),
+  document.fonts.load('600 30px Barlow')]).then(draw).catch(draw);
+setTimeout(draw,900);
+})();
+</script>
+
+<script>
+(function(){
+  const gate=document.getElementById('gate');
+  async function tryKey(k){
+    document.getElementById('gateerr').textContent='Checking...';
+    try{
+      const r=await fetch('/.netlify/functions/site',{method:'POST',
+        headers:{'content-type':'application/json','x-studio-key':k},
+        body:JSON.stringify({ping:true})});
+      if(r.status===401){document.getElementById('gateerr').textContent='Wrong passcode.';return;}
+      sessionStorage.setItem('gmma_key',k); gate.style.display='none';
+    }catch(e){document.getElementById('gateerr').textContent='Cannot reach the server.';}
+  }
+  const saved=sessionStorage.getItem('gmma_key');
+  if(saved) tryKey(saved);
+  document.getElementById('gatego').addEventListener('click',()=>tryKey(document.getElementById('gatepass').value));
+  document.getElementById('gatepass').addEventListener('keydown',e=>{if(e.key==='Enter')tryKey(e.target.value);});
+})();
+</script>
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const status=$('status');
+  const log=(m,c)=>{status.innerHTML+='<span class="'+(c||'')+'">'+m+'</span>\n';};
+
+  async function snapshot(fmt){
+    const sel=$('format').value;
+    if(sel!==fmt){ $('format').value=fmt; $('format').dispatchEvent(new Event('input')); await new Promise(r=>setTimeout(r,380)); }
+    const data=document.getElementById('card').toDataURL('image/jpeg',0.92).split(',')[1];
+    if(sel!==fmt){ $('format').value=sel; $('format').dispatchEvent(new Event('input')); }
+    return data;
+  }
+
+  $('publish').addEventListener('click',async()=>{
+    status.innerHTML='';
+    const targets=[];
+    if($('t_x').checked) targets.push('x');
+    if($('t_igfeed').checked) targets.push('ig_feed');
+    if($('t_igstory').checked) targets.push('ig_story');
+    if(!targets.length){ log('Pick at least one place to post.','bad'); return; }
+    $('publish').disabled=true; $('publish').textContent='Publishing...';
+    try{
+      log('Rendering cards...');
+      const postImg=await snapshot('post');
+      const storyImg=targets.includes('ig_story')?await snapshot('story'):null;
+      const r=await fetch('/.netlify/functions/publish',{method:'POST',
+        headers:{'content-type':'application/json','x-studio-key':sessionStorage.getItem('gmma_key')||''},
+        body:JSON.stringify({targets,caption:$('caption').value,
+          xHandle:$('xhandle').value.trim(),igHandle:$('ighandle').value.trim(),
+          postImage:postImg,storyImage:storyImg})});
+      const out=await r.json();
+      (out.results||[]).forEach(x=>log((x.ok?'\u2713 ':'\u2717 ')+x.target+' \u2014 '+x.message,x.ok?'ok':'bad'));
+      if(out.error) log('\u2717 '+out.error,'bad');
+    }catch(e){ log('\u2717 '+e.message,'bad'); }
+    $('publish').disabled=false; $('publish').textContent='Publish now';
+  });
+})();
+</script>
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  let card=null;
+  async function api(payload){
+    const r=await fetch('/.netlify/functions/site',{method:'POST',
+      headers:{'content-type':'application/json','x-studio-key':sessionStorage.getItem('gmma_key')||''},
+      body:JSON.stringify(payload)});
+    return r.json();
+  }
+  async function loadCard(){
+    try{
+      const out=await api({getCard:true});
+      if(!out.ok||!out.card||!(out.card.bouts||[]).length) return;
+      card=out.card;
+      const sel=$('boutpick');
+      sel.innerHTML='<option value="">— pick a bout —</option>'+
+        card.bouts.map((b,i)=>{
+          const label=(i===0?'MAIN':'Bout '+(i+1))+(b.weight?' · '+b.weight:'')+' — '+
+            ((b.a.last||b.a.first||'?')+' vs '+(b.b.last||b.b.first||'?'));
+          return '<option value="'+i+'">'+label.replace(/</g,'&lt;')+'</option>';
+        }).join('');
+      $('bout_status').textContent=(card.event||'Card')+(card.date?' · '+card.date:'')+' · '+card.bouts.length+' bouts';
+    }catch(e){}
+  }
+  function set(id,v){ const el=$(id); if(el && v!==undefined && v!==null && v!=='') el.value=v; }
+  $('boutload').addEventListener('click',()=>{
+    if(!card) return;
+    const i=$('boutpick').value;
+    if(i==='') return;
+    const b=card.bouts[+i];
+    set('a_first',b.a.first); set('a_last',b.a.last); set('a_nick',b.a.nickname);
+    set('a_rec',b.a.record); set('a_gym',b.a.gym); set('a_odds',b.a.odds);
+    set('b_first',b.b.first); set('b_last',b.b.last); set('b_nick',b.b.nickname);
+    set('b_rec',b.b.record); set('b_gym',b.b.gym); set('b_odds',b.b.odds);
+    set('e_name',card.event); set('e_date',card.date); set('e_venue',card.venue);
+    if(b.weight) set('e_bout',(+i===0?'Main Event · ':'')+b.weight);
+    $('bout_status').textContent='Loaded. Add photos, then publish.';
+    document.querySelectorAll('input,textarea,select').forEach(el=>el.dispatchEvent(new Event('input')));
+  });
+  // wait for the gate to clear, then try
+  const t=setInterval(()=>{ if(sessionStorage.getItem('gmma_key')){ clearInterval(t); loadCard(); } },600);
+  setTimeout(()=>clearInterval(t),20000);
+})();
+</script>
+</body>
+</html>
