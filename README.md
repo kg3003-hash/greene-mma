@@ -93,3 +93,52 @@ Private hype card generator + publisher. Not linked anywhere on the site.
 **Share cards:** `assets/share-card.png` is what shows when a link is posted to X, Instagram, or texted.
 
 **Firestore rules:** re-publish `firestore.rules` — it now covers `site` and `subscribers` too. Remember to keep your existing Bragging Rights rules below the marked line.
+
+---
+
+## v10 additions
+
+**Utah page** — gym directory (seeded with real Wasatch Front gyms, editable in the studio, featured sponsors sort to top with a badge), events calendar, local wire, and a "featured listing" pitch block for selling gym ads.
+
+**Newsletter** — `/newsletter.html` with signup + public issue archive. Studio has an issue composer and a subscriber CSV export.
+*Note:* saving an issue archives it on the site. It does not email anyone — export the CSV and paste it into a sending provider (Beehiiv, Buttondown, Mailchimp) to actually send.
+
+**AdSense** — scaffolding is in place on every page but **commented out**. To turn it on:
+1. Get approved at google.com/adsense (needs a live site with real content — you have that).
+2. In every HTML file, find `ca-pub-XXXXXXXXXXXXXXXX` and replace with your publisher ID.
+3. Uncomment the `<script>` line in the head and the `<ins>` block in the body.
+One slot per page, below the fold, with reserved height so nothing jumps.
+
+---
+
+## v12 additions
+
+**`/fighters.html`** — Utah fighter roster. Filters by pro/amateur/weight class. Editable in the studio.
+
+**`/cards.html`** — upgraded card studio with head-to-head tale-of-the-tape templates, dual photo slots, per-fighter brightness/contrast, and three output formats. Behind the same STUDIO_KEY passcode.
+
+**`/partner.html`** — media kit and rate card for selling gym listings, event promotion, and newsletter sponsorships. Deliberately honest about being a new site rather than showing invented traffic numbers.
+
+**`recap.mjs`** — post-fight recap bot. Runs Sundays (13:00 and 23:00 UTC), gathers overnight results coverage, and writes ONE original roundup article published as a full story page. Skips automatically if there wasn't a real card (fewer than 4 results items) and won't publish twice for the same day.
+Trigger it manually any Sunday morning from Netlify → Logs → Functions → recap.
+
+---
+
+## Weekly fight-week workflow (v14)
+
+1. **Find the card.** Tapology and Sherdog both keep regional event pages, and
+   SteelFist / Fierce FC post their cards on Instagram and Facebook. Copy the
+   text — any format, doesn't need cleaning up.
+2. **Studio → Import a fight card.** Paste it, hit "Read the card". It parses
+   into structured bouts. Hit save: the card is stored and every fighter is
+   dropped into the roster editor pre-filled and marked Booked.
+3. **Review the roster rows**, fix anything wrong, hit Save roster. They're now
+   live on /fighters.html.
+4. **Card Studio → Load a bout.** Pick a bout from the dropdown, hit "Fill both
+   corners". Both fighters, records, odds, event, venue and weight class fill in.
+5. **Add the two photos**, tune brightness/contrast, pick a template.
+6. **Publish** to X and Instagram with both handles tagged.
+
+The parser never invents a record, gym, or odds — blank means it wasn't in the
+text you pasted. Photos stay manual on purpose: ask the fighter, and you get
+permission and a better image in the same message.
