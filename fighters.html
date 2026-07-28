@@ -65,7 +65,7 @@
   .adwrap:empty{display:none;}
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}.eyebrow,h1,.dek{opacity:1;transform:none;}.hero .bigmark path{stroke-dashoffset:0;}.reveal{opacity:1;transform:none;}}
   .roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
-  .f{border:1px solid var(--hair);background:var(--black-2);padding:24px;transition:border-color .18s,transform .18s;position:relative;overflow:hidden;}
+  a.f,.f{display:block;border:1px solid var(--hair);background:var(--black-2);padding:24px;transition:border-color .18s,transform .18s;position:relative;overflow:hidden;}
   .f:hover{border-color:rgba(201,247,58,.5);transform:translateY(-2px);}
   .f .ghost{position:absolute;right:-30px;bottom:-38px;width:130px;opacity:.05;pointer-events:none;}
   .f .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
@@ -222,8 +222,9 @@ function render(){
     el.innerHTML='<div class="empty">Nobody on the roster in this filter yet.</div>';
     return;
   }
+  const slugOf=f=>((f.first||'')+'-'+(f.last||'')).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
   el.innerHTML=list.map(f=>
-    '<div class="f reveal'+(f.pro===false?' amateur':'')+'">'+
+    '<a class="f reveal'+(f.pro===false?' amateur':'')+'" href="/fighter.html?f='+encodeURIComponent(f.slug||slugOf(f))+'">'+
       (f.status&&f.status!=="Active"?'<span class="tag">'+esc(f.status)+'</span>':'')+
       MARK.replace('<svg','<svg class="ghost"')+
       '<div class="top"><div>'+
@@ -235,7 +236,8 @@ function render(){
       '</div>'+
       (f.next?'<div class="next"><b>Next fight</b>'+esc(f.next)+'</div>':'')+
       (f.note?'<div class="next"><b>Note</b>'+esc(f.note)+'</div>':'')+
-    '</div>').join("");
+      '<div style="margin-top:14px;font-family:\'JetBrains Mono\',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--volt);">Full tape \u2192</div>'+
+    '</a>').join("");
 }
 
 function buildFilters(){
