@@ -29,13 +29,27 @@ export default async function handler() {
   const res = await fetch(url);
   if (!res.ok) {
     const detail = await res.text().catch(() => "");
-    console.error("Odds API error", res.status, detail.slice(0, 300));
-    return new Response(JSON.stringify({ error: `Odds API ${res.status}` }), { status: 502 });
+    const outOfCredits = detail.includes("OUT_OF_USAGE_CREDITS");
+    console.error(
+      outOfCredits
+        ? "Odds API is out of monthly credits — leaving existing fight week data in place. " +
+          "Use a separate API key for this site, or wait for the monthly reset."
+        : `Odds API error ${res.status}: ${detail.slice(0, 300)}`
+    );
+    // Important: return WITHOUT writing. Whatever is already in Firestore stays,
+    // so the site keeps showing the last known card instead of going blank.
+    return new Response(
+      JSON.stringify({ error: outOfCredits ? "out_of_credits" : `Odds API ${res.status}` }),
+      { status: 502 }
+    );
   }
 
   const events = await res.json();
   const remaining = res.headers.get("x-requests-remaining");
-  console.log(`Odds API ok — ${events.length} events, ${remaining} requests left this month`);
+  console.log(`Odds API ok — ${events.length} events, ${remaining} credits left this month`);
+  if (remaining !== null && Number(remaining) < 40) {
+    console.warn(`Only ${remaining} credits left. Consider a separate key for this site.`);
+  }
 
   const now = Date.now();
   const bouts = [];
@@ -99,6 +113,6 @@ export default async function handler() {
   );
 }
 
-// Every 6 hours — odds don't move fast enough to justify more, and the free
-// tier has a monthly request budget.
-export const config = { schedule: "0 */6 * * *" };
+// Twice a day. The free tier has a monthly credit budget and odds don't move
+// fast enough to justify more. ~60 credits a month at this rate.
+export const config = { schedule: "0 14,23 * * *" };
