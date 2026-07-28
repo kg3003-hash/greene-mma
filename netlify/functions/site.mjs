@@ -202,9 +202,43 @@ Rules:
   }
 
   // Utah fighter roster
-  if (body.fighters) {
+  if (body.fighters || body.addFighters) {
+    const incoming = body.fighters || body.addFighters || [];
+    const slug = (f) => (String(f.first || "") + "-" + String(f.last || ""))
+      .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+    let merged = incoming;
+    if (body.addFighters) {
+      // merge into whatever is already saved, newest details win
+      const snap = await db.collection("site").doc("fighters").get();
+      const current = (snap.data() || {}).fighters || [];
+      const bySlug = new Map(current.map((f) => [slug(f), f]));
+      for (const f of incoming) {
+        const k = slug(f);
+        if (!k || k === "-") continue;
+        const prev = bySlug.get(k) || {};
+        // only overwrite fields that actually have a value
+        const next = { ...prev };
+        for (const [key, val] of Object.entries(f)) {
+          if (val !== "" && val !== undefined && val !== null) next[key] = val;
+        }
+        bySlug.set(k, next);
+      }
+      merged = [...bySlug.values()];
+    } else {
+      // straight save — still dedupe so the editor can't create twins
+      const bySlug = new Map();
+      for (const f of incoming) {
+        const k = slug(f);
+        if (!k || k === "-") continue;
+        bySlug.set(k, { ...(bySlug.get(k) || {}), ...f });
+      }
+      merged = [...bySlug.values()];
+    }
+
     await db.collection("site").doc("fighters").set({
-      fighters: (body.fighters || []).slice(0, 200).map((f) => ({
+      fighters: merged.slice(0, 300).map((f) => ({
+        slug: slug(f),
         first: String(f.first || "").slice(0, 40),
         last: String(f.last || "").slice(0, 40),
         nickname: String(f.nickname || "").slice(0, 60),
@@ -220,8 +254,9 @@ Rules:
       })),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
-    return new Response(JSON.stringify({ ok: true, saved: body.fighters.length }), { status: 200 });
+    return new Response(JSON.stringify({ ok: true, saved: merged.length }), { status: 200 });
   }
+
   if (body.getFighters) {
     const snap = await db.collection("site").doc("fighters").get();
     return new Response(JSON.stringify({ ok: true, fighters: (snap.data() || {}).fighters || [] }), { status: 200 });
@@ -284,3 +319,4 @@ Rules:
 
   return new Response(JSON.stringify({ error: "Nothing to do" }), { status: 400 });
 }
+
