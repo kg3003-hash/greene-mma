@@ -1,0 +1,27 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- GREENE MMA ----
+    // Stories: public read, bot-only write (admin SDK bypasses these rules).
+    match /stories/{storyId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Fight week odds + written picks: public read, function-only write.
+    match /site/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Newsletter subscribers: never readable or writable from a browser.
+    // Signups go through the site function, which uses the admin SDK.
+    match /subscribers/{email} {
+      allow read, write: if false;
+    }
+
+    // ---- Existing Bragging Rights / GBL rules go below, unchanged ----
+
+  }
+}

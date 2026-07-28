@@ -1,0 +1,12 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[build.environment]
+  # Firebase web API keys (AIza...) are public by design — they ship in the
+  # browser on every Firebase web app. Security comes from Firestore rules,
+  # not from hiding this value. Smart detection flags it as a false positive.
+  SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
+
+[functions]
+  node_bundler = "esbuild"
