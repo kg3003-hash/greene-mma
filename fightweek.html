@@ -5,13 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fight Week — Greene MMA</title>
 <meta name="description" content="Every bout on the next card, with live moneylines.">
-<link rel="icon" type="image/svg+xml" href="/assets/greene-mma-avatar.svg">
+<link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0C0E0A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Greene MMA">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Greene MMA">
 <meta property="og:title" content="Fight Week — Greene MMA">
 <meta property="og:description" content="Every bout on the next card, with live moneylines.">
 <meta property="og:image" content="https://mma.greene.bet/assets/share-card.png">
 <meta name="twitter:card" content="summary_large_image">
+<!-- AdSense: replace ca-pub-XXXXXXXXXXXXXXXX with your publisher ID, then uncomment -->
+<!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -50,6 +58,11 @@
   .reveal.in{opacity:1;transform:none;}
   footer{padding:46px 0 66px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--steel);line-height:2.1;}
   footer a{color:var(--bone);} footer a:hover{color:var(--volt);}
+  /* ad slots — reserved space so nothing jumps when they load */
+  .adwrap{margin:44px 0;text-align:center;}
+  .adwrap .lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel);opacity:.55;margin-bottom:8px;}
+  .adwrap ins{display:block;min-height:100px;}
+  .adwrap:empty{display:none;}
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}.eyebrow,h1,.dek{opacity:1;transform:none;}.hero .bigmark path{stroke-dashoffset:0;}.reveal{opacity:1;transform:none;}}
   .bout{border:1px solid var(--hair);background:var(--black-2);margin-bottom:12px;transition:border-color .18s,transform .18s;}
   .bout:hover{border-color:rgba(201,247,58,.5);transform:translateY(-2px);}
@@ -75,7 +88,8 @@
   <a href="/fightweek.html" class="on">Fight Week</a>
   <a href="/picks.html">Picks</a>
   <a href="/utah.html">Utah</a>
-  <a href="/#corner">The Corner</a>
+      <a href="/fighters.html">Fighters</a>
+  <a href="/newsletter.html">The Corner</a>
 </div></div></nav>
 
 <header class="hero">
@@ -101,7 +115,8 @@
 
 <footer><div class="wrap">
   Greene MMA · <a href="https://greene.bet">Part of the greene.bet family</a><br>
-  <a href="/">News</a> · <a href="/fightweek.html">Fight Week</a> · <a href="/picks.html">Picks</a> · <a href="/utah.html">Utah</a><br>
+  <a href="/">News</a> · <a href="/fightweek.html">Fight Week</a> · <a href="/picks.html">Picks</a> · <a href="/utah.html">Utah</a>
+      <a href="/fighters.html">Fighters</a> · <a href="/newsletter.html">Newsletter</a> · <a href="/partner.html">Advertise</a><br>
   © 2026 Greene MMA. Picks are for entertainment. Bet with your head, not over it.
 </div></footer>
 <script>
