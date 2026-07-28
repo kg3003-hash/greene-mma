@@ -129,6 +129,27 @@
   .headliner{border-top:3px solid var(--volt);}
   .headliner .top{background:rgba(201,247,58,.06);}
   .updated{font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);margin-top:20px;}
+  /* fighter modal */
+  .fmodal{position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(6,7,5,.86);backdrop-filter:blur(4px);}
+  .fmodal.on{display:flex;}
+  .fmodal .box{width:100%;max-width:520px;max-height:86vh;overflow:auto;background:var(--black-2);border:1px solid rgba(201,247,58,.35);position:relative;}
+  .fmodal .x{position:absolute;top:12px;right:14px;background:none;border:1px solid var(--hair);color:var(--steel);width:32px;height:32px;cursor:pointer;font-family:'JetBrains Mono',monospace;}
+  .fmodal .x:hover{border-color:var(--volt);color:var(--volt);}
+  .fmodal .hd{padding:28px 26px 22px;border-bottom:1px solid var(--hair);background:radial-gradient(ellipse 70% 100% at 12% 0%, rgba(201,247,58,.10), transparent 62%);}
+  .fmodal .nick{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);}
+  .fmodal .nm{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:32px;line-height:1.02;margin-top:5px;}
+  .fmodal .nm span{color:var(--volt);}
+  .fmodal .sub{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);margin-top:10px;}
+  .fmodal .rec{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:26px;color:var(--volt);margin-top:12px;}
+  .fmodal .grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+  .fmodal .cell{padding:16px 26px;border-bottom:1px solid var(--hair);}
+  .fmodal .cell:nth-child(odd){border-right:1px solid var(--hair);}
+  .fmodal .cell .l{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel);}
+  .fmodal .cell .v{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:20px;color:var(--volt);margin-top:5px;}
+  .fmodal .note{padding:20px 26px;color:var(--steel);font-size:15.5px;}
+  .fmodal .go{display:block;margin:0 26px 26px;padding:13px;text-align:center;border:2px solid var(--volt);color:var(--volt);font-weight:700;font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;}
+  .fmodal .go:hover{background:var(--volt);color:var(--black);}
+  .fmodal .empty-stats{padding:24px 26px;color:var(--steel);font-size:15px;}
 </style>
 </head>
 <body>
@@ -245,8 +266,8 @@ function render(){
     return;
   }
   const slugOf=f=>((f.first||'')+'-'+(f.last||'')).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
-  el.innerHTML=list.map(f=>
-    '<a class="f reveal'+(f.pro===false?' amateur':'')+'" href="/fighter.html?f='+encodeURIComponent(f.slug||slugOf(f))+'">'+
+  el.innerHTML=list.map((f,idx)=>
+    '<div class="f reveal'+(f.pro===false?' amateur':'')+'" data-i="'+idx+'" style="cursor:pointer">'+
       (f.status&&f.status!=="Active"?'<span class="tag">'+esc(f.status)+'</span>':'')+
       MARK.replace('<svg','<svg class="ghost"')+
       '<div class="top"><div>'+
@@ -258,8 +279,12 @@ function render(){
       '</div>'+
       (f.next?'<div class="next"><b>Next fight</b>'+esc(f.next)+'</div>':'')+
       (f.note?'<div class="next"><b>Note</b>'+esc(f.note)+'</div>':'')+
-      '<div style="margin-top:14px;font-family:\'JetBrains Mono\',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--volt);">Full tape \u2192</div>'+
-    '</a>').join("");
+      '<div style="margin-top:14px;font-family:\'JetBrains Mono\',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--volt);">Tap for stats \u2192</div>'+
+    '</div>').join("");
+  el.querySelectorAll('.f').forEach(c=>c.addEventListener('click',()=>{
+    window.__fighterModal.open(list[+c.dataset.i]);
+  }));
+  if(window.__reveal) window.__reveal();
 }
 
 function buildFilters(){
@@ -287,6 +312,53 @@ try{
   console.warn(e);
 }
 if(window.__reveal) window.__reveal();
+</script>
+<script>
+/* ---- shared fighter modal ---- */
+window.__fighterModal=(function(){
+  const esc=s=>{const d=document.createElement("div");d.textContent=s||"";return d.innerHTML;};
+  let el=null;
+  function ensure(){
+    if(el) return el;
+    el=document.createElement('div');
+    el.className='fmodal';
+    el.innerHTML='<div class="box"><button class="x">X</button><div class="inner"></div></div>';
+    document.body.appendChild(el);
+    el.addEventListener('click',e=>{ if(e.target===el||e.target.classList.contains('x')) close(); });
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape') close(); });
+    return el;
+  }
+  function close(){ if(el) el.classList.remove('on'); }
+  function open(f){
+    if(!f) return;
+    ensure();
+    const slug=f.slug||((f.first||'')+'-'+(f.last||'')).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+    const stats=[
+      ['Str. landed / min', f.slpm],['Str. accuracy', f.strAcc],
+      ['Str. absorbed / min', f.sapm],['Str. defence', f.strDef],
+      ['Takedowns / 15min', f.tdAvg],['TD accuracy', f.tdAcc],
+      ['TD defence', f.tdDef],['Sub. attempts / 15min', f.subAvg],
+      ['Height', f.height],['Reach', f.reach],
+      ['Age', f.age],['Stance', f.stance]
+    ].filter(r=>r[1]);
+    el.querySelector('.inner').innerHTML=
+      '<div class="hd">'+
+        (f.nickname?'<div class="nick">"'+esc(f.nickname)+'"</div>':'')+
+        '<div class="nm">'+esc(f.first)+' <span>'+esc(f.last)+'</span></div>'+
+        '<div class="sub">'+[f.weight,f.gym,f.city,(f.pro===false?'Amateur':'Pro')].filter(Boolean).map(esc).join(' \u00b7 ')+'</div>'+
+        (f.record?'<div class="rec">'+esc(f.record)+'</div>':'')+
+        (f.next?'<div class="sub" style="color:var(--volt)">Next: '+esc(f.next)+'</div>':'')+
+      '</div>'+
+      (stats.length
+        ? '<div class="grid">'+stats.map(r=>'<div class="cell"><div class="l">'+esc(r[0])+'</div><div class="v">'+esc(r[1])+'</div></div>').join('')+'</div>'
+        : '<div class="empty-stats">No fight stats recorded for this fighter yet.</div>')+
+      (f.note?'<div class="note">'+esc(f.note)+'</div>':'')+
+      '<a class="go" href="/fighter.html?f='+encodeURIComponent(slug)+'">Full profile \u2192</a>';
+    el.classList.add('on');
+  }
+  return {open,close};
+})();
+
 </script>
 </body>
 </html>
