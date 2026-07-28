@@ -72,6 +72,16 @@
   .pick p{font-size:16.5px;color:var(--steel);margin-top:14px;}
   .pick .conf{margin-top:18px;padding-top:14px;border-top:1px solid var(--hair);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);}
   .pick .conf b{color:var(--bone);font-weight:700;}
+  .method{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px;}
+  .m{border:1px solid var(--hair);background:var(--black-2);padding:26px;transition:border-color .18s,transform .18s;}
+  .m:hover{border-color:rgba(201,247,58,.5);transform:translateY(-2px);}
+  .m .k{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;color:var(--volt);font-weight:700;}
+  .m h3{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:21px;line-height:1.1;margin-top:8px;}
+  .m p{color:var(--steel);font-size:15.5px;margin-top:10px;}
+  .odds-explain{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;}
+  .oe{border:1px solid var(--hair);background:var(--black-2);padding:26px;border-top:3px solid var(--volt);}
+  .oe .n{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:34px;color:var(--volt);}
+  .oe p{color:var(--steel);font-size:15.5px;margin-top:12px;}
   .note{margin-top:26px;font-size:15px;color:var(--steel);max-width:640px;}
   .bout{border:1px solid var(--hair);background:var(--black-2);margin-bottom:12px;transition:border-color .18s,transform .18s;}
   .bout:hover{border-color:rgba(201,247,58,.5);transform:translateY(-2px);}
@@ -106,7 +116,7 @@
   <div class="wrap">
     <div class="eyebrow">This week's value</div>
     <h1>Live <span>Dogs</span></h1>
-    <p class="dek">Underdogs worth a second look. Where there's a written read, it's ours — otherwise these are the longest prices on the card, straight off the wire.</p>
+    <p class="dek">Underdogs worth a second look. Where there is a written read, it is ours. Where there is not, these are simply the longest prices on the board, pulled straight off the wire and marked as such.</p>
   </div>
 </header>
 
@@ -118,7 +128,39 @@
       <span class="mono-tag" id="tag">Loading</span>
     </div>
     <div class="picks" id="picks"><div class="empty">Loading the board...</div></div>
-    <p class="note">Nothing here is financial advice, and none of it is a sure thing. Underdogs lose most of the time — that's why they're underdogs. Bet with your head, not over it.</p>
+    <p class="note">Nothing here is financial advice, and none of it is a sure thing. Underdogs lose most of the time — that is exactly why they are underdogs. Bet with your head, not over it.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sechead">
+      <svg class="sicon" viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="14" stroke-linejoin="miter"/></svg>
+      <h2>How we read a dog</h2>
+      <span class="mono-tag">The method</span>
+    </div>
+    <div class="method">
+      <div class="m reveal"><div class="k">01</div><h3>Styles over records</h3><p>A 9-4 wrestler with heavy top control is a live dog against a 14-1 striker who has never been held down. The record sells tickets. The matchup decides fights.</p></div>
+      <div class="m reveal"><div class="k">02</div><h3>Camp and notice</h3><p>Short-notice fighters are priced like tourists. Some are. Some walk around near weight, train year-round, and have been waiting two years for the call.</p></div>
+      <div class="m reveal"><div class="k">03</div><h3>Where the line moved</h3><p>An opener at +475 that closes at +340 means money arrived. That is worth more than any prediction we could write.</p></div>
+      <div class="m reveal"><div class="k">04</div><h3>Age and mileage</h3><p>Not years — rounds. A 34-year-old with 40 pro fights and a wars-heavy resume is older than a 34-year-old with 14.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sechead">
+      <svg class="sicon" viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="14" stroke-linejoin="miter"/></svg>
+      <h2>Reading the numbers</h2>
+      <span class="mono-tag">If odds are new to you</span>
+    </div>
+    <div class="odds-explain">
+      <div class="oe reveal"><div class="n">+340</div><p>A positive number is the underdog. It shows what a $100 stake would return in profit — $340 here, plus your stake back. The bigger the number, the less the market fancies them.</p></div>
+      <div class="oe reveal"><div class="n">-410</div><p>A negative number is the favourite. It shows what you would have to stake to profit $100. Heavy favourites tie up a lot of money for very little return.</p></div>
+      <div class="oe reveal"><div class="n">~23%</div><p>Odds convert to an implied chance of winning. +340 is roughly a 23% chance. The question is never "will they win" — it is whether 23% is too low.</p></div>
+    </div>
+    <p class="note">Utah has no legal sportsbooks. Everything here is for reading the sport more closely, not for placing anything.</p>
   </div>
 </section>
 
