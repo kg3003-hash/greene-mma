@@ -4,11 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Greene MMA</title>
-<link rel="icon" type="image/svg+xml" href="/assets/greene-mma-avatar.svg">
+<link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0C0E0A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Greene MMA">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="Greene MMA">
 <meta property="og:image" content="https://mma.greene.bet/assets/share-card.png">
 <meta name="twitter:card" content="summary_large_image">
+<!-- AdSense: replace ca-pub-XXXXXXXXXXXXXXXX with your publisher ID, then uncomment -->
+<!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -59,6 +67,11 @@
   footer a{color:var(--bone);} footer a:hover{color:var(--volt);}
   .reveal{opacity:0;transform:translateY(14px);animation:rise .5s ease forwards;}
   @keyframes rise{to{opacity:1;transform:none;}}
+  /* ad slots — reserved space so nothing jumps when they load */
+  .adwrap{margin:44px 0;text-align:center;}
+  .adwrap .lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel);opacity:.55;margin-bottom:8px;}
+  .adwrap ins{display:block;min-height:100px;}
+  .adwrap:empty{display:none;}
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}.reveal{opacity:1;transform:none;}}
 </style>
 </head>
@@ -75,7 +88,8 @@
       <a href="/picks.html">Picks</a>
       <a href="/fightweek.html">Fight Week</a>
       <a href="/utah.html">Utah</a>
-      <a href="/#corner">The Corner</a>
+      <a href="/fighters.html">Fighters</a>
+      <a href="/newsletter.html">The Corner</a>
     </div>
   </div>
 </nav>
@@ -85,7 +99,8 @@
 <footer>
   <div class="wrap wide">
     Greene MMA · <a href="https://greene.bet">Part of the greene.bet family</a><br>
-    © 2026 Greene MMA. Picks are for entertainment. Bet with your head, not over it.
+    <a href="/partner.html">Advertise with us</a><br>
+      © 2026 Greene MMA. Picks are for entertainment. Bet with your head, not over it.
   </div>
 </footer>
 
@@ -154,6 +169,7 @@ try{
           '<a class="go" href="'+esc(s.sourceUrl)+'" target="_blank" rel="noopener">Read the full story →</a>'+
           '</div>')+
     '</div>'+
+    '<div class="wrap"><div class="adwrap">      <div class="lbl">Advertisement</div>      <!-- <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="0000000000" data-ad-format="auto" data-full-width-responsive="true"></ins>      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script> -->    </div></div>'+
     (others.length?
     '<div class="more"><div class="wrap wide">'+
       '<h2>More from the corner</h2>'+
