@@ -5,7 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Utah MMA — Greene MMA</title>
 <meta name="description" content="Utah and mountain-west MMA: SteelFist, Fierce Fighting Championship, Delta Center cards, and the local fighters nobody else is covering.">
-<link rel="icon" type="image/svg+xml" href="/assets/greene-mma-avatar.svg">
+<link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0C0E0A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Greene MMA">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Greene MMA">
 <meta property="og:title" content="Utah MMA — Greene MMA">
@@ -13,6 +19,8 @@
 <meta property="og:url" content="https://mma.greene.bet/utah.html">
 <meta property="og:image" content="https://mma.greene.bet/assets/share-card.png">
 <meta name="twitter:card" content="summary_large_image">
+<!-- AdSense: replace ca-pub-XXXXXXXXXXXXXXXX with your publisher ID, then uncomment -->
+<!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -76,6 +84,31 @@
   .ev .go{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--volt);white-space:nowrap;}
   @media(max-width:640px){.ev{grid-template-columns:1fr;gap:10px;}.ev .date{border-right:none;border-bottom:1px solid var(--hair);padding:0 0 10px;}}
 
+  /* gyms */
+  .gyms{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;}
+  .gym{border:1px solid var(--hair);background:var(--black-2);padding:24px;transition:border-color .18s,transform .18s;}
+  .gym:hover{border-color:rgba(201,247,58,.5);transform:translateY(-2px);}
+  .gym.feat{border-top:3px solid var(--volt);}
+  .gym .badge{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--black);background:var(--volt);padding:3px 8px;display:inline-block;margin-bottom:10px;font-weight:700;}
+  .gym .n{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:21px;line-height:1.1;}
+  .gym .c{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--volt);margin-top:6px;}
+  .gym .d{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--steel);margin-top:8px;}
+  .gym p{font-size:15px;color:var(--steel);margin-top:10px;}
+  .gym a.go{display:inline-block;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--volt);}
+  .gym a.go:hover{color:var(--bone);}
+
+  /* sponsor pitch */
+  .sponsor{border:1px dashed rgba(201,247,58,.4);background:rgba(201,247,58,.04);padding:30px;margin-top:20px;}
+  .sponsor .k{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--volt);font-weight:700;}
+  .sponsor h3{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:24px;margin-top:8px;}
+  .sponsor p{color:var(--steel);font-size:16px;margin-top:8px;max-width:600px;}
+  .sponsor a{display:inline-block;margin-top:16px;padding:13px 26px;border:2px solid var(--volt);color:var(--volt);font-weight:700;font-size:13px;letter-spacing:.1em;text-transform:uppercase;}
+  .sponsor a:hover{background:var(--volt);color:var(--black);}
+
+  /* ad slot */
+  .adslot{margin:36px 0;min-height:90px;display:flex;align-items:center;justify-content:center;}
+  .adslot.empty-ad{display:none;}
+
   /* feed */
   .feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px;}
   .card{border:1px solid var(--hair);padding:26px;display:flex;flex-direction:column;gap:13px;background:var(--black-2);transition:border-color .15s,transform .15s;}
@@ -120,6 +153,11 @@
   .venue{transition:background .15s;}
   .venue:hover{background:rgba(201,247,58,.05);}
   .corner .cta{transition:background .15s,color .15s,box-shadow .15s;}
+  /* ad slots — reserved space so nothing jumps when they load */
+  .adwrap{margin:44px 0;text-align:center;}
+  .adwrap .lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel);opacity:.55;margin-bottom:8px;}
+  .adwrap ins{display:block;min-height:100px;}
+  .adwrap:empty{display:none;}
   @media(prefers-reduced-motion:reduce){
     *{animation:none !important;transition:none !important;}
     .hero h1,.hero .dek,.hero .eyebrow{opacity:1;transform:none;}
@@ -141,7 +179,8 @@
       <a href="/#fightweek">Fight Week</a>
       <a href="/#picks">Picks</a>
       <a href="/utah.html" class="on">Utah</a>
-      <a href="/#corner">The Corner</a>
+      <a href="/fighters.html">Fighters</a>
+      <a href="/newsletter.html">The Corner</a>
     </div>
   </div>
 </nav>
@@ -183,6 +222,36 @@
   </div>
 </section>
 
+<!-- FIGHTERS STRIP -->
+<section id="fighters">
+  <div class="wrap">
+    <div class="sechead">
+      <svg class="sicon" viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="14" stroke-linejoin="miter"/></svg>
+      <h2>Utah Fighters</h2>
+      <a class="mono-tag" href="/fighters.html" style="margin-left:auto;color:var(--volt);">Full roster \u2192</a>
+    </div>
+    <div id="fighterstrip"><div class="empty">Building the roster. Fight out of Utah? Get on it.</div></div>
+  </div>
+</section>
+
+<!-- GYMS -->
+<section id="gyms">
+  <div class="wrap">
+    <div class="sechead">
+      <svg class="sicon" viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="14" stroke-linejoin="miter"/></svg>
+      <h2>Where Utah Trains</h2>
+      <span class="mono-tag">Gyms across the Wasatch Front</span>
+    </div>
+    <div class="gyms" id="gymlist"></div>
+    <div class="sponsor">
+      <div class="k">Gym owners</div>
+      <h3>Get your gym in front of Utah fight fans</h3>
+      <p>This page is where people look when they want to find a gym, follow a local card, or figure out who's fighting this weekend. Featured listings put your gym at the top with your logo, your pitch, and a link — and we'll cover your fighters when they compete.</p>
+      <a href="/partner.html">See featured listing options</a>
+    </div>
+  </div>
+</section>
+
 <!-- EVENTS -->
 <section id="events">
   <div class="wrap">
@@ -211,6 +280,12 @@
   </div>
 </section>
 
+<div class="wrap"><div class="adwrap">
+      <div class="lbl">Advertisement</div>
+      <!-- <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="0000000000" data-ad-format="auto" data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script> -->
+    </div></div>
+
 <!-- FIGHTER CTA -->
 <section class="corner" style="border:none;padding:0;">
   <div class="wrap inner">
@@ -234,7 +309,9 @@
     </div>
     <div class="fine">
       Fight news from the Greene corner · <a href="https://greene.bet">Part of the greene.bet family</a><br>
-      <a href="/">News</a> · <a href="/#picks">Picks</a> · <a href="/utah.html">Utah</a> · <a href="/#corner">The Greene Corner newsletter</a><br>
+      <a href="/">News</a> · <a href="/#picks">Picks</a> · <a href="/utah.html">Utah</a>
+      <a href="/fighters.html">Fighters</a> · <a href="/newsletter.html">The Greene Corner newsletter</a><br>
+      <a href="/partner.html">Advertise with us</a><br>
       © 2026 Greene MMA. Picks are for entertainment. Bet with your head, not over it.
     </div>
   </div>
@@ -289,6 +366,47 @@ try{
     const db=getFirestore(app);
     // Pull recent stories and filter client-side — avoids needing a composite index
     const snap=await getDocs(query(collection(db,"stories"),orderBy("publishedAt","desc"),limit(60)));
+    // fighter strip
+    try{
+      const fSnap=await getDoc(doc(db,"site","fighters"));
+      const fl=((fSnap.data()||{}).fighters)||[];
+      if(fl.length){
+        document.getElementById("fighterstrip").innerHTML=
+          '<div class="gyms">'+fl.slice(0,6).map(f=>
+            '<div class="gym reveal">'+
+              '<div class="n">'+esc(f.first)+' '+esc(f.last)+'</div>'+
+              '<div class="c">'+esc(f.record||"")+(f.weight?" · "+esc(f.weight):"")+'</div>'+
+              (f.gym?'<div class="d">'+esc(f.gym)+'</div>':'')+
+              (f.next?'<p>Next: '+esc(f.next)+'</p>':'')+
+            '</div>').join("")+'</div>';
+      }
+    }catch(e){ console.warn("fighters",e); }
+
+    // gym directory (seeded list, overridden by anything saved in the studio)
+    const SEED=[
+      {name:"Absolute MMA",city:"West Jordan",disciplines:"BJJ · Muay Thai · Judo · Wrestling · MMA",note:"Long-running Utah program with a deep black belt lineage. Beginners start here every day.",link:"https://absolutemma.com"},
+      {name:"Renzo Gracie Salt Lake City",city:"Salt Lake City",disciplines:"BJJ · MMA",note:"Renzo Gracie affiliate under black belt Stan Beck. Full adult and kids schedule, MMA a few times a week.",link:""},
+      {name:"Ultimate Combat Training Center",city:"Holladay",disciplines:"BJJ · Boxing · Kickboxing · MMA",note:"Serves Millcreek, West Valley, Murray and the surrounding valley. Strong kids program.",link:"https://ultimatecombat.com"},
+      {name:"Mushin Self Defense",city:"Salt Lake / Davis County",disciplines:"BJJ · Submission Wrestling · Muay Thai",note:"Two BJJ black belt instructors and certified Thai Boxing Association coaches. Over 20 years running.",link:"https://mushinmma.com"},
+      {name:"Gracie Barra Utah",city:"Multiple locations",disciplines:"BJJ (gi + no-gi)",note:"Structured curriculum for kids, teens, adults and women's programs.",link:""},
+      {name:"Unified Jiu Jitsu",city:"Salt Lake City",disciplines:"BJJ",note:"Founded by black belts Shawn Weaver, John Carlquist, James Gardner and Matt Strack.",link:""}
+    ];
+    try{
+      const gSnap=await getDoc(doc(db,"site","gyms"));
+      const saved=((gSnap.data()||{}).gyms)||[];
+      const list=saved.length?saved:SEED;
+      list.sort((a,b)=>(b.featured?1:0)-(a.featured?1:0));
+      document.getElementById("gymlist").innerHTML=list.map(g=>
+        '<div class="gym reveal'+(g.featured?' feat':'')+'">'+
+          (g.featured?'<span class="badge">Featured</span>':'')+
+          '<div class="n">'+esc(g.name)+'</div>'+
+          '<div class="c">'+esc(g.city)+'</div>'+
+          (g.disciplines?'<div class="d">'+esc(g.disciplines)+'</div>':'')+
+          (g.note?'<p>'+esc(g.note)+'</p>':'')+
+          (g.link?'<a class="go" href="'+esc(g.link)+'" target="_blank" rel="noopener">Visit →</a>':'')+
+        '</div>').join("");
+    }catch(e){ console.warn("gyms",e); }
+
     // events calendar
     try{
       const evSnap=await getDoc(doc(db,"site","events"));
