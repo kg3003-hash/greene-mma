@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Greene MMA — Hype Card Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{--black:#0C0E0A;--black-2:#13160F;--volt:#C9F73A;--bone:#F2F0E9;--steel:#9AA194;--hair:rgba(242,240,233,.14);}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--black);color:var(--bone);font-family:'Barlow',sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px;}
+  .top{border-bottom:1px solid var(--hair);}
+  .top .wrap{display:flex;align-items:center;gap:12px;height:62px;}
+  .top svg{width:30px;height:30px;}
+  .top .name{font-family:'Anton',sans-serif;font-size:19px;text-transform:uppercase;}
+  .top .name span{color:var(--volt);}
+  .top .tool{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);}
+  .app{display:grid;grid-template-columns:390px 1fr;gap:28px;padding:30px 0 70px;}
+  @media(max-width:900px){.app{grid-template-columns:1fr;}.stage{position:static !important;}}
+  .panel{border:1px solid var(--hair);background:var(--black-2);padding:22px;}
+  .panel+.panel{margin-top:16px;}
+  .panel h2{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:20px;margin-bottom:14px;}
+  label{display:block;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);margin:13px 0 6px;}
+  input[type=text],textarea,select{width:100%;padding:11px 12px;background:var(--black);border:1px solid var(--hair);color:var(--bone);font-family:'Barlow',sans-serif;font-size:15px;}
+  input:focus,textarea:focus,select:focus{outline:2px solid var(--volt);outline-offset:1px;border-color:transparent;}
+  textarea{resize:vertical;min-height:60px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  input[type=range]{width:100%;accent-color:var(--volt);margin-top:4px;}
+  .drop{border:2px dashed var(--hair);padding:24px 16px;text-align:center;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);transition:border-color .15s,color .15s;}
+  .drop:hover,.drop.over{border-color:var(--volt);color:var(--volt);}
+  .drop b{display:block;color:var(--bone);font-size:13px;margin-bottom:6px;letter-spacing:.06em;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+  .chip{padding:9px 13px;border:1px solid var(--hair);background:var(--black);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);}
+  .chip:hover{border-color:var(--volt);color:var(--volt);}
+  .chip.on{background:var(--volt);border-color:var(--volt);color:var(--black);font-weight:700;}
+  .btn{display:block;width:100%;margin-top:20px;padding:15px;background:var(--volt);color:var(--black);border:none;cursor:pointer;font-family:'Barlow',sans-serif;font-weight:700;font-size:14px;letter-spacing:.1em;text-transform:uppercase;}
+  .btn:hover{background:var(--bone);}
+  .btn.ghost{background:transparent;color:var(--volt);border:2px solid var(--volt);margin-top:10px;}
+  .btn.ghost:hover{background:var(--volt);color:var(--black);}
+  .hint{margin-top:12px;font-size:13px;color:var(--steel);}
+  .hint a{color:var(--volt);}
+  .stage{display:flex;flex-direction:column;align-items:center;gap:14px;position:sticky;top:20px;align-self:start;}
+  .stage .frame{border:1px solid var(--hair);line-height:0;max-width:100%;}
+  canvas{max-width:100%;height:auto;display:block;}
+  .stage .cap{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--steel);text-align:center;}
+
+  /* ---- gate ---- */
+  #gate{position:fixed;inset:0;background:var(--black);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;}
+  #gate .box{width:100%;max-width:360px;text-align:center;}
+  #gate svg{width:74px;height:74px;margin:0 auto 26px;display:block;}
+  #gate h1{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:30px;margin-bottom:6px;}
+  #gate h1 span{color:var(--volt);}
+  #gate p{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel);margin-bottom:24px;}
+  #gate input{width:100%;padding:14px;background:var(--black-2);border:1px solid var(--hair);color:var(--bone);font-family:'JetBrains Mono',monospace;font-size:15px;text-align:center;letter-spacing:.2em;}
+  #gate input:focus{outline:2px solid var(--volt);outline-offset:1px;}
+  #gate button{width:100%;margin-top:12px;padding:14px;background:var(--volt);color:var(--black);border:none;cursor:pointer;font-family:'Barlow',sans-serif;font-weight:700;font-size:14px;letter-spacing:.1em;text-transform:uppercase;}
+  #gate .err{color:#FF4B3E;font-size:13px;margin-top:12px;min-height:20px;font-family:'Barlow',sans-serif;letter-spacing:0;text-transform:none;}
+  /* ---- publish ---- */
+  .targets{display:flex;flex-direction:column;gap:9px;margin-top:8px;}
+  .tgt{display:flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);}
+  .tgt input{accent-color:var(--volt);width:16px;height:16px;}
+  .tgt small{display:block;text-transform:none;letter-spacing:0;font-family:'Barlow',sans-serif;font-size:12.5px;color:var(--steel);opacity:.8;}
+  #status{margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.06em;line-height:1.9;white-space:pre-wrap;}
+  .ok{color:var(--volt);} .bad{color:#FF4B3E;}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="box">
+    <svg viewBox="0 0 120 120"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>
+    <h1>Greene <span>Studio</span></h1>
+    <p>Staff only</p>
+    <input type="password" id="gatepass" placeholder="PASSCODE" autocomplete="off">
+    <button id="gatego">Enter</button>
+    <div class="err" id="gateerr"></div>
+  </div>
+</div>
+
+<div class="top"><div class="wrap">
+  <svg viewBox="0 0 120 120"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>
+  <div class="name">Greene <span>MMA</span></div>
+  <div class="tool">Hype Card Generator</div>
+</div></div>
+
+<div class="wrap"><div class="app">
+  <div>
+    <div class="panel">
+      <h2>Template</h2>
+      <div class="chips" id="layouts">
+        <div class="chip on" data-l="poster">1 · Poster</div>
+        <div class="chip" data-l="split">2 · Split</div>
+        <div class="chip" data-l="octagon">3 · Octagon</div>
+        <div class="chip" data-l="ticket">4 · Ticket</div>
+        <div class="chip" data-l="odds">5 · Odds Drop</div>
+      </div>
+      <label>Format</label>
+      <select id="format">
+        <option value="post">Post · 1080 × 1350</option>
+        <option value="story">Story · 1080 × 1920</option>
+      </select>
+    </div>
+
+    <div class="panel">
+      <h2>The photo</h2>
+      <div class="drop" id="drop"><b>Tap to upload a fighter photo</b>or drag one here · JPG or PNG</div>
+      <input type="file" id="file" accept="image/*" style="display:none">
+      <label>Treatment</label>
+      <div class="chips" id="treatments">
+        <div class="chip on" data-t="duotone">Volt duotone</div>
+        <div class="chip" data-t="bw">High-contrast B&amp;W</div>
+        <div class="chip" data-t="graded">Dark graded</div>
+        <div class="chip" data-t="raw">Raw</div>
+      </div>
+      <label>Zoom</label><input type="range" id="zoom" min="100" max="260" value="118">
+      <div class="row2">
+        <div><label>Move ↔</label><input type="range" id="px" min="0" max="100" value="50"></div>
+        <div><label>Move ↕</label><input type="range" id="py" min="0" max="100" value="30"></div>
+      </div>
+      <p class="hint">Sharpest results: cut the background out first with <a href="https://www.remove.bg" target="_blank" rel="noopener">remove.bg</a> and upload the transparent PNG.</p>
+    </div>
+
+    <div class="panel">
+      <h2>The fighter</h2>
+      <div class="row2">
+        <div><label>First name</label><input type="text" id="first" value="Dusty"></div>
+        <div><label>Last name</label><input type="text" id="last" value="Marks"></div>
+      </div>
+      <label>Nickname (optional)</label><input type="text" id="nick" value="The Landlord">
+      <div class="row2">
+        <div><label>Record</label><input type="text" id="record" value="12-2-0"></div>
+        <div><label>Odds</label><input type="text" id="odds" value="+340"></div>
+      </div>
+      <div class="row2">
+        <div><label>Division</label><input type="text" id="weight" value="Lightweight"></div>
+        <div><label>Camp</label><input type="text" id="gym" value="Riverton, Utah"></div>
+      </div>
+      <label>The story line</label>
+      <textarea id="story">Took the biggest fight of his life on six days' notice. Never blinked.</textarea>
+      <div class="row2">
+        <div><label>Event</label><input type="text" id="event" value="Saturday · Main Card"></div>
+        <div><label>Date</label><input type="text" id="date" value="AUG 1"></div>
+      </div>
+      <button class="btn" id="dl">Download PNG</button>
+      <button class="btn ghost" id="dlall">Download all 5 templates</button>
+    </div>
+
+    <div class="panel">
+      <h2>Write an article</h2>
+      <label>Headline</label><input type="text" id="a_head" placeholder="Short. Punchy. Max ~10 words.">
+      <label>Standfirst (shows on cards + previews)</label>
+      <textarea id="a_sum" placeholder="One or two sentences. 25-45 words."></textarea>
+      <label>Body</label>
+      <textarea id="a_body" style="min-height:220px" placeholder="Write the piece. Blank line between paragraphs."></textarea>
+      <div class="row2">
+        <div><label>Category</label>
+          <select id="a_cat">
+            <option>The Corner</option><option>Fight booked</option><option>Results</option>
+            <option>Injury report</option><option>Line movement</option><option>Utah</option><option>News</option>
+          </select>
+        </div>
+        <div><label>Tag as Utah story</label>
+          <select id="a_utah"><option value="no">No</option><option value="yes">Yes</option></select>
+        </div>
+      </div>
+      <button class="btn" id="a_pub">Publish article</button>
+      <div id="a_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Utah events</h2>
+      <p class="hint" style="margin-top:0">These fill the calendar on the Utah page.</p>
+      <div id="evrows"></div>
+      <button class="btn ghost" id="ev_add">Add event</button>
+      <button class="btn" id="ev_save">Save calendar</button>
+      <div id="ev_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Manage stories</h2>
+      <p class="hint" style="margin-top:0">Delete stray items — old wrestling posts, bad rewrites.</p>
+      <button class="btn ghost" id="s_load">Load recent stories</button>
+      <div id="s_list" style="margin-top:12px;"></div>
+    </div>
+
+    <div class="panel">
+      <h2>This week's picks</h2>
+      <p class="hint" style="margin-top:0">Live Dogs shows the biggest underdogs from the odds feed until you write your own. Yours replace them.</p>
+      <div id="pickrows"></div>
+      <button class="btn ghost" id="addpick">Add another pick</button>
+      <button class="btn" id="savepicks">Save picks to site</button>
+      <div id="pickstatus" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Publish</h2>
+      <div class="row2">
+        <div><label>X handle</label><input type="text" id="xhandle" placeholder="@fighter"></div>
+        <div><label>IG handle</label><input type="text" id="ighandle" placeholder="@fighter"></div>
+      </div>
+      <label>Caption</label>
+      <textarea id="caption">In the Greene corner this Saturday. Made you something.</textarea>
+      <label>Post to</label>
+      <div class="targets">
+        <label class="tgt"><input type="checkbox" id="t_x" checked><span>X post<small>Card + caption, fighter tagged</small></span></label>
+        <label class="tgt"><input type="checkbox" id="t_igfeed"><span>Instagram feed<small>Card + caption, fighter tagged</small></span></label>
+        <label class="tgt"><input type="checkbox" id="t_igstory"><span>Instagram story<small>Story format · mention sticker must be added by hand</small></span></label>
+      </div>
+      <button class="btn" id="publish">Publish now</button>
+      <div id="status"></div>
+      <p class="hint">Tag the fighter when you post. For most undercard guys this is the best graphic anyone has ever made of them.</p>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="frame"><canvas id="card" width="1080" height="1350"></canvas></div>
+    <div class="cap" id="cap">1080 × 1350</div>
+  </div>
+</div></div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const canvas=$('card'), ctx=canvas.getContext('2d');
+const C={bg:'#0C0E0A',ink:'#F2F0E9',accent:'#C9F73A',dim:'#9AA194',hair:'rgba(242,240,233,.18)'};
+let img=null, treatment='duotone', layout='poster', cache=null, cacheKey='';
+
+const V=()=>({first:$('first').value.trim().toUpperCase(),last:$('last').value.trim().toUpperCase(),
+  nick:$('nick').value.trim(),record:$('record').value.trim(),odds:$('odds').value.trim(),
+  weight:$('weight').value.trim().toUpperCase(),gym:$('gym').value.trim().toUpperCase(),
+  story:$('story').value.trim(),event:$('event').value.trim(),date:$('date').value.trim().toUpperCase()});
+
+/* ---------- shapes ---------- */
+function markPath(x,y,size){
+  const s=size/120;
+  const pts=[[104.35,41.63],[78.37,15.65],[41.63,15.65],[15.65,41.63],[15.65,78.37],
+             [41.63,104.35],[78.37,104.35],[104.35,78.37],[104.35,64],[71,64]];
+  ctx.beginPath();
+  pts.forEach((p,i)=> i===0?ctx.moveTo(x+p[0]*s,y+p[1]*s):ctx.lineTo(x+p[0]*s,y+p[1]*s));
+}
+function logo(x,y,size,stroke,color,alpha){
+  ctx.save(); ctx.globalAlpha=alpha===undefined?1:alpha;
+  markPath(x,y,size); ctx.strokeStyle=color; ctx.lineWidth=stroke*(size/120);
+  ctx.lineJoin='miter'; ctx.lineCap='butt'; ctx.stroke(); ctx.restore();
+}
+function octPath(cx,cy,r){
+  ctx.beginPath();
+  for(let i=0;i<8;i++){
+    const a=Math.PI/8 + i*Math.PI/4;
+    const px=cx+r*Math.cos(a), py=cy+r*Math.sin(a);
+    i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+  }
+  ctx.closePath();
+}
+
+/* ---------- photo ---------- */
+function treated(){
+  const key=treatment+'|'+img.width+'x'+img.height;
+  if(cache&&cacheKey===key) return cache;
+  const off=document.createElement('canvas');
+  off.width=img.width; off.height=img.height;
+  const o=off.getContext('2d'); o.drawImage(img,0,0);
+  if(treatment!=='raw'){
+    const d=o.getImageData(0,0,off.width,off.height), p=d.data;
+    for(let i=0;i<p.length;i+=4){
+      if(p[i+3]===0) continue;
+      let lum=(p[i]*.299+p[i+1]*.587+p[i+2]*.114)/255;
+      if(treatment==='duotone'){
+        lum=Math.min(1,Math.max(0,(lum-.12)*1.45));
+        const t=lum*lum*(3-2*lum);
+        p[i]=12+(201-12)*t; p[i+1]=14+(247-14)*t; p[i+2]=10+(58-10)*t;
+      } else if(treatment==='bw'){
+        let v=Math.min(1,Math.max(0,(lum-.16)*1.6)); v=v*v*(3-2*v);
+        const g=18+232*v; p[i]=g;p[i+1]=g;p[i+2]=g;
+      } else {
+        p[i]=Math.min(255,p[i]*.82+4); p[i+1]=Math.min(255,p[i+1]*.92+8); p[i+2]=Math.min(255,p[i+2]*.74);
+      }
+    }
+    o.putImageData(d,0,0);
+  }
+  cache=off; cacheKey=key; return off;
+}
+function photo(box,clipFn){
+  if(!img) return;
+  const src=treated(), zoom=+$('zoom').value/100;
+  const scale=Math.max(box.w/src.width,box.h/src.height)*zoom;
+  const dw=src.width*scale, dh=src.height*scale;
+  const dx=box.x+(box.w-dw)*(+$('px').value/100);
+  const dy=box.y+(box.h-dh)*(+$('py').value/100);
+  ctx.save();
+  if(clipFn){clipFn();} else {ctx.beginPath();ctx.rect(box.x,box.y,box.w,box.h);}
+  ctx.clip(); ctx.drawImage(src,dx,dy,dw,dh); ctx.restore();
+}
+function scrim(x,y,w,h,dir,strength){
+  const g=dir==='v'?ctx.createLinearGradient(0,y,0,y+h):ctx.createLinearGradient(x,0,x+w,0);
+  g.addColorStop(0,'rgba(12,14,10,0)');
+  g.addColorStop(.5,'rgba(12,14,10,'+(strength*.72)+')');
+  g.addColorStop(1,'rgba(12,14,10,'+strength+')');
+  ctx.fillStyle=g; ctx.fillRect(x,y,w,h);
+}
+
+/* ---------- text ---------- */
+function fit(text,font,maxPx,maxW,minPx){
+  let s=maxPx;
+  do{ ctx.font=s+'px '+font; if(ctx.measureText(text).width<=maxW) break; s-=4; }while(s>(minPx||26));
+  return s;
+}
+function wrapT(text,maxW,max){
+  const words=text.split(/\s+/),lines=[];let line='';
+  for(const w of words){const t=line?line+' '+w:w;
+    if(ctx.measureText(t).width>maxW&&line){lines.push(line);line=w;}else line=t;}
+  if(line)lines.push(line); return lines.slice(0,max||3);
+}
+function header(W,M,y){
+  logo(M,y,56,13,C.accent);
+  ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+  ctx.fillStyle=C.ink; ctx.font='34px Anton';
+  ctx.fillText('GREENE ',M+74,y+42);
+  const gw=ctx.measureText('GREENE ').width;
+  ctx.fillStyle=C.accent; ctx.fillText('MMA',M+74+gw,y+42);
+  ctx.fillStyle=C.dim; ctx.font='700 18px "JetBrains Mono"';
+  ctx.textAlign='right'; ctx.fillText('UNDERCARD HYPE',W-M,y+38); ctx.textAlign='left';
+}
+function footer(W,H,M,v){
+  const fy=H-72;
+  ctx.fillStyle=C.hair; ctx.fillRect(M,fy-44,W-M*2,2);
+  ctx.fillStyle=C.dim; ctx.font='700 20px "JetBrains Mono"'; ctx.textAlign='left';
+  ctx.fillText((v.event+'  ·  '+v.date).replace(/^\s*·\s*|\s*·\s*$/g,''),M,fy);
+  ctx.fillStyle=C.accent; ctx.textAlign='right'; ctx.fillText('MMA.GREENE.BET',W-M,fy); ctx.textAlign='left';
+}
+function tape(x,y,w,rows,rowH,align){
+  ctx.textAlign='left';
+  for(const [label,val] of rows){
+    ctx.fillStyle=C.hair; ctx.fillRect(x,y,w,2);
+    ctx.fillStyle=C.dim; ctx.font='700 20px "JetBrains Mono"';
+    ctx.fillText(label,x,y+rowH*.62);
+    ctx.fillStyle=C.accent; ctx.font='700 30px "JetBrains Mono"';
+    ctx.textAlign='right'; ctx.fillText(val,x+w,y+rowH*.64); ctx.textAlign='left';
+    y+=rowH;
+  }
+  ctx.fillStyle=C.hair; ctx.fillRect(x,y,w,2);
+  return y;
+}
+function rowsFor(v){
+  return [['RECORD',v.record],['ODDS',v.odds],['DIVISION',v.weight],['CAMP',v.gym]].filter(r=>r[1]);
+}
+
+/* ================= TEMPLATES ================= */
+function tplPoster(W,H,M,v,isStory){
+  if(img){ photo({x:0,y:0,w:W,h:H});
+    let g=ctx.createLinearGradient(0,H*.2,0,H);
+    g.addColorStop(0,'rgba(12,14,10,0)');g.addColorStop(.45,'rgba(12,14,10,.74)');g.addColorStop(1,'rgba(12,14,10,.97)');
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    g=ctx.createLinearGradient(0,0,0,240);
+    g.addColorStop(0,'rgba(12,14,10,.85)');g.addColorStop(1,'rgba(12,14,10,0)');
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,240);
+  } else logo(W-430,H-520,600,11,C.accent,.06);
+  header(W,M,isStory?100:72);
+  const CW=W-M*2, footY=H-72;
+  ctx.font='600 33px Barlow';
+  const sl=wrapT(v.story,CW,3);
+  let storyTop=footY-116-(sl.length-1)*45;
+  const rows=rowsFor(v), rowH=72;
+  const tapeTop=storyTop-42-rows.length*rowH;
+  const lastS=fit(v.last,'Anton',isStory?190:164,CW);
+  const firstS=fit(v.first,'Anton',80,CW);
+  const nameBase=tapeTop-44;
+  ctx.textAlign='left';
+  ctx.fillStyle=C.accent;ctx.font=lastS+'px Anton';ctx.fillText(v.last,M,nameBase);
+  ctx.fillStyle=C.ink;ctx.font=firstS+'px Anton';ctx.fillText(v.first,M,nameBase-lastS*.86);
+  let ny=nameBase-lastS*.86-firstS*1.06-22;
+  if(v.nick){ctx.fillStyle=C.dim;ctx.font='29px "JetBrains Mono"';ctx.fillText('\u201C'+v.nick.toUpperCase()+'\u201D',M,ny);ny-=50;}
+  ctx.fillStyle=C.accent;ctx.font='700 22px "JetBrains Mono"';ctx.fillText('IN THE GREENE CORNER',M,ny);
+  tape(M,tapeTop,CW,rows,rowH);
+  ctx.fillStyle=C.ink;ctx.font='600 33px Barlow';
+  let y=storyTop; for(const l of sl){ctx.fillText(l,M,y);y+=45;}
+  footer(W,H,M,v);
+}
+
+function tplSplit(W,H,M,v,isStory){
+  const sx=Math.round(W*.46);
+  if(img){ photo({x:sx,y:0,w:W-sx,h:H});
+    const g=ctx.createLinearGradient(sx,0,sx+230,0);
+    g.addColorStop(0,'rgba(12,14,10,.96)');g.addColorStop(1,'rgba(12,14,10,0)');
+    ctx.fillStyle=g;ctx.fillRect(sx,0,270,H);
+    ctx.fillStyle=C.accent;ctx.fillRect(sx-3,0,3,H);
+  } else logo(W-380,H/2-260,520,11,C.accent,.06);
+  header(W,M,isStory?100:72);
+  const tw=sx-M-26, footY=H-72;
+  ctx.font='600 28px Barlow';
+  const sl=wrapT(v.story,tw,4);
+  let storyTop=footY-110-(sl.length-1)*40;
+  const rows=rowsFor(v),rowH=64;
+  const tapeTop=storyTop-38-rows.length*rowH;
+  const lastS=fit(v.last,'Anton',isStory?128:112,tw,40);
+  const firstS=fit(v.first,'Anton',58,tw,30);
+  const nameBase=tapeTop-40;
+  ctx.textAlign='left';
+  ctx.fillStyle=C.accent;ctx.font=lastS+'px Anton';ctx.fillText(v.last,M,nameBase);
+  ctx.fillStyle=C.ink;ctx.font=firstS+'px Anton';ctx.fillText(v.first,M,nameBase-lastS*.86);
+  let ny=nameBase-lastS*.86-firstS*1.06-22;
+  if(v.nick){ctx.fillStyle=C.dim;ctx.font='24px "JetBrains Mono"';ctx.fillText('\u201C'+v.nick.toUpperCase()+'\u201D',M,ny);ny-=44;}
+  ctx.fillStyle=C.accent;ctx.font='700 19px "JetBrains Mono"';ctx.fillText('IN THE GREENE CORNER',M,ny);
+  ctx.textAlign='left';
+  let y=tapeTop;
+  for(const [label,val] of rows){
+    ctx.fillStyle=C.hair;ctx.fillRect(M,y,tw,2);
+    ctx.fillStyle=C.dim;ctx.font='700 17px "JetBrains Mono"';ctx.fillText(label,M,y+rowH*.6);
+    ctx.fillStyle=C.accent;ctx.font='700 25px "JetBrains Mono"';
+    ctx.textAlign='right';ctx.fillText(val,M+tw,y+rowH*.62);ctx.textAlign='left';
+    y+=rowH;
+  }
+  ctx.fillStyle=C.hair;ctx.fillRect(M,y,tw,2);
+  ctx.fillStyle=C.ink;ctx.font='600 28px Barlow';
+  y=storyTop; for(const l of sl){ctx.fillText(l,M,y);y+=40;}
+  footer(W,H,M,v);
+}
+
+function tplOctagon(W,H,M,v,isStory){
+  header(W,M,isStory?100:72);
+  const cx=W/2, r=Math.min(W*.40,H*.26), cy=(isStory?H*.34:H*.33);
+  // volt ring behind
+  ctx.save();ctx.globalAlpha=.9;octPath(cx,cy,r+16);ctx.strokeStyle=C.accent;ctx.lineWidth=4;ctx.stroke();ctx.restore();
+  if(img){ photo({x:cx-r,y:cy-r,w:r*2,h:r*2},()=>octPath(cx,cy,r)); }
+  else { octPath(cx,cy,r); ctx.fillStyle='rgba(201,247,58,.06)'; ctx.fill(); }
+  ctx.textAlign='center';
+  let y=cy+r+86;
+  ctx.fillStyle=C.accent;ctx.font='700 21px "JetBrains Mono"';
+  ctx.fillText('IN THE GREENE CORNER',cx,y); y+=54;
+  if(v.nick){ctx.fillStyle=C.dim;ctx.font='27px "JetBrains Mono"';ctx.fillText('\u201C'+v.nick.toUpperCase()+'\u201D',cx,y);y+=52;}
+  const CW=W-M*2;
+  const firstS=fit(v.first,'Anton',66,CW);
+  ctx.fillStyle=C.ink;ctx.font=firstS+'px Anton';ctx.fillText(v.first,cx,y); y+=(isStory?126:112);
+  const lastS=fit(v.last,'Anton',isStory?150:132,CW);
+  ctx.fillStyle=C.accent;ctx.font=lastS+'px Anton';ctx.fillText(v.last,cx,y);
+  // inline stat strip
+  y+=(isStory?76:64);
+  const rows=rowsFor(v);
+  ctx.fillStyle=C.hair;ctx.fillRect(M,y,CW,2); y+=46;
+  const cellW=CW/rows.length;
+  rows.forEach((r2,i)=>{
+    const x=M+cellW*i+cellW/2;
+    ctx.fillStyle=C.dim;ctx.font='700 16px "JetBrains Mono"';ctx.fillText(r2[0],x,y);
+    ctx.fillStyle=C.accent;ctx.font='700 27px "JetBrains Mono"';ctx.fillText(r2[1],x,y+38);
+  });
+  y+=76;
+  ctx.fillStyle=C.hair;ctx.fillRect(M,y,CW,2);
+  y+=58;
+  ctx.fillStyle=C.ink;ctx.font='600 30px Barlow';
+  for(const l of wrapT(v.story,CW-60,3)){ctx.fillText(l,cx,y);y+=42;}
+  ctx.textAlign='left';
+  footer(W,H,M,v);
+}
+
+function tplTicket(W,H,M,v,isStory){
+  const bandH=Math.round(H*(isStory?.50:.46));
+  if(img){ photo({x:0,y:0,w:W,h:bandH});
+    scrim(0,bandH-320,W,320,'v',.92);
+  } else { ctx.fillStyle='#13160F';ctx.fillRect(0,0,W,bandH); logo(W/2-190,bandH/2-190,380,11,C.accent,.08); }
+  header(W,M,isStory?100:72);
+  // name over the band bottom
+  ctx.textAlign='left';
+  const CW=W-M*2;
+  const lastS=fit(v.last,'Anton',isStory?168:148,CW);
+  ctx.fillStyle=C.accent;ctx.font=lastS+'px Anton';ctx.fillText(v.last,M,bandH-58);
+  const firstS=fit(v.first,'Anton',68,CW);
+  ctx.fillStyle=C.ink;ctx.font=firstS+'px Anton';ctx.fillText(v.first,M,bandH-58-lastS*.86);
+  // perforation
+  ctx.save();ctx.strokeStyle=C.accent;ctx.lineWidth=3;ctx.setLineDash([18,14]);
+  ctx.beginPath();ctx.moveTo(0,bandH);ctx.lineTo(W,bandH);ctx.stroke();ctx.restore();
+  // notches
+  ctx.fillStyle=C.bg;
+  ctx.beginPath();ctx.arc(0,bandH,26,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(W,bandH,26,0,Math.PI*2);ctx.fill();
+  // stub
+  let y=bandH+80;
+  ctx.fillStyle=C.accent;ctx.font='700 21px "JetBrains Mono"';
+  ctx.fillText('IN THE GREENE CORNER',M,y);
+  if(v.nick){ctx.fillStyle=C.dim;ctx.font='26px "JetBrains Mono"';ctx.textAlign='right';ctx.fillText('\u201C'+v.nick.toUpperCase()+'\u201D',W-M,y);ctx.textAlign='left';}
+  y+=54;
+  const rows=rowsFor(v);
+  y=tape(M,y,CW,rows,isStory?78:70)+ (isStory?70:58);
+  ctx.fillStyle=C.ink;ctx.font='600 32px Barlow';
+  for(const l of wrapT(v.story,CW,3)){ctx.fillText(l,M,y);y+=44;}
+  footer(W,H,M,v);
+}
+
+function tplOdds(W,H,M,v,isStory){
+  if(img){ photo({x:0,y:0,w:W,h:H});
+    ctx.fillStyle='rgba(12,14,10,.72)';ctx.fillRect(0,0,W,H);
+    let g=ctx.createLinearGradient(0,H*.35,0,H);
+    g.addColorStop(0,'rgba(12,14,10,0)');g.addColorStop(1,'rgba(12,14,10,.95)');
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  } else logo(W/2-300,H/2-380,600,11,C.accent,.06);
+  header(W,M,isStory?100:72);
+  const cx=W/2, CW=W-M*2;
+  ctx.textAlign='center';
+  let y=isStory?H*.40:H*.395;
+  ctx.fillStyle=C.dim;ctx.font='700 24px "JetBrains Mono"';
+  ctx.fillText('C U R R E N T   L I N E',cx,y-  (isStory?150:128));
+  const oddsS=fit(v.odds||'+000','Anton',isStory?330:290,CW);
+  ctx.fillStyle=C.accent;ctx.font=oddsS+'px Anton';
+  ctx.fillText(v.odds||'+000',cx,y);
+  // underline
+  ctx.fillStyle=C.accent;ctx.fillRect(cx-CW*.34,y+34,CW*.68,4);
+  y+=112;
+  ctx.fillStyle=C.ink;ctx.font='600 30px Barlow';
+  ctx.fillText('LIVE DOG',cx,y);
+  y+=(isStory?110:92);
+  const firstS=fit(v.first,'Anton',56,CW);
+  ctx.fillStyle=C.dim;ctx.font=firstS+'px Anton';ctx.fillText(v.first,cx,y);
+  y+=(isStory?110:98);
+  const lastS=fit(v.last,'Anton',isStory?138:120,CW);
+  ctx.fillStyle=C.ink;ctx.font=lastS+'px Anton';ctx.fillText(v.last,cx,y);
+  y+=(isStory?66:56);
+  ctx.fillStyle=C.dim;ctx.font='700 22px "JetBrains Mono"';
+  ctx.fillText([v.record,v.weight,v.gym].filter(Boolean).join('  ·  '),cx,y);
+  y+=(isStory?76:64);
+  ctx.fillStyle=C.ink;ctx.font='600 30px Barlow';
+  for(const l of wrapT(v.story,CW-40,3)){ctx.fillText(l,cx,y);y+=42;}
+  ctx.textAlign='left';
+  footer(W,H,M,v);
+}
+
+const TEMPLATES={poster:tplPoster,split:tplSplit,octagon:tplOctagon,ticket:tplTicket,odds:tplOdds};
+
+function draw(){
+  const isStory=$('format').value==='story';
+  const W=1080,H=isStory?1920:1350;
+  canvas.width=W;canvas.height=H;
+  ctx.fillStyle=C.bg;ctx.fillRect(0,0,W,H);
+  ctx.textBaseline='alphabetic';
+  TEMPLATES[layout](W,H,80,V(),isStory);
+  $('cap').textContent=W+' × '+H+' · '+layout+(img?' · photo loaded':' · no photo yet');
+}
+
+/* ---------- upload ---------- */
+function loadFile(f){
+  if(!f||!/^image\//.test(f.type))return;
+  const r=new FileReader();
+  r.onload=e=>{const i=new Image();i.onload=()=>{img=i;cache=null;cacheKey='';draw();};i.src=e.target.result;};
+  r.readAsDataURL(f);
+}
+$('drop').addEventListener('click',()=>$('file').click());
+$('file').addEventListener('change',e=>loadFile(e.target.files[0]));
+['dragenter','dragover'].forEach(ev=>$('drop').addEventListener(ev,e=>{e.preventDefault();$('drop').classList.add('over');}));
+['dragleave','drop'].forEach(ev=>$('drop').addEventListener(ev,e=>{e.preventDefault();$('drop').classList.remove('over');}));
+$('drop').addEventListener('drop',e=>loadFile(e.dataTransfer.files[0]));
+
+/* ---------- chips ---------- */
+$('treatments').addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;
+  $('treatments').querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+  c.classList.add('on');treatment=c.dataset.t;cache=null;draw();});
+$('layouts').addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;
+  $('layouts').querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+  c.classList.add('on');layout=c.dataset.l;draw();});
+document.querySelectorAll('input,textarea,select').forEach(el=>el.addEventListener('input',draw));
+
+/* ---------- export ---------- */
+function save(tag){
+  const n=($('first').value+'-'+$('last').value).toLowerCase().replace(/[^a-z0-9]+/g,'-');
+  canvas.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);
+    a.download='greene-mma-'+(n||'card')+'-'+(tag||layout)+'.png';a.click();URL.revokeObjectURL(a.href);});
+}
+$('dl').addEventListener('click',()=>save());
+$('dlall').addEventListener('click',()=>{
+  const orig=layout, keys=Object.keys(TEMPLATES);
+  keys.forEach((k,i)=>setTimeout(()=>{
+    layout=k;draw();save(k);
+    if(i===keys.length-1) setTimeout(()=>{layout=orig;draw();},600);
+  },i*750));
+});
+
+Promise.all([document.fonts.load('100px Anton'),
+  document.fonts.load('700 30px "JetBrains Mono"'),
+  document.fonts.load('600 34px Barlow')]).then(draw).catch(draw);
+setTimeout(draw,900);
+})();
+
+/* ================= GATE ================= */
+(function(){
+  const gate=document.getElementById('gate');
+  const saved=sessionStorage.getItem('gmma_key');
+  async function tryKey(k){
+    document.getElementById('gateerr').textContent='Checking...';
+    try{
+      const r=await fetch('/.netlify/functions/publish',{method:'POST',
+        headers:{'content-type':'application/json','x-studio-key':k},
+        body:JSON.stringify({ping:true})});
+      if(r.status===401){document.getElementById('gateerr').textContent='Wrong passcode.';return false;}
+      sessionStorage.setItem('gmma_key',k); gate.style.display='none'; return true;
+    }catch(e){
+      document.getElementById('gateerr').textContent='Cannot reach the server.';return false;
+    }
+  }
+  if(saved) tryKey(saved); 
+  document.getElementById('gatego').addEventListener('click',()=>tryKey(document.getElementById('gatepass').value));
+  document.getElementById('gatepass').addEventListener('keydown',e=>{if(e.key==='Enter')tryKey(e.target.value);});
+})();
+
+/* ================= ARTICLES / EVENTS / STORIES ================= */
+(function(){
+  const $=id=>document.getElementById(id);
+  const KEY=()=>sessionStorage.getItem('gmma_key')||'';
+  async function api(payload){
+    const r=await fetch('/.netlify/functions/site',{method:'POST',
+      headers:{'content-type':'application/json','x-studio-key':KEY()},
+      body:JSON.stringify(payload)});
+    return r.json();
+  }
+  const say=(el,msg,cls)=>{el.textContent=msg;el.className=cls||'';};
+
+  /* ---- article ---- */
+  $('a_pub').addEventListener('click',async()=>{
+    const st=$('a_status');
+    const article={
+      headline:$('a_head').value.trim(),
+      summary:$('a_sum').value.trim(),
+      body:$('a_body').value.trim(),
+      category:$('a_cat').value,
+      utah:$('a_utah').value==='yes'
+    };
+    if(!article.headline||!article.body){ say(st,'Headline and body are required.','bad'); return; }
+    say(st,'Publishing...');
+    const out=await api({article});
+    if(out.ok){
+      say(st,'✓ Published — live at /story.html?id='+out.id,'ok');
+      $('a_head').value='';$('a_sum').value='';$('a_body').value='';
+    } else say(st,'✗ '+(out.error||'Failed'),'bad');
+  });
+
+  /* ---- events ---- */
+  const evrows=$('evrows');
+  function evRow(e){
+    e=e||{};
+    const d=document.createElement('div');
+    d.className='evrow';
+    d.style.cssText='border-top:1px solid var(--hair);padding-top:12px;margin-top:12px;';
+    d.innerHTML=
+      '<div class="row2"><div><label>Event name</label><input class="e_n" type="text" value="'+(e.name||'')+'"></div>'+
+      '<div><label>Date</label><input class="e_d" type="text" value="'+(e.date||'')+'" placeholder="AUG 15"></div></div>'+
+      '<div class="row2"><div><label>Promotion</label><input class="e_p" type="text" value="'+(e.promotion||'')+'"></div>'+
+      '<div><label>City</label><input class="e_c" type="text" value="'+(e.city||'')+'"></div></div>'+
+      '<label>Venue</label><input class="e_v" type="text" value="'+(e.venue||'')+'">'+
+      '<label>Note</label><input class="e_note" type="text" value="'+(e.note||'')+'">'+
+      '<label>Link (optional)</label><input class="e_l" type="text" value="'+(e.link||'')+'">'+
+      '<button class="btn ghost rm" style="margin-top:8px;padding:9px;">Remove</button>';
+    d.querySelector('.rm').addEventListener('click',()=>d.remove());
+    evrows.appendChild(d);
+  }
+  $('ev_add').addEventListener('click',()=>evRow());
+  $('ev_save').addEventListener('click',async()=>{
+    const st=$('ev_status');
+    const events=[...evrows.querySelectorAll('.evrow')].map(r=>({
+      name:r.querySelector('.e_n').value.trim(),
+      date:r.querySelector('.e_d').value.trim(),
+      promotion:r.querySelector('.e_p').value.trim(),
+      city:r.querySelector('.e_c').value.trim(),
+      venue:r.querySelector('.e_v').value.trim(),
+      note:r.querySelector('.e_note').value.trim(),
+      link:r.querySelector('.e_l').value.trim()
+    })).filter(e=>e.name);
+    say(st,'Saving...');
+    const out=await api({events});
+    say(st, out.ok?('✓ Saved '+out.saved+' event(s).'):'✗ '+(out.error||'Failed'), out.ok?'ok':'bad');
+  });
+  // preload existing events
+  (async()=>{ try{ const out=await api({getEvents:true});
+    if(out.ok&&out.events&&out.events.length) out.events.forEach(evRow); else evRow();
+  }catch(e){ evRow(); } })();
+
+  /* ---- manage stories ---- */
+  $('s_load').addEventListener('click',async()=>{
+    const list=$('s_list');
+    list.innerHTML='<div style="color:var(--steel);font-size:13px;">Loading...</div>';
+    const out=await api({listStories:true});
+    if(!out.ok){ list.innerHTML='<div class="bad">'+(out.error||'Failed')+'</div>'; return; }
+    list.innerHTML=out.stories.map(st=>
+      '<div class="srow" data-id="'+st.id+'" style="display:flex;gap:10px;align-items:flex-start;border-top:1px solid var(--hair);padding:10px 0;">'+
+        '<div style="flex:1;font-size:14px;line-height:1.4;">'+st.headline+
+          '<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);margin-top:4px;">'+
+          (st.original?'YOURS · ':'')+st.category+' · '+st.sourceName+'</div></div>'+
+        '<button class="del" style="background:none;border:1px solid var(--hair);color:#FF4B3E;padding:6px 10px;cursor:pointer;font-size:11px;font-family:\'JetBrains Mono\',monospace;">DEL</button>'+
+      '</div>').join('');
+    list.querySelectorAll('.del').forEach(b=>b.addEventListener('click',async e=>{
+      const row=e.target.closest('.srow');
+      const r=await api({deleteStory:row.dataset.id});
+      if(r.ok) row.remove();
+    }));
+  });
+})();
+
+/* ================= PICKS EDITOR ================= */
+(function(){
+  const rows=document.getElementById('pickrows');
+  const st=document.getElementById('pickstatus');
+  function addRow(p){
+    p=p||{};
+    const d=document.createElement('div');
+    d.className='pickrow';
+    d.style.cssText='border-top:1px solid var(--hair);padding-top:12px;margin-top:12px;';
+    d.innerHTML=
+      '<div class="row2">'+
+        '<div><label>Fighter</label><input type="text" class="pf" value="'+(p.fighter||'')+'"></div>'+
+        '<div><label>Odds</label><input type="text" class="po" value="'+(p.odds||'')+'" placeholder="+340"></div>'+
+      '</div>'+
+      '<label>Your read</label><textarea class="pn">'+(p.note||'')+'</textarea>'+
+      '<label>Confidence</label>'+
+      '<select class="pc"><option>Lean</option><option>Live dog</option><option>Strong</option></select>'+
+      '<button class="btn ghost rm" style="margin-top:8px;padding:9px;">Remove</button>';
+    if(p.confidence) d.querySelector('.pc').value=p.confidence;
+    d.querySelector('.rm').addEventListener('click',()=>d.remove());
+    rows.appendChild(d);
+  }
+  addRow();
+  document.getElementById('addpick').addEventListener('click',()=>addRow());
+
+  document.getElementById('savepicks').addEventListener('click',async()=>{
+    const picks=[...rows.querySelectorAll('.pickrow')].map(r=>({
+      fighter:r.querySelector('.pf').value.trim(),
+      odds:r.querySelector('.po').value.trim(),
+      note:r.querySelector('.pn').value.trim(),
+      confidence:r.querySelector('.pc').value
+    })).filter(p=>p.fighter);
+    st.textContent='Saving...'; st.className='';
+    try{
+      const r=await fetch('/.netlify/functions/site',{method:'POST',
+        headers:{'content-type':'application/json','x-studio-key':sessionStorage.getItem('gmma_key')||''},
+        body:JSON.stringify({picks})});
+      const out=await r.json();
+      if(out.ok){ st.textContent='✓ Saved '+out.saved+' pick(s) — live on the site now.'; st.className='ok'; }
+      else { st.textContent='✗ '+(out.error||'Failed'); st.className='bad'; }
+    }catch(e){ st.textContent='✗ '+e.message; st.className='bad'; }
+  });
+})();
+
+/* ================= PUBLISH ================= */
+(function(){
+  const $=id=>document.getElementById(id);
+  const status=$('status');
+  function log(msg,cls){status.innerHTML+='<span class="'+(cls||'')+'">'+msg+'</span>\n';}
+
+  async function snapshot(fmt){
+    const sel=$('format').value;
+    if(sel!==fmt){ $('format').value=fmt; $('format').dispatchEvent(new Event('input')); await new Promise(r=>setTimeout(r,350)); }
+    const data=document.getElementById('card').toDataURL('image/jpeg',0.92).split(',')[1];
+    if(sel!==fmt){ $('format').value=sel; $('format').dispatchEvent(new Event('input')); }
+    return data;
+  }
+
+  $('publish').addEventListener('click',async()=>{
+    status.innerHTML='';
+    const targets=[];
+    if($('t_x').checked) targets.push('x');
+    if($('t_igfeed').checked) targets.push('ig_feed');
+    if($('t_igstory').checked) targets.push('ig_story');
+    if(!targets.length){log('Pick at least one place to post.','bad');return;}
+
+    $('publish').disabled=true; $('publish').textContent='Publishing...';
+    try{
+      log('Rendering cards...');
+      const postImg=await snapshot('post');
+      const storyImg=targets.includes('ig_story')?await snapshot('story'):null;
+
+      const body={
+        targets,
+        caption:$('caption').value,
+        xHandle:$('xhandle').value.trim(),
+        igHandle:$('ighandle').value.trim(),
+        fighter:($('first').value+' '+$('last').value).trim(),
+        postImage:postImg,
+        storyImage:storyImg
+      };
+      const r=await fetch('/.netlify/functions/publish',{method:'POST',
+        headers:{'content-type':'application/json','x-studio-key':sessionStorage.getItem('gmma_key')||''},
+        body:JSON.stringify(body)});
+      const out=await r.json();
+      (out.results||[]).forEach(x=>log((x.ok?'✓ ':'✗ ')+x.target+' — '+x.message,x.ok?'ok':'bad'));
+      if(out.error) log('✗ '+out.error,'bad');
+    }catch(e){ log('✗ '+e.message,'bad'); }
+    $('publish').disabled=false; $('publish').textContent='Publish now';
+  });
+})();
+</script>
+</body>
+</html>

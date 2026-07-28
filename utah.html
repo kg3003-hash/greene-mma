@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Utah MMA — Greene MMA</title>
+<meta name="description" content="Utah and mountain-west MMA: SteelFist, Fierce Fighting Championship, Delta Center cards, and the local fighters nobody else is covering.">
+<link rel="icon" type="image/svg+xml" href="/assets/greene-mma-avatar.svg">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Greene MMA">
+<meta property="og:title" content="Utah MMA — Greene MMA">
+<meta property="og:description" content="SteelFist, Fierce Fighting Championship, Delta Center cards, and the local fighters nobody else is covering.">
+<meta property="og:url" content="https://mma.greene.bet/utah.html">
+<meta property="og:image" content="https://mma.greene.bet/assets/share-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#0C0E0A; --black-2:#13160F; --volt:#C9F73A; --bone:#F2F0E9;
+    --steel:#9AA194; --red:#FF4B3E; --hair:rgba(242,240,233,.14);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--black);color:var(--bone);font-family:'Barlow',sans-serif;font-size:17.5px;line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;text-decoration:none;}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 22px;}
+
+  nav{position:sticky;top:0;z-index:50;background:rgba(12,14,10,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--hair);}
+  nav .wrap{display:flex;align-items:center;gap:14px;height:66px;}
+  nav .mark{width:34px;height:34px;flex-shrink:0;}
+  nav .name{font-family:'Anton',sans-serif;font-size:21px;letter-spacing:.02em;text-transform:uppercase;}
+  nav .name span{color:var(--volt);}
+  nav .links{margin-left:auto;display:flex;gap:26px;font-weight:600;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);}
+  nav .links a:hover,nav .links a.on{color:var(--volt);}
+  @media(max-width:800px){nav .links{display:none;}}
+
+  /* hero */
+  .hero{padding:80px 0 64px;border-bottom:1px solid var(--hair);position:relative;overflow:hidden;
+        background:radial-gradient(ellipse 80% 60% at 20% 0%, rgba(201,247,58,.08), transparent 62%);}
+  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--volt);font-weight:700;display:flex;align-items:center;gap:14px;margin-bottom:22px;}
+  .eyebrow::after{content:'';width:70px;height:1px;background:var(--hair);}
+  .hero h1{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:clamp(44px,9vw,96px);line-height:.95;}
+  .hero h1 span{color:var(--volt);}
+  .hero .dek{margin-top:22px;max-width:620px;font-size:19px;}
+
+  section{padding:64px 0;border-bottom:1px solid var(--hair);}
+  .sechead{display:flex;align-items:baseline;gap:16px;margin-bottom:30px;flex-wrap:wrap;}
+  .sechead .sicon{width:20px;height:20px;align-self:center;flex-shrink:0;}
+  .sechead h2{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:clamp(26px,4.2vw,38px);line-height:1;}
+  .sechead .mono-tag{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);}
+
+  /* promotions */
+  .promos{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px;}
+  .promo{border:1px solid var(--hair);border-top:3px solid var(--volt);background:var(--black-2);padding:26px;}
+  .promo h3{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:24px;line-height:1.1;}
+  .promo .where{margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--volt);}
+  .promo p{margin-top:12px;font-size:16px;color:var(--steel);}
+
+  /* venues */
+  .venues{border:1px solid var(--hair);background:var(--black-2);}
+  .venue{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;padding:18px 24px;}
+  .venue+.venue{border-top:1px solid var(--hair);}
+  .venue .n{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:20px;}
+  .venue .c{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);margin-top:3px;}
+  .venue .t{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--volt);text-align:right;}
+
+  /* events */
+  .ev{border:1px solid var(--hair);background:var(--black-2);display:grid;grid-template-columns:112px 1fr auto;gap:20px;align-items:center;padding:20px 24px;margin-bottom:10px;transition:border-color .18s,transform .18s;}
+  .ev:hover{border-color:rgba(201,247,58,.5);transform:translateY(-2px);}
+  .ev .date{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:15px;color:var(--volt);line-height:1.15;border-right:1px solid var(--hair);padding-right:18px;}
+  .ev .n{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:21px;line-height:1.1;}
+  .ev .meta{font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);margin-top:6px;}
+  .ev .note{font-size:15px;color:var(--steel);margin-top:8px;}
+  .ev .go{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--volt);white-space:nowrap;}
+  @media(max-width:640px){.ev{grid-template-columns:1fr;gap:10px;}.ev .date{border-right:none;border-bottom:1px solid var(--hair);padding:0 0 10px;}}
+
+  /* feed */
+  .feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px;}
+  .card{border:1px solid var(--hair);padding:26px;display:flex;flex-direction:column;gap:13px;background:var(--black-2);transition:border-color .15s,transform .15s;}
+  .card:hover{border-color:rgba(201,247,58,.55);transform:translateY(-2px);}
+  .card .cat{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--volt);font-weight:700;}
+  .card h3{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:23px;line-height:1.12;}
+  .card p{font-size:16px;color:var(--steel);}
+  .card .time{margin-top:auto;font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);opacity:.8;}
+  .empty{border:1px dashed var(--hair);padding:44px 26px;text-align:center;color:var(--steel);font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.08em;text-transform:uppercase;}
+
+  /* fighters CTA */
+  .corner{background:var(--volt);color:var(--black);}
+  .corner .inner{padding:66px 0;}
+  .corner h2{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:clamp(30px,5.2vw,48px);line-height:1;}
+  .corner p{margin-top:14px;max-width:560px;font-size:18.5px;font-weight:500;}
+  .corner .list{margin-top:22px;display:grid;gap:8px;max-width:560px;}
+  .corner .list div{padding-left:20px;position:relative;font-weight:500;font-size:17px;}
+  .corner .list div::before{content:'';position:absolute;left:0;top:11px;width:9px;height:9px;background:var(--black);transform:rotate(22.5deg);}
+  .corner .cta{margin-top:28px;display:inline-block;padding:16px 32px;background:var(--black);color:var(--volt);font-weight:700;font-size:14px;letter-spacing:.1em;text-transform:uppercase;}
+  .corner .cta:hover{background:transparent;color:var(--black);box-shadow:inset 0 0 0 2px var(--black);}
+
+  footer{padding:52px 0 70px;}
+  footer .top{display:flex;align-items:center;gap:14px;margin-bottom:20px;}
+  footer .top svg{width:30px;height:30px;}
+  footer .top .name{font-family:'Anton',sans-serif;font-size:19px;text-transform:uppercase;}
+  footer .top .name span{color:var(--volt);}
+  footer .fine{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--steel);line-height:2.1;}
+  footer .fine a{color:var(--bone);}
+  footer .fine a:hover{color:var(--volt);}
+  /* entrance + scroll reveals */
+  .hero .bigmark{position:absolute;right:-90px;top:50%;transform:translateY(-50%);width:min(460px,52vw);opacity:.06;pointer-events:none;}
+  .hero .bigmark path{stroke-dasharray:320;stroke-dashoffset:320;animation:draw 1.8s cubic-bezier(.65,0,.35,1) .2s forwards;}
+  @keyframes draw{to{stroke-dashoffset:0;}}
+  .hero h1{opacity:0;transform:translateY(18px);animation:rise .7s cubic-bezier(.2,.7,.3,1) .35s forwards;}
+  .hero .dek{opacity:0;transform:translateY(14px);animation:rise .6s cubic-bezier(.2,.7,.3,1) .6s forwards;}
+  .hero .eyebrow{opacity:0;animation:rise .5s ease .15s forwards;}
+  @keyframes rise{to{opacity:1;transform:none;}}
+  .reveal{opacity:0;transform:translateY(16px);transition:opacity .55s ease,transform .55s ease;}
+  .reveal.in{opacity:1;transform:none;}
+  .promo{transition:border-color .18s,transform .18s,background .18s;}
+  .promo:hover{border-color:rgba(201,247,58,.5);transform:translateY(-3px);background:#171B12;}
+  .venue{transition:background .15s;}
+  .venue:hover{background:rgba(201,247,58,.05);}
+  .corner .cta{transition:background .15s,color .15s,box-shadow .15s;}
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none !important;transition:none !important;}
+    .hero h1,.hero .dek,.hero .eyebrow{opacity:1;transform:none;}
+    .hero .bigmark path{stroke-dashoffset:0;}
+    .reveal{opacity:1;transform:none;}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a href="/" style="display:flex;align-items:center;gap:14px;">
+      <svg class="mark" viewBox="0 0 120 120" aria-label="Greene MMA"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>
+      <span class="name">Greene <span>MMA</span></span>
+    </a>
+    <div class="links">
+      <a href="/#feed">News</a>
+      <a href="/#fightweek">Fight Week</a>
+      <a href="/#picks">Picks</a>
+      <a href="/utah.html" class="on">Utah</a>
+      <a href="/#corner">The Corner</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <svg class="bigmark" viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>
+  <div class="wrap">
+    <div class="eyebrow">Regional desk</div>
+    <h1>Utah <span>MMA</span></h1>
+    <p class="dek">The Delta Center gets the big cards. Everybody covers those. This page is for the rest of it — the local promotions, the fighters two wins from a contract, and the Saturday nights nobody else is writing about.</p>
+  </div>
+</header>
+
+<!-- PROMOTIONS -->
+<section>
+  <div class="wrap">
+    <div class="sechead">
+      <svg class="sicon" viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="14" stroke-linejoin="miter"/></svg>
+      <h2>The Promotions</h2>
+      <span class="mono-tag">Who runs the cards here</span>
+    </div>
+    <div class="promos">
+      <div class="promo">
+        <h3>SteelFist Fight Night</h3>
+        <div class="where">Union Event Center · Salt Lake City</div>
+        <p>Utah's longest-running live combat sports show. Mixed cards — MMA, kickboxing, and Muay Thai on the same night — and the most reliable place in the state to watch a prospect's third pro fight.</p>
+      </div>
+      <div class="promo">
+        <h3>Fierce Fighting Championship</h3>
+        <div class="where">Mountain America Center · Regional</div>
+        <p>Built on the bones of Showdown Fights, and currently the biggest promotion operating in the region. Heavyweight-heavy cards and a real title picture.</p>
+      </div>
+      <div class="promo">
+        <h3>UFC at the Delta Center</h3>
+        <div class="where">Salt Lake City · Occasional</div>
+        <p>Four visits and counting, including UFC 278, 291, and 307 — the top three grossing events in building history. When the UFC comes to town, the whole local scene gets a week of daylight.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVENTS -->
+<section id="events">
+  <div class="wrap">
+    <div class="sechead">
+      <svg class="sicon" viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="14" stroke-linejoin="miter"/></svg>
+      <h2>Upcoming in Utah</h2>
+      <span class="mono-tag">Local cards on the calendar</span>
+    </div>
+    <div id="eventlist">
+      <div class="empty">No local cards on the calendar yet.<br>Announced events land here.</div>
+    </div>
+  </div>
+</section>
+
+<!-- LOCAL FEED -->
+<section id="localfeed">
+  <div class="wrap">
+    <div class="sechead">
+      <svg class="sicon" viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="14" stroke-linejoin="miter"/></svg>
+      <h2>Local Wire</h2>
+      <span class="mono-tag">Regional stories, newest first</span>
+    </div>
+    <div class="feed" id="feedgrid">
+      <div class="empty">Watching the wire for Utah and mountain-west stories.<br>They'll land here automatically.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FIGHTER CTA -->
+<section class="corner" style="border:none;padding:0;">
+  <div class="wrap inner">
+    <h2>Fighting in Utah?</h2>
+    <p>If you've got a fight booked in this state, we'll cover it — and we'll make you a graphic for it. Free, no catch, no watermark but ours.</p>
+    <div class="list">
+      <div>A custom hype card for your fight announcement</div>
+      <div>Your record, your camp, your story on the card</div>
+      <div>Coverage on the site and the Local Wire</div>
+      <div>You keep the file and post it wherever you want</div>
+    </div>
+    <a class="cta" href="mailto:hello@greene.bet?subject=Utah%20fighter%20-%20hype%20card">Get in the Greene corner</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="top">
+      <svg viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>
+      <div class="name">Greene <span>MMA</span></div>
+    </div>
+    <div class="fine">
+      Fight news from the Greene corner · <a href="https://greene.bet">Part of the greene.bet family</a><br>
+      <a href="/">News</a> · <a href="/#picks">Picks</a> · <a href="/utah.html">Utah</a> · <a href="/#corner">The Greene Corner newsletter</a><br>
+      © 2026 Greene MMA. Picks are for entertainment. Bet with your head, not over it.
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if(!('IntersectionObserver' in window)) return;
+  var t=document.querySelectorAll('.promo,.venues,.feed .card,.empty,.corner .list div');
+  t.forEach(function(el){el.classList.add('reveal');});
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(e.isIntersecting){
+        var sib=e.target.parentElement.querySelectorAll('.reveal');
+        var i=Array.prototype.indexOf.call(sib,e.target);
+        e.target.style.transitionDelay=(Math.max(i,0)*70)+'ms';
+        e.target.classList.add('in'); io.unobserve(e.target);
+      }
+    });
+  },{threshold:.12});
+  t.forEach(function(el){io.observe(el);});
+})();
+</script>
+<script type="module">
+// Pulls Utah-tagged stories from Firestore. Falls back to the empty state.
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, doc, getDoc, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// SAME CONFIG AS index.html — paste the identical values here
+const firebaseConfig = {
+  apiKey: "AIzaSyCN2eOBaQBiZDOexipJ-KS7pqkOaNJq7gU",
+  authDomain: "bragging-rights-public.firebaseapp.com",
+  projectId: "bragging-rights-public",
+  storageBucket: "bragging-rights-public.firebasestorage.app",
+  messagingSenderId: "525120309709",
+  appId: "1:525120309709:web:a21f060511e84bb4a91c84"
+};
+
+function timeAgo(d){
+  const s=(Date.now()-d.getTime())/1000;
+  if(s<90) return "Now";
+  const m=Math.floor(s/60); if(m<60) return m+"m ago";
+  const h=Math.floor(m/60); if(h<24) return h+"h ago";
+  return Math.floor(h/24)+"d ago";
+}
+function esc(str){const d=document.createElement("div");d.textContent=str||"";return d.innerHTML;}
+
+try{
+  if(firebaseConfig.projectId!=="PASTE_ME"){
+    const app=initializeApp(firebaseConfig);
+    const db=getFirestore(app);
+    // Pull recent stories and filter client-side — avoids needing a composite index
+    const snap=await getDocs(query(collection(db,"stories"),orderBy("publishedAt","desc"),limit(60)));
+    // events calendar
+    try{
+      const evSnap=await getDoc(doc(db,"site","events"));
+      const evs=((evSnap.data()||{}).events)||[];
+      if(evs.length){
+        document.getElementById("eventlist").innerHTML=evs.map(e=>
+          '<div class="ev reveal">'+
+            '<div class="date">'+esc(e.date||"TBA")+'</div>'+
+            '<div><div class="n">'+esc(e.name)+'</div>'+
+              '<div class="meta">'+[e.promotion,e.venue,e.city].filter(Boolean).map(esc).join(" · ")+'</div>'+
+              (e.note?'<div class="note">'+esc(e.note)+'</div>':'')+
+            '</div>'+
+            (e.link?'<a class="go" href="'+esc(e.link)+'" target="_blank" rel="noopener">Details →</a>':'<span></span>')+
+          '</div>').join("");
+      }
+    }catch(e){ console.warn("events",e); }
+
+    const local=snap.docs.map(d=>d.data()).filter(s=>s.utah===true).slice(0,12);
+    if(local.length){
+      document.getElementById("feedgrid").innerHTML=local.map(s=>
+        '<article class="card">'+
+          '<span class="cat">'+esc(s.category)+'</span>'+
+          '<h3>'+esc(s.headline)+'</h3>'+
+          '<p>'+esc(s.summary)+'</p>'+
+          '<a class="time" href="'+esc(s.sourceUrl)+'" target="_blank" rel="noopener">'+
+            timeAgo(s.publishedAt.toDate())+' · via '+esc(s.sourceName)+' →</a>'+
+        '</article>').join("");
+    }
+  }
+}catch(err){ console.warn("Local wire unavailable.",err); }
+</script>
+</body>
+</html>

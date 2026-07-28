@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fight Week — Greene MMA</title>
+<meta name="description" content="Every bout on the next card, with live moneylines.">
+<link rel="icon" type="image/svg+xml" href="/assets/greene-mma-avatar.svg">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Greene MMA">
+<meta property="og:title" content="Fight Week — Greene MMA">
+<meta property="og:description" content="Every bout on the next card, with live moneylines.">
+<meta property="og:image" content="https://mma.greene.bet/assets/share-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{--black:#0C0E0A;--black-2:#13160F;--volt:#C9F73A;--bone:#F2F0E9;--steel:#9AA194;--red:#FF4B3E;--hair:rgba(242,240,233,.14);}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--black);color:var(--bone);font-family:'Barlow',sans-serif;font-size:17.5px;line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;text-decoration:none;}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 22px;}
+  nav{position:sticky;top:0;z-index:50;background:rgba(12,14,10,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--hair);}
+  nav .wrap{display:flex;align-items:center;justify-content:center;height:58px;}
+  nav .links{display:flex;gap:38px;font-weight:600;font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);}
+  nav .links a{position:relative;padding:4px 0;}
+  nav .links a::after{content:'';position:absolute;left:50%;right:50%;bottom:-2px;height:2px;background:var(--volt);transition:left .2s,right .2s;}
+  nav .links a:hover,nav .links a.on{color:var(--volt);}
+  nav .links a:hover::after,nav .links a.on::after{left:0;right:0;}
+  @media(max-width:700px){nav .links{gap:18px;font-size:12px;letter-spacing:.06em;}}
+  .hero{padding:70px 0 52px;border-bottom:1px solid var(--hair);position:relative;overflow:hidden;
+        background:radial-gradient(ellipse 80% 60% at 22% 0%, rgba(201,247,58,.07), transparent 62%);}
+  .hero .bigmark{position:absolute;right:-80px;top:50%;transform:translateY(-50%);width:min(400px,48vw);opacity:.055;pointer-events:none;}
+  .hero .bigmark path{stroke-dasharray:320;stroke-dashoffset:320;animation:draw 1.8s cubic-bezier(.65,0,.35,1) .2s forwards;}
+  @keyframes draw{to{stroke-dashoffset:0;}}
+  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--volt);font-weight:700;display:flex;align-items:center;gap:14px;margin-bottom:20px;opacity:0;animation:rise .5s ease .15s forwards;}
+  .eyebrow::after{content:'';width:70px;height:1px;background:var(--hair);}
+  h1{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:clamp(40px,8vw,84px);line-height:.96;opacity:0;transform:translateY(18px);animation:rise .7s cubic-bezier(.2,.7,.3,1) .3s forwards;}
+  h1 span{color:var(--volt);}
+  .dek{margin-top:20px;max-width:620px;font-size:18.5px;opacity:0;transform:translateY(14px);animation:rise .6s cubic-bezier(.2,.7,.3,1) .5s forwards;}
+  @keyframes rise{to{opacity:1;transform:none;}}
+  section{padding:56px 0;border-bottom:1px solid var(--hair);}
+  .sechead{display:flex;align-items:baseline;gap:16px;margin-bottom:28px;flex-wrap:wrap;}
+  .sechead .sicon{width:20px;height:20px;align-self:center;}
+  .sechead h2{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:clamp(24px,4vw,34px);line-height:1;}
+  .sechead .mono-tag{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);}
+  .empty{border:1px dashed var(--hair);padding:52px 26px;text-align:center;color:var(--steel);font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.08em;text-transform:uppercase;line-height:2;}
+  .reveal{opacity:0;transform:translateY(16px);transition:opacity .55s ease,transform .55s ease;}
+  .reveal.in{opacity:1;transform:none;}
+  footer{padding:46px 0 66px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--steel);line-height:2.1;}
+  footer a{color:var(--bone);} footer a:hover{color:var(--volt);}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}.eyebrow,h1,.dek{opacity:1;transform:none;}.hero .bigmark path{stroke-dashoffset:0;}.reveal{opacity:1;transform:none;}}
+  .bout{border:1px solid var(--hair);background:var(--black-2);margin-bottom:12px;transition:border-color .18s,transform .18s;}
+  .bout:hover{border-color:rgba(201,247,58,.5);transform:translateY(-2px);}
+  .bout .top{display:flex;justify-content:space-between;align-items:center;padding:12px 22px;border-bottom:1px solid var(--hair);
+    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);}
+  .bout .top .when{color:var(--volt);font-weight:700;}
+  .bout .body{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;padding:22px;}
+  .bout .f{text-align:center;}
+  .bout .f .n{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:clamp(19px,2.6vw,26px);line-height:1.06;}
+  .bout .f .o{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:22px;margin-top:8px;}
+  .bout .f.dog .o{color:var(--volt);}
+  .bout .f.fav .o{color:var(--steel);}
+  .bout .f .tag{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel);margin-top:6px;}
+  .bout .vs{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel);}
+  .headliner{border-top:3px solid var(--volt);}
+  .headliner .top{background:rgba(201,247,58,.06);}
+  .updated{font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);margin-top:20px;}
+</style>
+</head>
+<body>
+<nav><div class="wrap"><div class="links">
+  <a href="/#feed">News</a>
+  <a href="/fightweek.html" class="on">Fight Week</a>
+  <a href="/picks.html">Picks</a>
+  <a href="/utah.html">Utah</a>
+  <a href="/#corner">The Corner</a>
+</div></div></nav>
+
+<header class="hero">
+  <svg class="bigmark" aria-hidden="true" viewBox="0 0 120 120"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>
+  <div class="wrap">
+    <div class="eyebrow">The next card</div>
+    <h1>Fight <span>Week</span></h1>
+    <p class="dek">Every bout on the next card with live moneylines, soonest first. Lines move — these refresh through the week.</p>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="sechead">
+      <svg class="sicon" aria-hidden="true" viewBox="0 0 120 120"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>
+      <h2>The Card</h2>
+      <span class="mono-tag" id="cardtag">Loading</span>
+    </div>
+    <div id="card"><div class="empty">Pulling the card...</div></div>
+    <div class="updated" id="updated"></div>
+  </div>
+</section>
+
+<footer><div class="wrap">
+  Greene MMA · <a href="https://greene.bet">Part of the greene.bet family</a><br>
+  <a href="/">News</a> · <a href="/fightweek.html">Fight Week</a> · <a href="/picks.html">Picks</a> · <a href="/utah.html">Utah</a><br>
+  © 2026 Greene MMA. Picks are for entertainment. Bet with your head, not over it.
+</div></footer>
+<script>
+(function(){
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if(!('IntersectionObserver' in window)) return;
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){
+    if(e.isIntersecting){var sib=e.target.parentElement.querySelectorAll('.reveal');
+      var i=Array.prototype.indexOf.call(sib,e.target);
+      e.target.style.transitionDelay=(Math.max(i,0)*70)+'ms';
+      e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12});
+  setTimeout(function(){document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});},60);
+})();
+</script>
+
+</html>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyCN2eOBaQBiZDOexipJ-KS7pqkOaNJq7gU",
+  authDomain: "bragging-rights-public.firebaseapp.com",
+  projectId: "bragging-rights-public",
+  storageBucket: "bragging-rights-public.firebasestorage.app",
+  messagingSenderId: "525120309709",
+  appId: "1:525120309709:web:a21f060511e84bb4a91c84"
+};
+const esc=s=>{const d=document.createElement("div");d.textContent=s||"";return d.innerHTML;};
+const fmt=n=>(n>0?"+":"")+n;
+try{
+  const db=getFirestore(initializeApp(firebaseConfig));
+  const fw=(await getDoc(doc(db,"site","fightweek"))).data();
+  const el=document.getElementById("card");
+  if(!fw||!fw.card||!fw.card.length){
+    el.innerHTML='<div class="empty">No upcoming card on the wire right now.<br>Check back when the next one is announced.</div>';
+    document.getElementById("cardtag").textContent="Nothing scheduled";
+  } else {
+    document.getElementById("cardtag").textContent=fw.card.length+" bouts";
+    el.innerHTML=fw.card.map((b,i)=>{
+      const d=new Date(b.startTime);
+      const when=d.toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"})+
+        " · "+d.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
+      return '<div class="bout reveal'+(i===0?' headliner':'')+'">'+
+        '<div class="top"><span>'+(i===0?'Main event':'Bout '+(i+1))+'</span><span class="when">'+when+'</span></div>'+
+        '<div class="body">'+
+          '<div class="f fav"><div class="n">'+esc(b.favourite.name)+'</div><div class="o">'+fmt(b.favourite.odds)+'</div><div class="tag">Favourite</div></div>'+
+          '<div class="vs">vs</div>'+
+          '<div class="f dog"><div class="n">'+esc(b.underdog.name)+'</div><div class="o">'+fmt(b.underdog.odds)+'</div><div class="tag">Underdog</div></div>'+
+        '</div></div>';
+    }).join("");
+    if(fw.updatedAt) document.getElementById("updated").textContent="Lines last refreshed "+new Date(fw.updatedAt.seconds*1000).toLocaleString();
+  }
+}catch(e){
+  document.getElementById("card").innerHTML='<div class="empty">Couldn\'t load the card right now.</div>';
+  console.warn(e);
+}
+</script>
+</body>
+</html>
