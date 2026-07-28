@@ -142,9 +142,13 @@
 
     <div class="panel">
       <h2>Utah fighter roster</h2>
-      <p class="hint" style="margin-top:0">Powers /fighters.html and the strip on the Utah page.</p>
-      <div id="ftrows"></div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+        <input type="text" id="ft_search" placeholder="Search name, gym, weight..." style="flex:1">
+        <span id="ft_count" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--steel);white-space:nowrap;"></span>
+      </div>
+      <div id="ftlist" style="max-height:420px;overflow:auto;border:1px solid var(--hair);"></div>
       <button class="btn ghost" id="ft_add">Add fighter</button>
+      <button class="btn ghost" id="ft_dedupe">Remove duplicates</button>
       <button class="btn" id="ft_save">Save roster</button>
       <div id="ft_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
     </div>
@@ -353,68 +357,137 @@
     say(st,'Saving...');
     const out=await api({card:parsedCard});
     if(!out.ok){ say(st,'\u2717 '+(out.error||'Failed'),'bad'); return; }
-    // also drop every fighter into the roster editor for review
+    // merge every fighter straight into the saved roster (deduped server-side)
+    const incoming=[];
     (parsedCard.bouts||[]).forEach(b=>{
       [b.a,b.b].forEach(f=>{
         if(!f || (!f.first && !f.last)) return;
-        ftRow({first:f.first||'',last:f.last||'',nickname:f.nickname||'',record:f.record||'',
-               weight:b.weight||'',gym:f.gym||'',city:'',
-               next:(parsedCard.event||'')+(parsedCard.date?' · '+parsedCard.date:''),
-               status:'Booked',pro:true});
+        incoming.push({first:f.first||'',last:f.last||'',nickname:f.nickname||'',
+          record:f.record||'',weight:b.weight||'',gym:f.gym||'',city:'',
+          next:(parsedCard.event||'')+(parsedCard.date?' \u00b7 '+parsedCard.date:''),
+          status:'Booked',pro:true});
       });
     });
-    say(st,'\u2713 Card saved ('+out.bouts+' bouts). Fighters added below — review, then Save roster.','ok');
+    const add=await api({addFighters:incoming});
+    if(add.ok){
+      say(st,'\u2713 Card saved ('+out.bouts+' bouts). Roster now has '+add.saved+' fighters — live on the site.','ok');
+      if(window.__reloadRoster) await window.__reloadRoster();
+    } else {
+      say(st,'Card saved, but the roster update failed: '+(add.error||''),'bad');
+    }
   });
 
   /* ---- fighter roster ---- */
-  const ftrows=$('ftrows');
-  function ftRow(f){
-    f=f||{};
-    const d=document.createElement('div');
-    d.className='ftrow';
-    d.style.cssText='border-top:1px solid var(--hair);padding-top:12px;margin-top:12px;';
-    d.innerHTML=
-      '<div class="row2"><div><label>First</label><input class="f_first" type="text" value="'+(f.first||'')+'"></div>'+
-      '<div><label>Last</label><input class="f_last" type="text" value="'+(f.last||'')+'"></div></div>'+
-      '<label>Nickname</label><input class="f_nick" type="text" value="'+(f.nickname||'')+'">'+
-      '<div class="row2"><div><label>Record</label><input class="f_rec" type="text" value="'+(f.record||'')+'"></div>'+
-      '<div><label>Weight class</label><input class="f_wt" type="text" value="'+(f.weight||'')+'"></div></div>'+
-      '<div class="row2"><div><label>Gym</label><input class="f_gym" type="text" value="'+(f.gym||'')+'"></div>'+
-      '<div><label>City</label><input class="f_city" type="text" value="'+(f.city||'')+'"></div></div>'+
-      '<label>Next fight</label><input class="f_next" type="text" value="'+(f.next||'')+'" placeholder="SteelFist 116 · Aug 15">'+
-      '<label>Note</label><input class="f_note" type="text" value="'+(f.note||'')+'">'+
-      '<div class="row2"><div><label>Status</label><select class="f_stat">'+
-        ['Active','Injured','Booked','Debut','On a streak'].map(x=>'<option'+(f.status===x?' selected':'')+'>'+x+'</option>').join('')+
-      '</select></div>'+
-      '<div><label>Level</label><select class="f_pro"><option value="pro"'+(f.pro===false?'':' selected')+'>Pro</option>'+
-      '<option value="am"'+(f.pro===false?' selected':'')+'>Amateur</option></select></div></div>'+
-      '<button class="btn ghost rm" style="margin-top:8px;padding:9px;">Remove</button>';
-    d.querySelector('.rm').addEventListener('click',()=>d.remove());
-    ftrows.appendChild(d);
+  let ROSTER=[], openIdx=-1;
+  const slugOf=f=>((f.first||'')+'-'+(f.last||'')).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+
+  function renderRoster(){
+    const q=($('ft_search').value||'').toLowerCase();
+    const list=$('ftlist');
+    const shown=ROSTER.map((f,i)=>({f,i})).filter(({f})=>
+      !q || ((f.first||'')+' '+(f.last||'')+' '+(f.gym||'')+' '+(f.weight||'')+' '+(f.nickname||'')).toLowerCase().includes(q));
+    $('ft_count').textContent=ROSTER.length+' total';
+    if(!ROSTER.length){ list.innerHTML='<div style="padding:18px;color:var(--steel);font-size:13px;">No fighters yet. Add one, or import a fight card above.</div>'; return; }
+    list.innerHTML=shown.map(({f,i})=>{
+      const head='<div class="ftline" data-i="'+i+'" style="display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid var(--hair);cursor:pointer;">'+
+        '<div style="flex:1;min-width:0;">'+
+          '<div style="font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+
+            ((f.first||'')+' '+(f.last||'')).trim().replace(/</g,'&lt;')+'</div>'+
+          '<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;letter-spacing:.08em;color:var(--steel);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+
+            [f.record,f.weight,f.gym].filter(Boolean).join(' \u00b7 ').replace(/</g,'&lt;')+'</div>'+
+        '</div>'+
+        '<span style="font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--volt);">'+(openIdx===i?'CLOSE':'EDIT')+'</span>'+
+        '<button class="ftdel" data-i="'+i+'" style="background:none;border:1px solid var(--hair);color:#FF4B3E;padding:5px 8px;cursor:pointer;font-size:10px;font-family:\'JetBrains Mono\',monospace;">DEL</button>'+
+      '</div>';
+      if(openIdx!==i) return head;
+      return head+'<div style="padding:14px 12px;border-bottom:1px solid var(--hair);background:var(--black);">'+
+        '<div class="row2"><div><label>First</label><input class="e_first" type="text" value="'+(f.first||'')+'"></div>'+
+        '<div><label>Last</label><input class="e_last" type="text" value="'+(f.last||'')+'"></div></div>'+
+        '<label>Nickname</label><input class="e_nick" type="text" value="'+(f.nickname||'')+'">'+
+        '<div class="row2"><div><label>Record</label><input class="e_rec" type="text" value="'+(f.record||'')+'"></div>'+
+        '<div><label>Weight class</label><input class="e_wt" type="text" value="'+(f.weight||'')+'"></div></div>'+
+        '<div class="row2"><div><label>Gym</label><input class="e_gym" type="text" value="'+(f.gym||'')+'"></div>'+
+        '<div><label>City</label><input class="e_city" type="text" value="'+(f.city||'')+'"></div></div>'+
+        '<label>Next fight</label><input class="e_next" type="text" value="'+(f.next||'')+'">'+
+        '<label>Note</label><input class="e_note" type="text" value="'+(f.note||'')+'">'+
+        '<div class="row2"><div><label>Status</label><select class="e_stat">'+
+          ['Active','Injured','Booked','Debut','On a streak'].map(x=>'<option'+(f.status===x?' selected':'')+'>'+x+'</option>').join('')+
+        '</select></div><div><label>Level</label><select class="e_pro">'+
+          '<option value="pro"'+(f.pro===false?'':' selected')+'>Pro</option>'+
+          '<option value="am"'+(f.pro===false?' selected':'')+'>Amateur</option></select></div></div>'+
+      '</div>';
+    }).join('');
+
+    list.querySelectorAll('.ftline').forEach(el=>el.addEventListener('click',e=>{
+      if(e.target.classList.contains('ftdel')) return;
+      const i=+el.dataset.i;
+      commitOpen();
+      openIdx = (openIdx===i ? -1 : i);
+      renderRoster();
+    }));
+    list.querySelectorAll('.ftdel').forEach(b=>b.addEventListener('click',e=>{
+      e.stopPropagation();
+      const i=+b.dataset.i;
+      ROSTER.splice(i,1);
+      if(openIdx===i) openIdx=-1; else if(openIdx>i) openIdx--;
+      renderRoster();
+    }));
   }
-  $('ft_add').addEventListener('click',()=>ftRow());
+
+  function commitOpen(){
+    if(openIdx<0) return;
+    const box=$('ftlist');
+    const g=c=>{const el=box.querySelector('.'+c); return el?el.value:undefined;};
+    if(g('e_last')===undefined) return;
+    const f=ROSTER[openIdx];
+    f.first=g('e_first').trim(); f.last=g('e_last').trim(); f.nickname=g('e_nick').trim();
+    f.record=g('e_rec').trim(); f.weight=g('e_wt').trim(); f.gym=g('e_gym').trim();
+    f.city=g('e_city').trim(); f.next=g('e_next').trim(); f.note=g('e_note').trim();
+    f.status=g('e_stat'); f.pro=g('e_pro')==='pro';
+  }
+
+  $('ft_search').addEventListener('input',()=>{commitOpen();openIdx=-1;renderRoster();});
+  $('ft_add').addEventListener('click',()=>{
+    commitOpen();
+    ROSTER.unshift({first:'',last:'',nickname:'',record:'',weight:'',gym:'',city:'',next:'',note:'',status:'Active',pro:true});
+    openIdx=0; $('ft_search').value=''; renderRoster();
+    $('ftlist').scrollTop=0;
+  });
+  $('ft_dedupe').addEventListener('click',()=>{
+    commitOpen(); openIdx=-1;
+    const seen=new Map();
+    ROSTER.forEach(f=>{
+      const k=slugOf(f); if(!k||k==='-') return;
+      const prev=seen.get(k)||{};
+      const merged={...prev};
+      Object.entries(f).forEach(([key,val])=>{ if(val!=='' && val!==undefined && val!==null) merged[key]=val; });
+      seen.set(k,merged);
+    });
+    const before=ROSTER.length;
+    ROSTER=[...seen.values()];
+    renderRoster();
+    say($('ft_status'),'Removed '+(before-ROSTER.length)+' duplicate(s). Hit Save roster to keep it.','ok');
+  });
   $('ft_save').addEventListener('click',async()=>{
+    commitOpen();
     const st=$('ft_status');
-    const fighters=[...ftrows.querySelectorAll('.ftrow')].map(r=>({
-      first:r.querySelector('.f_first').value.trim(),
-      last:r.querySelector('.f_last').value.trim(),
-      nickname:r.querySelector('.f_nick').value.trim(),
-      record:r.querySelector('.f_rec').value.trim(),
-      weight:r.querySelector('.f_wt').value.trim(),
-      gym:r.querySelector('.f_gym').value.trim(),
-      city:r.querySelector('.f_city').value.trim(),
-      next:r.querySelector('.f_next').value.trim(),
-      note:r.querySelector('.f_note').value.trim(),
-      status:r.querySelector('.f_stat').value,
-      pro:r.querySelector('.f_pro').value==='pro'
-    })).filter(f=>f.last||f.first);
+    const fighters=ROSTER.filter(f=>f.first||f.last);
     say(st,'Saving...');
     const out=await api({fighters});
-    say(st, out.ok?('\u2713 Saved '+out.saved+' fighter(s).'):'\u2717 '+(out.error||'Failed'), out.ok?'ok':'bad');
+    if(out.ok){
+      say(st,'\u2713 Saved '+out.saved+' fighter(s) — live on the site.','ok');
+      const cur=await api({getFighters:true});
+      if(cur.ok) { ROSTER=cur.fighters||[]; openIdx=-1; renderRoster(); }
+    } else say(st,'\u2717 '+(out.error||'Failed'),'bad');
   });
-  (async()=>{ try{ const out=await api({getFighters:true});
-    if(out.ok&&out.fighters&&out.fighters.length) out.fighters.forEach(ftRow); else ftRow();
-  }catch(e){ ftRow(); } })();
+  async function loadRoster(){
+    try{ const out=await api({getFighters:true});
+      ROSTER=(out.ok&&out.fighters)?out.fighters:[];
+    }catch(e){ ROSTER=[]; }
+    renderRoster();
+  }
+  window.__reloadRoster=loadRoster;
+  loadRoster();
 
   /* ---- gyms ---- */
   const gymrows=$('gymrows');
