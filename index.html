@@ -649,47 +649,7 @@
 })();
 </script>
 
-<script>
-(function(){
-  // Scroll reveals — added by JS so the page is fully visible without it
-  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if(!reduced && 'IntersectionObserver' in window){
-    var targets = document.querySelectorAll('.card, .pick, .tape, .split .frame, .lead h2, .lead .dek');
-    targets.forEach(function(el){ el.classList.add('reveal'); });
-    var io = new IntersectionObserver(function(entries){
-      entries.forEach(function(e){
-        if(e.isIntersecting){
-          var siblings = e.target.parentElement.querySelectorAll('.reveal');
-          var i = Array.prototype.indexOf.call(siblings, e.target);
-          e.target.style.transitionDelay = (Math.max(i,0) * 70) + 'ms';
-          e.target.classList.add('in');
-          io.unobserve(e.target);
-        }
-      });
-    },{threshold:.12});
-    targets.forEach(function(el){ io.observe(el); });
-  }
 
-  // Live countdown to next Saturday
-  var t = document.getElementById('tminus');
-  if(t){
-    var now = new Date();
-    var days = (6 - now.getDay() + 7) % 7; // 6 = Saturday
-    if(days === 0) t.textContent = 'Fight night';
-    else t.textContent = 'T-minus ' + days + (days === 1 ? ' day' : ' days');
-  }
-
-  // Split Decision — pick one, there is no third door
-  document.querySelectorAll('.split .opt').forEach(function(opt){
-    opt.addEventListener('click', function(){
-      document.querySelectorAll('.split .opt').forEach(function(o){ o.classList.remove('picked'); });
-      opt.classList.add('picked');
-      var soon = document.querySelector('.split .soon');
-      if(soon) soon.innerHTML = '<b>Locked in.</b> That\'s the whole show.';
-    });
-  });
-})();
-</script>
 <script type="module">
 // ---- LIVE DATA ----
 // Stories from the news bot, fight week + dogs from the odds puller, and
