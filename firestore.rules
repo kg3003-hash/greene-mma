@@ -15,6 +15,12 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Newsletter issue archive: public read, studio-only write.
+    match /issues/{issueId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // Newsletter subscribers: never readable or writable from a browser.
     // Signups go through the site function, which uses the admin SDK.
     match /subscribers/{email} {
