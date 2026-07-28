@@ -83,71 +83,11 @@
 <div class="top"><div class="wrap">
   <svg viewBox="0 0 120 120"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>
   <div class="name">Greene <span>MMA</span></div>
-  <div class="tool">Hype Card Generator</div>
+  <a class="tool" href="/cards.html" style="color:#C9F73A">Card Studio &rarr;</a>
 </div></div>
 
 <div class="wrap"><div class="app">
   <div>
-    <div class="panel">
-      <h2>Template</h2>
-      <div class="chips" id="layouts">
-        <div class="chip on" data-l="poster">1 · Poster</div>
-        <div class="chip" data-l="split">2 · Split</div>
-        <div class="chip" data-l="octagon">3 · Octagon</div>
-        <div class="chip" data-l="ticket">4 · Ticket</div>
-        <div class="chip" data-l="odds">5 · Odds Drop</div>
-      </div>
-      <label>Format</label>
-      <select id="format">
-        <option value="post">Post · 1080 × 1350</option>
-        <option value="story">Story · 1080 × 1920</option>
-      </select>
-    </div>
-
-    <div class="panel">
-      <h2>The photo</h2>
-      <div class="drop" id="drop"><b>Tap to upload a fighter photo</b>or drag one here · JPG or PNG</div>
-      <input type="file" id="file" accept="image/*" style="display:none">
-      <label>Treatment</label>
-      <div class="chips" id="treatments">
-        <div class="chip on" data-t="duotone">Volt duotone</div>
-        <div class="chip" data-t="bw">High-contrast B&amp;W</div>
-        <div class="chip" data-t="graded">Dark graded</div>
-        <div class="chip" data-t="raw">Raw</div>
-      </div>
-      <label>Zoom</label><input type="range" id="zoom" min="100" max="260" value="118">
-      <div class="row2">
-        <div><label>Move ↔</label><input type="range" id="px" min="0" max="100" value="50"></div>
-        <div><label>Move ↕</label><input type="range" id="py" min="0" max="100" value="30"></div>
-      </div>
-      <p class="hint">Sharpest results: cut the background out first with <a href="https://www.remove.bg" target="_blank" rel="noopener">remove.bg</a> and upload the transparent PNG.</p>
-    </div>
-
-    <div class="panel">
-      <h2>The fighter</h2>
-      <div class="row2">
-        <div><label>First name</label><input type="text" id="first" value="Dusty"></div>
-        <div><label>Last name</label><input type="text" id="last" value="Marks"></div>
-      </div>
-      <label>Nickname (optional)</label><input type="text" id="nick" value="The Landlord">
-      <div class="row2">
-        <div><label>Record</label><input type="text" id="record" value="12-2-0"></div>
-        <div><label>Odds</label><input type="text" id="odds" value="+340"></div>
-      </div>
-      <div class="row2">
-        <div><label>Division</label><input type="text" id="weight" value="Lightweight"></div>
-        <div><label>Camp</label><input type="text" id="gym" value="Riverton, Utah"></div>
-      </div>
-      <label>The story line</label>
-      <textarea id="story">Took the biggest fight of his life on six days' notice. Never blinked.</textarea>
-      <div class="row2">
-        <div><label>Event</label><input type="text" id="event" value="Saturday · Main Card"></div>
-        <div><label>Date</label><input type="text" id="date" value="AUG 1"></div>
-      </div>
-      <button class="btn" id="dl">Download PNG</button>
-      <button class="btn ghost" id="dlall">Download all 5 templates</button>
-    </div>
-
     <div class="panel">
       <h2>Write an article</h2>
       <label>Headline</label><input type="text" id="a_head" placeholder="Short. Punchy. Max ~10 words.">
@@ -168,6 +108,54 @@
       </div>
       <button class="btn" id="a_pub">Publish article</button>
       <div id="a_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Newsletter issue</h2>
+      <label>Subject</label><input type="text" id="n_sub" placeholder="This week in the Greene corner">
+      <label>Preview line</label><input type="text" id="n_prev" placeholder="Shows under the subject in the archive">
+      <label>Body</label>
+      <textarea id="n_body" style="min-height:200px" placeholder="Blank line between paragraphs."></textarea>
+      <button class="btn" id="n_save">Save to archive</button>
+      <div id="n_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+      <p class="hint">Saves the issue to the public archive at /newsletter.html. To actually email it, export your list below and paste it into your sending provider.</p>
+    </div>
+
+    <div class="panel">
+      <h2>Subscribers</h2>
+      <button class="btn ghost" id="sub_load">Load list</button>
+      <button class="btn ghost" id="sub_csv">Download CSV</button>
+      <div id="sub_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+      <div id="sub_box" style="margin-top:10px;max-height:180px;overflow:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--steel);"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Import a fight card</h2>
+      <p class="hint" style="margin-top:0">Copy a card from anywhere — a promotion's post, a listing site, an email — paste it here, and it gets read into structured bouts. Those bouts then load straight into the Card Studio.</p>
+      <label>Paste the card</label>
+      <textarea id="imp_text" style="min-height:150px" placeholder="SteelFist Fight Night 116&#10;Aug 15 · Union Event Center, SLC&#10;&#10;155 lbs: Dusty Marks (12-2) vs Marcus Reyes (15-1)&#10;170 lbs: ..."></textarea>
+      <button class="btn" id="imp_go">Read the card</button>
+      <div id="imp_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+      <div id="imp_out" style="margin-top:12px;"></div>
+      <button class="btn ghost" id="imp_save" style="display:none">Save card + add fighters to roster</button>
+    </div>
+
+    <div class="panel">
+      <h2>Utah fighter roster</h2>
+      <p class="hint" style="margin-top:0">Powers /fighters.html and the strip on the Utah page.</p>
+      <div id="ftrows"></div>
+      <button class="btn ghost" id="ft_add">Add fighter</button>
+      <button class="btn" id="ft_save">Save roster</button>
+      <div id="ft_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Utah gyms</h2>
+      <p class="hint" style="margin-top:0">Tick "featured" for paying sponsors — they sort to the top with a badge.</p>
+      <div id="gymrows"></div>
+      <button class="btn ghost" id="g_add">Add gym</button>
+      <button class="btn" id="g_save">Save directory</button>
+      <div id="g_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
     </div>
 
     <div class="panel">
@@ -195,391 +183,22 @@
       <div id="pickstatus" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
     </div>
 
-    <div class="panel">
-      <h2>Publish</h2>
-      <div class="row2">
-        <div><label>X handle</label><input type="text" id="xhandle" placeholder="@fighter"></div>
-        <div><label>IG handle</label><input type="text" id="ighandle" placeholder="@fighter"></div>
-      </div>
-      <label>Caption</label>
-      <textarea id="caption">In the Greene corner this Saturday. Made you something.</textarea>
-      <label>Post to</label>
-      <div class="targets">
-        <label class="tgt"><input type="checkbox" id="t_x" checked><span>X post<small>Card + caption, fighter tagged</small></span></label>
-        <label class="tgt"><input type="checkbox" id="t_igfeed"><span>Instagram feed<small>Card + caption, fighter tagged</small></span></label>
-        <label class="tgt"><input type="checkbox" id="t_igstory"><span>Instagram story<small>Story format · mention sticker must be added by hand</small></span></label>
-      </div>
-      <button class="btn" id="publish">Publish now</button>
-      <div id="status"></div>
+    
       <p class="hint">Tag the fighter when you post. For most undercard guys this is the best graphic anyone has ever made of them.</p>
     </div>
   </div>
 
   <div class="stage">
-    <div class="frame"><canvas id="card" width="1080" height="1350"></canvas></div>
-    <div class="cap" id="cap">1080 × 1350</div>
-  </div>
+      <div class="panel" style="width:100%;text-align:center;">
+        <svg viewBox="0 0 120 120" style="width:70px;height:70px;margin:0 auto 18px;display:block;"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>
+        <h2>Card Studio</h2>
+        <p class="hint" style="margin-top:0">Tale of the tape, clash posters, solo cards, and publishing to X and Instagram all live in the Card Studio now.</p>
+        <a class="btn" href="/cards.html" style="text-decoration:none;">Open Card Studio</a>
+      </div>
+    </div>
 </div></div>
 
 <script>
-(function(){
-const $=id=>document.getElementById(id);
-const canvas=$('card'), ctx=canvas.getContext('2d');
-const C={bg:'#0C0E0A',ink:'#F2F0E9',accent:'#C9F73A',dim:'#9AA194',hair:'rgba(242,240,233,.18)'};
-let img=null, treatment='duotone', layout='poster', cache=null, cacheKey='';
-
-const V=()=>({first:$('first').value.trim().toUpperCase(),last:$('last').value.trim().toUpperCase(),
-  nick:$('nick').value.trim(),record:$('record').value.trim(),odds:$('odds').value.trim(),
-  weight:$('weight').value.trim().toUpperCase(),gym:$('gym').value.trim().toUpperCase(),
-  story:$('story').value.trim(),event:$('event').value.trim(),date:$('date').value.trim().toUpperCase()});
-
-/* ---------- shapes ---------- */
-function markPath(x,y,size){
-  const s=size/120;
-  const pts=[[104.35,41.63],[78.37,15.65],[41.63,15.65],[15.65,41.63],[15.65,78.37],
-             [41.63,104.35],[78.37,104.35],[104.35,78.37],[104.35,64],[71,64]];
-  ctx.beginPath();
-  pts.forEach((p,i)=> i===0?ctx.moveTo(x+p[0]*s,y+p[1]*s):ctx.lineTo(x+p[0]*s,y+p[1]*s));
-}
-function logo(x,y,size,stroke,color,alpha){
-  ctx.save(); ctx.globalAlpha=alpha===undefined?1:alpha;
-  markPath(x,y,size); ctx.strokeStyle=color; ctx.lineWidth=stroke*(size/120);
-  ctx.lineJoin='miter'; ctx.lineCap='butt'; ctx.stroke(); ctx.restore();
-}
-function octPath(cx,cy,r){
-  ctx.beginPath();
-  for(let i=0;i<8;i++){
-    const a=Math.PI/8 + i*Math.PI/4;
-    const px=cx+r*Math.cos(a), py=cy+r*Math.sin(a);
-    i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
-  }
-  ctx.closePath();
-}
-
-/* ---------- photo ---------- */
-function treated(){
-  const key=treatment+'|'+img.width+'x'+img.height;
-  if(cache&&cacheKey===key) return cache;
-  const off=document.createElement('canvas');
-  off.width=img.width; off.height=img.height;
-  const o=off.getContext('2d'); o.drawImage(img,0,0);
-  if(treatment!=='raw'){
-    const d=o.getImageData(0,0,off.width,off.height), p=d.data;
-    for(let i=0;i<p.length;i+=4){
-      if(p[i+3]===0) continue;
-      let lum=(p[i]*.299+p[i+1]*.587+p[i+2]*.114)/255;
-      if(treatment==='duotone'){
-        lum=Math.min(1,Math.max(0,(lum-.12)*1.45));
-        const t=lum*lum*(3-2*lum);
-        p[i]=12+(201-12)*t; p[i+1]=14+(247-14)*t; p[i+2]=10+(58-10)*t;
-      } else if(treatment==='bw'){
-        let v=Math.min(1,Math.max(0,(lum-.16)*1.6)); v=v*v*(3-2*v);
-        const g=18+232*v; p[i]=g;p[i+1]=g;p[i+2]=g;
-      } else {
-        p[i]=Math.min(255,p[i]*.82+4); p[i+1]=Math.min(255,p[i+1]*.92+8); p[i+2]=Math.min(255,p[i+2]*.74);
-      }
-    }
-    o.putImageData(d,0,0);
-  }
-  cache=off; cacheKey=key; return off;
-}
-function photo(box,clipFn){
-  if(!img) return;
-  const src=treated(), zoom=+$('zoom').value/100;
-  const scale=Math.max(box.w/src.width,box.h/src.height)*zoom;
-  const dw=src.width*scale, dh=src.height*scale;
-  const dx=box.x+(box.w-dw)*(+$('px').value/100);
-  const dy=box.y+(box.h-dh)*(+$('py').value/100);
-  ctx.save();
-  if(clipFn){clipFn();} else {ctx.beginPath();ctx.rect(box.x,box.y,box.w,box.h);}
-  ctx.clip(); ctx.drawImage(src,dx,dy,dw,dh); ctx.restore();
-}
-function scrim(x,y,w,h,dir,strength){
-  const g=dir==='v'?ctx.createLinearGradient(0,y,0,y+h):ctx.createLinearGradient(x,0,x+w,0);
-  g.addColorStop(0,'rgba(12,14,10,0)');
-  g.addColorStop(.5,'rgba(12,14,10,'+(strength*.72)+')');
-  g.addColorStop(1,'rgba(12,14,10,'+strength+')');
-  ctx.fillStyle=g; ctx.fillRect(x,y,w,h);
-}
-
-/* ---------- text ---------- */
-function fit(text,font,maxPx,maxW,minPx){
-  let s=maxPx;
-  do{ ctx.font=s+'px '+font; if(ctx.measureText(text).width<=maxW) break; s-=4; }while(s>(minPx||26));
-  return s;
-}
-function wrapT(text,maxW,max){
-  const words=text.split(/\s+/),lines=[];let line='';
-  for(const w of words){const t=line?line+' '+w:w;
-    if(ctx.measureText(t).width>maxW&&line){lines.push(line);line=w;}else line=t;}
-  if(line)lines.push(line); return lines.slice(0,max||3);
-}
-function header(W,M,y){
-  logo(M,y,56,13,C.accent);
-  ctx.textAlign='left'; ctx.textBaseline='alphabetic';
-  ctx.fillStyle=C.ink; ctx.font='34px Anton';
-  ctx.fillText('GREENE ',M+74,y+42);
-  const gw=ctx.measureText('GREENE ').width;
-  ctx.fillStyle=C.accent; ctx.fillText('MMA',M+74+gw,y+42);
-  ctx.fillStyle=C.dim; ctx.font='700 18px "JetBrains Mono"';
-  ctx.textAlign='right'; ctx.fillText('UNDERCARD HYPE',W-M,y+38); ctx.textAlign='left';
-}
-function footer(W,H,M,v){
-  const fy=H-72;
-  ctx.fillStyle=C.hair; ctx.fillRect(M,fy-44,W-M*2,2);
-  ctx.fillStyle=C.dim; ctx.font='700 20px "JetBrains Mono"'; ctx.textAlign='left';
-  ctx.fillText((v.event+'  ·  '+v.date).replace(/^\s*·\s*|\s*·\s*$/g,''),M,fy);
-  ctx.fillStyle=C.accent; ctx.textAlign='right'; ctx.fillText('MMA.GREENE.BET',W-M,fy); ctx.textAlign='left';
-}
-function tape(x,y,w,rows,rowH,align){
-  ctx.textAlign='left';
-  for(const [label,val] of rows){
-    ctx.fillStyle=C.hair; ctx.fillRect(x,y,w,2);
-    ctx.fillStyle=C.dim; ctx.font='700 20px "JetBrains Mono"';
-    ctx.fillText(label,x,y+rowH*.62);
-    ctx.fillStyle=C.accent; ctx.font='700 30px "JetBrains Mono"';
-    ctx.textAlign='right'; ctx.fillText(val,x+w,y+rowH*.64); ctx.textAlign='left';
-    y+=rowH;
-  }
-  ctx.fillStyle=C.hair; ctx.fillRect(x,y,w,2);
-  return y;
-}
-function rowsFor(v){
-  return [['RECORD',v.record],['ODDS',v.odds],['DIVISION',v.weight],['CAMP',v.gym]].filter(r=>r[1]);
-}
-
-/* ================= TEMPLATES ================= */
-function tplPoster(W,H,M,v,isStory){
-  if(img){ photo({x:0,y:0,w:W,h:H});
-    let g=ctx.createLinearGradient(0,H*.2,0,H);
-    g.addColorStop(0,'rgba(12,14,10,0)');g.addColorStop(.45,'rgba(12,14,10,.74)');g.addColorStop(1,'rgba(12,14,10,.97)');
-    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-    g=ctx.createLinearGradient(0,0,0,240);
-    g.addColorStop(0,'rgba(12,14,10,.85)');g.addColorStop(1,'rgba(12,14,10,0)');
-    ctx.fillStyle=g;ctx.fillRect(0,0,W,240);
-  } else logo(W-430,H-520,600,11,C.accent,.06);
-  header(W,M,isStory?100:72);
-  const CW=W-M*2, footY=H-72;
-  ctx.font='600 33px Barlow';
-  const sl=wrapT(v.story,CW,3);
-  let storyTop=footY-116-(sl.length-1)*45;
-  const rows=rowsFor(v), rowH=72;
-  const tapeTop=storyTop-42-rows.length*rowH;
-  const lastS=fit(v.last,'Anton',isStory?190:164,CW);
-  const firstS=fit(v.first,'Anton',80,CW);
-  const nameBase=tapeTop-44;
-  ctx.textAlign='left';
-  ctx.fillStyle=C.accent;ctx.font=lastS+'px Anton';ctx.fillText(v.last,M,nameBase);
-  ctx.fillStyle=C.ink;ctx.font=firstS+'px Anton';ctx.fillText(v.first,M,nameBase-lastS*.86);
-  let ny=nameBase-lastS*.86-firstS*1.06-22;
-  if(v.nick){ctx.fillStyle=C.dim;ctx.font='29px "JetBrains Mono"';ctx.fillText('\u201C'+v.nick.toUpperCase()+'\u201D',M,ny);ny-=50;}
-  ctx.fillStyle=C.accent;ctx.font='700 22px "JetBrains Mono"';ctx.fillText('IN THE GREENE CORNER',M,ny);
-  tape(M,tapeTop,CW,rows,rowH);
-  ctx.fillStyle=C.ink;ctx.font='600 33px Barlow';
-  let y=storyTop; for(const l of sl){ctx.fillText(l,M,y);y+=45;}
-  footer(W,H,M,v);
-}
-
-function tplSplit(W,H,M,v,isStory){
-  const sx=Math.round(W*.46);
-  if(img){ photo({x:sx,y:0,w:W-sx,h:H});
-    const g=ctx.createLinearGradient(sx,0,sx+230,0);
-    g.addColorStop(0,'rgba(12,14,10,.96)');g.addColorStop(1,'rgba(12,14,10,0)');
-    ctx.fillStyle=g;ctx.fillRect(sx,0,270,H);
-    ctx.fillStyle=C.accent;ctx.fillRect(sx-3,0,3,H);
-  } else logo(W-380,H/2-260,520,11,C.accent,.06);
-  header(W,M,isStory?100:72);
-  const tw=sx-M-26, footY=H-72;
-  ctx.font='600 28px Barlow';
-  const sl=wrapT(v.story,tw,4);
-  let storyTop=footY-110-(sl.length-1)*40;
-  const rows=rowsFor(v),rowH=64;
-  const tapeTop=storyTop-38-rows.length*rowH;
-  const lastS=fit(v.last,'Anton',isStory?128:112,tw,40);
-  const firstS=fit(v.first,'Anton',58,tw,30);
-  const nameBase=tapeTop-40;
-  ctx.textAlign='left';
-  ctx.fillStyle=C.accent;ctx.font=lastS+'px Anton';ctx.fillText(v.last,M,nameBase);
-  ctx.fillStyle=C.ink;ctx.font=firstS+'px Anton';ctx.fillText(v.first,M,nameBase-lastS*.86);
-  let ny=nameBase-lastS*.86-firstS*1.06-22;
-  if(v.nick){ctx.fillStyle=C.dim;ctx.font='24px "JetBrains Mono"';ctx.fillText('\u201C'+v.nick.toUpperCase()+'\u201D',M,ny);ny-=44;}
-  ctx.fillStyle=C.accent;ctx.font='700 19px "JetBrains Mono"';ctx.fillText('IN THE GREENE CORNER',M,ny);
-  ctx.textAlign='left';
-  let y=tapeTop;
-  for(const [label,val] of rows){
-    ctx.fillStyle=C.hair;ctx.fillRect(M,y,tw,2);
-    ctx.fillStyle=C.dim;ctx.font='700 17px "JetBrains Mono"';ctx.fillText(label,M,y+rowH*.6);
-    ctx.fillStyle=C.accent;ctx.font='700 25px "JetBrains Mono"';
-    ctx.textAlign='right';ctx.fillText(val,M+tw,y+rowH*.62);ctx.textAlign='left';
-    y+=rowH;
-  }
-  ctx.fillStyle=C.hair;ctx.fillRect(M,y,tw,2);
-  ctx.fillStyle=C.ink;ctx.font='600 28px Barlow';
-  y=storyTop; for(const l of sl){ctx.fillText(l,M,y);y+=40;}
-  footer(W,H,M,v);
-}
-
-function tplOctagon(W,H,M,v,isStory){
-  header(W,M,isStory?100:72);
-  const cx=W/2, r=Math.min(W*.40,H*.26), cy=(isStory?H*.34:H*.33);
-  // volt ring behind
-  ctx.save();ctx.globalAlpha=.9;octPath(cx,cy,r+16);ctx.strokeStyle=C.accent;ctx.lineWidth=4;ctx.stroke();ctx.restore();
-  if(img){ photo({x:cx-r,y:cy-r,w:r*2,h:r*2},()=>octPath(cx,cy,r)); }
-  else { octPath(cx,cy,r); ctx.fillStyle='rgba(201,247,58,.06)'; ctx.fill(); }
-  ctx.textAlign='center';
-  let y=cy+r+86;
-  ctx.fillStyle=C.accent;ctx.font='700 21px "JetBrains Mono"';
-  ctx.fillText('IN THE GREENE CORNER',cx,y); y+=54;
-  if(v.nick){ctx.fillStyle=C.dim;ctx.font='27px "JetBrains Mono"';ctx.fillText('\u201C'+v.nick.toUpperCase()+'\u201D',cx,y);y+=52;}
-  const CW=W-M*2;
-  const firstS=fit(v.first,'Anton',66,CW);
-  ctx.fillStyle=C.ink;ctx.font=firstS+'px Anton';ctx.fillText(v.first,cx,y); y+=(isStory?126:112);
-  const lastS=fit(v.last,'Anton',isStory?150:132,CW);
-  ctx.fillStyle=C.accent;ctx.font=lastS+'px Anton';ctx.fillText(v.last,cx,y);
-  // inline stat strip
-  y+=(isStory?76:64);
-  const rows=rowsFor(v);
-  ctx.fillStyle=C.hair;ctx.fillRect(M,y,CW,2); y+=46;
-  const cellW=CW/rows.length;
-  rows.forEach((r2,i)=>{
-    const x=M+cellW*i+cellW/2;
-    ctx.fillStyle=C.dim;ctx.font='700 16px "JetBrains Mono"';ctx.fillText(r2[0],x,y);
-    ctx.fillStyle=C.accent;ctx.font='700 27px "JetBrains Mono"';ctx.fillText(r2[1],x,y+38);
-  });
-  y+=76;
-  ctx.fillStyle=C.hair;ctx.fillRect(M,y,CW,2);
-  y+=58;
-  ctx.fillStyle=C.ink;ctx.font='600 30px Barlow';
-  for(const l of wrapT(v.story,CW-60,3)){ctx.fillText(l,cx,y);y+=42;}
-  ctx.textAlign='left';
-  footer(W,H,M,v);
-}
-
-function tplTicket(W,H,M,v,isStory){
-  const bandH=Math.round(H*(isStory?.50:.46));
-  if(img){ photo({x:0,y:0,w:W,h:bandH});
-    scrim(0,bandH-320,W,320,'v',.92);
-  } else { ctx.fillStyle='#13160F';ctx.fillRect(0,0,W,bandH); logo(W/2-190,bandH/2-190,380,11,C.accent,.08); }
-  header(W,M,isStory?100:72);
-  // name over the band bottom
-  ctx.textAlign='left';
-  const CW=W-M*2;
-  const lastS=fit(v.last,'Anton',isStory?168:148,CW);
-  ctx.fillStyle=C.accent;ctx.font=lastS+'px Anton';ctx.fillText(v.last,M,bandH-58);
-  const firstS=fit(v.first,'Anton',68,CW);
-  ctx.fillStyle=C.ink;ctx.font=firstS+'px Anton';ctx.fillText(v.first,M,bandH-58-lastS*.86);
-  // perforation
-  ctx.save();ctx.strokeStyle=C.accent;ctx.lineWidth=3;ctx.setLineDash([18,14]);
-  ctx.beginPath();ctx.moveTo(0,bandH);ctx.lineTo(W,bandH);ctx.stroke();ctx.restore();
-  // notches
-  ctx.fillStyle=C.bg;
-  ctx.beginPath();ctx.arc(0,bandH,26,0,Math.PI*2);ctx.fill();
-  ctx.beginPath();ctx.arc(W,bandH,26,0,Math.PI*2);ctx.fill();
-  // stub
-  let y=bandH+80;
-  ctx.fillStyle=C.accent;ctx.font='700 21px "JetBrains Mono"';
-  ctx.fillText('IN THE GREENE CORNER',M,y);
-  if(v.nick){ctx.fillStyle=C.dim;ctx.font='26px "JetBrains Mono"';ctx.textAlign='right';ctx.fillText('\u201C'+v.nick.toUpperCase()+'\u201D',W-M,y);ctx.textAlign='left';}
-  y+=54;
-  const rows=rowsFor(v);
-  y=tape(M,y,CW,rows,isStory?78:70)+ (isStory?70:58);
-  ctx.fillStyle=C.ink;ctx.font='600 32px Barlow';
-  for(const l of wrapT(v.story,CW,3)){ctx.fillText(l,M,y);y+=44;}
-  footer(W,H,M,v);
-}
-
-function tplOdds(W,H,M,v,isStory){
-  if(img){ photo({x:0,y:0,w:W,h:H});
-    ctx.fillStyle='rgba(12,14,10,.72)';ctx.fillRect(0,0,W,H);
-    let g=ctx.createLinearGradient(0,H*.35,0,H);
-    g.addColorStop(0,'rgba(12,14,10,0)');g.addColorStop(1,'rgba(12,14,10,.95)');
-    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-  } else logo(W/2-300,H/2-380,600,11,C.accent,.06);
-  header(W,M,isStory?100:72);
-  const cx=W/2, CW=W-M*2;
-  ctx.textAlign='center';
-  let y=isStory?H*.40:H*.395;
-  ctx.fillStyle=C.dim;ctx.font='700 24px "JetBrains Mono"';
-  ctx.fillText('C U R R E N T   L I N E',cx,y-  (isStory?150:128));
-  const oddsS=fit(v.odds||'+000','Anton',isStory?330:290,CW);
-  ctx.fillStyle=C.accent;ctx.font=oddsS+'px Anton';
-  ctx.fillText(v.odds||'+000',cx,y);
-  // underline
-  ctx.fillStyle=C.accent;ctx.fillRect(cx-CW*.34,y+34,CW*.68,4);
-  y+=112;
-  ctx.fillStyle=C.ink;ctx.font='600 30px Barlow';
-  ctx.fillText('LIVE DOG',cx,y);
-  y+=(isStory?110:92);
-  const firstS=fit(v.first,'Anton',56,CW);
-  ctx.fillStyle=C.dim;ctx.font=firstS+'px Anton';ctx.fillText(v.first,cx,y);
-  y+=(isStory?110:98);
-  const lastS=fit(v.last,'Anton',isStory?138:120,CW);
-  ctx.fillStyle=C.ink;ctx.font=lastS+'px Anton';ctx.fillText(v.last,cx,y);
-  y+=(isStory?66:56);
-  ctx.fillStyle=C.dim;ctx.font='700 22px "JetBrains Mono"';
-  ctx.fillText([v.record,v.weight,v.gym].filter(Boolean).join('  ·  '),cx,y);
-  y+=(isStory?76:64);
-  ctx.fillStyle=C.ink;ctx.font='600 30px Barlow';
-  for(const l of wrapT(v.story,CW-40,3)){ctx.fillText(l,cx,y);y+=42;}
-  ctx.textAlign='left';
-  footer(W,H,M,v);
-}
-
-const TEMPLATES={poster:tplPoster,split:tplSplit,octagon:tplOctagon,ticket:tplTicket,odds:tplOdds};
-
-function draw(){
-  const isStory=$('format').value==='story';
-  const W=1080,H=isStory?1920:1350;
-  canvas.width=W;canvas.height=H;
-  ctx.fillStyle=C.bg;ctx.fillRect(0,0,W,H);
-  ctx.textBaseline='alphabetic';
-  TEMPLATES[layout](W,H,80,V(),isStory);
-  $('cap').textContent=W+' × '+H+' · '+layout+(img?' · photo loaded':' · no photo yet');
-}
-
-/* ---------- upload ---------- */
-function loadFile(f){
-  if(!f||!/^image\//.test(f.type))return;
-  const r=new FileReader();
-  r.onload=e=>{const i=new Image();i.onload=()=>{img=i;cache=null;cacheKey='';draw();};i.src=e.target.result;};
-  r.readAsDataURL(f);
-}
-$('drop').addEventListener('click',()=>$('file').click());
-$('file').addEventListener('change',e=>loadFile(e.target.files[0]));
-['dragenter','dragover'].forEach(ev=>$('drop').addEventListener(ev,e=>{e.preventDefault();$('drop').classList.add('over');}));
-['dragleave','drop'].forEach(ev=>$('drop').addEventListener(ev,e=>{e.preventDefault();$('drop').classList.remove('over');}));
-$('drop').addEventListener('drop',e=>loadFile(e.dataTransfer.files[0]));
-
-/* ---------- chips ---------- */
-$('treatments').addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;
-  $('treatments').querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
-  c.classList.add('on');treatment=c.dataset.t;cache=null;draw();});
-$('layouts').addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;
-  $('layouts').querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
-  c.classList.add('on');layout=c.dataset.l;draw();});
-document.querySelectorAll('input,textarea,select').forEach(el=>el.addEventListener('input',draw));
-
-/* ---------- export ---------- */
-function save(tag){
-  const n=($('first').value+'-'+$('last').value).toLowerCase().replace(/[^a-z0-9]+/g,'-');
-  canvas.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);
-    a.download='greene-mma-'+(n||'card')+'-'+(tag||layout)+'.png';a.click();URL.revokeObjectURL(a.href);});
-}
-$('dl').addEventListener('click',()=>save());
-$('dlall').addEventListener('click',()=>{
-  const orig=layout, keys=Object.keys(TEMPLATES);
-  keys.forEach((k,i)=>setTimeout(()=>{
-    layout=k;draw();save(k);
-    if(i===keys.length-1) setTimeout(()=>{layout=orig;draw();},600);
-  },i*750));
-});
-
-Promise.all([document.fonts.load('100px Anton'),
-  document.fonts.load('700 30px "JetBrains Mono"'),
-  document.fonts.load('600 34px Barlow')]).then(draw).catch(draw);
-setTimeout(draw,900);
-})();
-
 /* ================= GATE ================= */
 (function(){
   const gate=document.getElementById('gate');
@@ -671,6 +290,168 @@ setTimeout(draw,900);
   (async()=>{ try{ const out=await api({getEvents:true});
     if(out.ok&&out.events&&out.events.length) out.events.forEach(evRow); else evRow();
   }catch(e){ evRow(); } })();
+
+  /* ---- newsletter ---- */
+  $('n_save').addEventListener('click',async()=>{
+    const st=$('n_status');
+    const issue={subject:$('n_sub').value.trim(),preview:$('n_prev').value.trim(),body:$('n_body').value.trim()};
+    if(!issue.subject||!issue.body){ say(st,'Subject and body are required.','bad'); return; }
+    say(st,'Saving...');
+    const out=await api({issue});
+    if(out.ok){ say(st,'✓ Archived — live at /newsletter.html','ok'); $('n_sub').value='';$('n_prev').value='';$('n_body').value=''; }
+    else say(st,'✗ '+(out.error||'Failed'),'bad');
+  });
+
+  /* ---- subscribers ---- */
+  let subs=[];
+  async function loadSubs(){
+    const st=$('sub_status');
+    say(st,'Loading...');
+    const out=await api({listSubscribers:true});
+    if(!out.ok){ say(st,'✗ '+(out.error||'Failed'),'bad'); return; }
+    subs=out.rows||[];
+    say(st,'✓ '+out.count+' subscriber(s)','ok');
+    $('sub_box').innerHTML=subs.map(r=>r.email).join('<br>');
+  }
+  $('sub_load').addEventListener('click',loadSubs);
+  $('sub_csv').addEventListener('click',async()=>{
+    if(!subs.length) await loadSubs();
+    if(!subs.length) return;
+    const csv='email,source,signed_up\n'+subs.map(r=>[r.email,r.source,r.createdAt].join(',')).join('\n');
+    const b=new Blob([csv],{type:'text/csv'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(b); a.download='greene-mma-subscribers.csv'; a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  /* ---- card import ---- */
+  let parsedCard=null;
+  $('imp_go').addEventListener('click',async()=>{
+    const st=$('imp_status');
+    const txt=$('imp_text').value.trim();
+    if(txt.length<20){ say(st,'Paste a bit more of the card first.','bad'); return; }
+    say(st,'Reading...');
+    const out=await api({parseCard:txt});
+    if(!out.ok){ say(st,'\u2717 '+(out.error||'Failed'),'bad'); return; }
+    parsedCard=out.card;
+    const b=parsedCard.bouts||[];
+    say(st,'\u2713 Found '+b.length+' bout(s)'+(parsedCard.event?' — '+parsedCard.event:''),'ok');
+    $('imp_out').innerHTML=b.map((x,i)=>
+      '<div style="border-top:1px solid var(--hair);padding:9px 0;font-size:14px;">'+
+        '<span style="font-family:\'JetBrains Mono\',monospace;font-size:10px;letter-spacing:.12em;color:var(--steel);">'+
+        (i===0?'MAIN':'BOUT '+(i+1))+(x.weight?' · '+x.weight:'')+'</span><br>'+
+        (x.a.first||'')+' '+(x.a.last||'')+(x.a.record?' ('+x.a.record+')':'')+
+        ' <span style="color:var(--volt)">vs</span> '+
+        (x.b.first||'')+' '+(x.b.last||'')+(x.b.record?' ('+x.b.record+')':'')+
+      '</div>').join('');
+    $('imp_save').style.display='block';
+  });
+
+  $('imp_save').addEventListener('click',async()=>{
+    const st=$('imp_status');
+    if(!parsedCard) return;
+    say(st,'Saving...');
+    const out=await api({card:parsedCard});
+    if(!out.ok){ say(st,'\u2717 '+(out.error||'Failed'),'bad'); return; }
+    // also drop every fighter into the roster editor for review
+    (parsedCard.bouts||[]).forEach(b=>{
+      [b.a,b.b].forEach(f=>{
+        if(!f || (!f.first && !f.last)) return;
+        ftRow({first:f.first||'',last:f.last||'',nickname:f.nickname||'',record:f.record||'',
+               weight:b.weight||'',gym:f.gym||'',city:'',
+               next:(parsedCard.event||'')+(parsedCard.date?' · '+parsedCard.date:''),
+               status:'Booked',pro:true});
+      });
+    });
+    say(st,'\u2713 Card saved ('+out.bouts+' bouts). Fighters added below — review, then Save roster.','ok');
+  });
+
+  /* ---- fighter roster ---- */
+  const ftrows=$('ftrows');
+  function ftRow(f){
+    f=f||{};
+    const d=document.createElement('div');
+    d.className='ftrow';
+    d.style.cssText='border-top:1px solid var(--hair);padding-top:12px;margin-top:12px;';
+    d.innerHTML=
+      '<div class="row2"><div><label>First</label><input class="f_first" type="text" value="'+(f.first||'')+'"></div>'+
+      '<div><label>Last</label><input class="f_last" type="text" value="'+(f.last||'')+'"></div></div>'+
+      '<label>Nickname</label><input class="f_nick" type="text" value="'+(f.nickname||'')+'">'+
+      '<div class="row2"><div><label>Record</label><input class="f_rec" type="text" value="'+(f.record||'')+'"></div>'+
+      '<div><label>Weight class</label><input class="f_wt" type="text" value="'+(f.weight||'')+'"></div></div>'+
+      '<div class="row2"><div><label>Gym</label><input class="f_gym" type="text" value="'+(f.gym||'')+'"></div>'+
+      '<div><label>City</label><input class="f_city" type="text" value="'+(f.city||'')+'"></div></div>'+
+      '<label>Next fight</label><input class="f_next" type="text" value="'+(f.next||'')+'" placeholder="SteelFist 116 · Aug 15">'+
+      '<label>Note</label><input class="f_note" type="text" value="'+(f.note||'')+'">'+
+      '<div class="row2"><div><label>Status</label><select class="f_stat">'+
+        ['Active','Injured','Booked','Debut','On a streak'].map(x=>'<option'+(f.status===x?' selected':'')+'>'+x+'</option>').join('')+
+      '</select></div>'+
+      '<div><label>Level</label><select class="f_pro"><option value="pro"'+(f.pro===false?'':' selected')+'>Pro</option>'+
+      '<option value="am"'+(f.pro===false?' selected':'')+'>Amateur</option></select></div></div>'+
+      '<button class="btn ghost rm" style="margin-top:8px;padding:9px;">Remove</button>';
+    d.querySelector('.rm').addEventListener('click',()=>d.remove());
+    ftrows.appendChild(d);
+  }
+  $('ft_add').addEventListener('click',()=>ftRow());
+  $('ft_save').addEventListener('click',async()=>{
+    const st=$('ft_status');
+    const fighters=[...ftrows.querySelectorAll('.ftrow')].map(r=>({
+      first:r.querySelector('.f_first').value.trim(),
+      last:r.querySelector('.f_last').value.trim(),
+      nickname:r.querySelector('.f_nick').value.trim(),
+      record:r.querySelector('.f_rec').value.trim(),
+      weight:r.querySelector('.f_wt').value.trim(),
+      gym:r.querySelector('.f_gym').value.trim(),
+      city:r.querySelector('.f_city').value.trim(),
+      next:r.querySelector('.f_next').value.trim(),
+      note:r.querySelector('.f_note').value.trim(),
+      status:r.querySelector('.f_stat').value,
+      pro:r.querySelector('.f_pro').value==='pro'
+    })).filter(f=>f.last||f.first);
+    say(st,'Saving...');
+    const out=await api({fighters});
+    say(st, out.ok?('\u2713 Saved '+out.saved+' fighter(s).'):'\u2717 '+(out.error||'Failed'), out.ok?'ok':'bad');
+  });
+  (async()=>{ try{ const out=await api({getFighters:true});
+    if(out.ok&&out.fighters&&out.fighters.length) out.fighters.forEach(ftRow); else ftRow();
+  }catch(e){ ftRow(); } })();
+
+  /* ---- gyms ---- */
+  const gymrows=$('gymrows');
+  function gymRow(g){
+    g=g||{};
+    const d=document.createElement('div');
+    d.className='gymrow';
+    d.style.cssText='border-top:1px solid var(--hair);padding-top:12px;margin-top:12px;';
+    d.innerHTML=
+      '<div class="row2"><div><label>Gym name</label><input class="g_n" type="text" value="'+(g.name||'')+'"></div>'+
+      '<div><label>City</label><input class="g_c" type="text" value="'+(g.city||'')+'"></div></div>'+
+      '<label>Disciplines</label><input class="g_d" type="text" value="'+(g.disciplines||'')+'" placeholder="BJJ · Muay Thai · MMA">'+
+      '<label>Note</label><textarea class="g_note">'+(g.note||'')+'</textarea>'+
+      '<label>Link</label><input class="g_l" type="text" value="'+(g.link||'')+'">'+
+      '<label class="check" style="margin-top:12px"><input class="g_f" type="checkbox" '+(g.featured?'checked':'')+'><span>Featured sponsor</span></label>'+
+      '<button class="btn ghost rm" style="margin-top:8px;padding:9px;">Remove</button>';
+    d.querySelector('.rm').addEventListener('click',()=>d.remove());
+    gymrows.appendChild(d);
+  }
+  $('g_add').addEventListener('click',()=>gymRow());
+  $('g_save').addEventListener('click',async()=>{
+    const st=$('g_status');
+    const gyms=[...gymrows.querySelectorAll('.gymrow')].map(r=>({
+      name:r.querySelector('.g_n').value.trim(),
+      city:r.querySelector('.g_c').value.trim(),
+      disciplines:r.querySelector('.g_d').value.trim(),
+      note:r.querySelector('.g_note').value.trim(),
+      link:r.querySelector('.g_l').value.trim(),
+      featured:r.querySelector('.g_f').checked
+    })).filter(g=>g.name);
+    say(st,'Saving...');
+    const out=await api({gyms});
+    say(st, out.ok?('✓ Saved '+out.saved+' gym(s).'):'✗ '+(out.error||'Failed'), out.ok?'ok':'bad');
+  });
+  (async()=>{ try{ const out=await api({getGyms:true});
+    if(out.ok&&out.gyms&&out.gyms.length) out.gyms.forEach(gymRow); else gymRow();
+  }catch(e){ gymRow(); } })();
 
   /* ---- manage stories ---- */
   $('s_load').addEventListener('click',async()=>{
