@@ -160,6 +160,36 @@
     </div>
 
     <div class="panel">
+      <h2>Utah rankings</h2>
+      <p class="hint" style="margin-top:0">Your list. Type a fighter's name exactly as it appears on the roster and it links up automatically.</p>
+      <label>Division</label>
+      <select id="rk_div"></select>
+      <div class="arow" style="margin-top:10px;">
+        <input type="text" id="rk_divname" placeholder="New division name (e.g. Pound for Pound)">
+        <button class="btn ghost" id="rk_adddiv" style="margin:0;width:auto;padding:10px 14px;">Add</button>
+      </div>
+      <label>Note under the heading (optional)</label>
+      <input type="text" id="rk_note">
+      <div class="alist" id="rk_list" style="margin-top:10px;"></div>
+      <div class="arow" style="margin-top:10px;">
+        <input type="text" id="rk_name" placeholder="Fighter name">
+        <button class="btn ghost" id="rk_add" style="margin:0;width:auto;padding:10px 14px;">Add</button>
+      </div>
+      <button class="btn ghost" id="rk_deldiv">Delete this division</button>
+      <button class="btn" id="rk_save">Save rankings</button>
+      <div id="rk_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Pioneers</h2>
+      <p class="hint" style="margin-top:0">The legends section on the Fighters page. Leave this empty and it shows the built-in Jeremy Horn and Court McGee entries.</p>
+      <div class="alist" id="lg_list"></div>
+      <button class="btn ghost" id="lg_add">Add pioneer</button>
+      <button class="btn" id="lg_save">Save pioneers</button>
+      <div id="lg_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+    </div>
+
+    <div class="panel">
       <h2>Import a fight card</h2>
       <p class="hint" style="margin-top:0">Copy a card from anywhere — a promotion's post, a listing site, an email — paste it here, and it gets read into structured bouts. Those bouts then load straight into the Card Studio.</p>
       <label>Paste the card</label>
@@ -323,6 +353,91 @@
     a.href=URL.createObjectURL(b); a.download='greene-mma-subscribers.csv'; a.click();
     URL.revokeObjectURL(a.href);
   });
+
+  /* ---- rankings ---- */
+  let DIVS=[], curDiv=0;
+  function drawDivs(){
+    const sel=$('rk_div');
+    sel.innerHTML=DIVS.map((d,i)=>'<option value="'+i+'"'+(i===curDiv?' selected':'')+'>'+
+      (d.name||'(unnamed)').replace(/</g,'&lt;')+'</option>').join('') || '<option>— none yet —</option>';
+    const d=DIVS[curDiv];
+    $('rk_note').value=d?(d.note||''):'';
+    const box=$('rk_list');
+    if(!d||!(d.fighters||[]).length){ box.innerHTML='<div style="padding:14px;color:var(--steel);font-size:13px;">No fighters ranked in this division yet.</div>'; return; }
+    box.innerHTML=d.fighters.map((n,i)=>
+      '<div class="aline"><div class="t"><div class="t1">'+(i+1)+'. '+n.replace(/</g,'&lt;')+'</div></div>'+
+      '<button class="up" data-i="'+i+'" style="background:none;border:1px solid var(--hair);color:var(--volt);padding:5px 8px;cursor:pointer;font-size:10px;font-family:\'JetBrains Mono\',monospace;">UP</button>'+
+      '<button class="dn" data-i="'+i+'" style="background:none;border:1px solid var(--hair);color:var(--volt);padding:5px 8px;cursor:pointer;font-size:10px;font-family:\'JetBrains Mono\',monospace;">DN</button>'+
+      '<button class="del" data-i="'+i+'">DEL</button></div>').join('');
+    box.querySelectorAll('.up').forEach(b=>b.addEventListener('click',()=>{
+      const i=+b.dataset.i; if(i<1) return;
+      const a=DIVS[curDiv].fighters; [a[i-1],a[i]]=[a[i],a[i-1]]; drawDivs();
+    }));
+    box.querySelectorAll('.dn').forEach(b=>b.addEventListener('click',()=>{
+      const i=+b.dataset.i; const a=DIVS[curDiv].fighters;
+      if(i>=a.length-1) return; [a[i+1],a[i]]=[a[i],a[i+1]]; drawDivs();
+    }));
+    box.querySelectorAll('.del').forEach(b=>b.addEventListener('click',()=>{
+      DIVS[curDiv].fighters.splice(+b.dataset.i,1); drawDivs();
+    }));
+  }
+  $('rk_div').addEventListener('change',e=>{
+    if(DIVS[curDiv]) DIVS[curDiv].note=$('rk_note').value.trim();
+    curDiv=+e.target.value||0; drawDivs();
+  });
+  $('rk_adddiv').addEventListener('click',()=>{
+    const n=$('rk_divname').value.trim(); if(!n) return;
+    DIVS.push({name:n,note:'',fighters:[]}); curDiv=DIVS.length-1;
+    $('rk_divname').value=''; drawDivs();
+  });
+  $('rk_add').addEventListener('click',()=>{
+    const n=$('rk_name').value.trim(); if(!n||!DIVS[curDiv]) return;
+    DIVS[curDiv].fighters.push(n); $('rk_name').value=''; drawDivs();
+  });
+  $('rk_name').addEventListener('keydown',e=>{ if(e.key==='Enter') $('rk_add').click(); });
+  $('rk_deldiv').addEventListener('click',()=>{
+    if(!DIVS.length) return;
+    DIVS.splice(curDiv,1); curDiv=0; drawDivs();
+  });
+  $('rk_save').addEventListener('click',async()=>{
+    if(DIVS[curDiv]) DIVS[curDiv].note=$('rk_note').value.trim();
+    const st=$('rk_status'); say(st,'Saving...');
+    const out=await api({rankings:DIVS});
+    say(st, out.ok?('\u2713 Saved '+out.saved+' division(s).'):'\u2717 '+(out.error||'Failed'), out.ok?'ok':'bad');
+  });
+  (async()=>{ try{ const o=await api({getRankings:true});
+    DIVS=(o.ok&&o.divisions&&o.divisions.length)?o.divisions:[{name:'Pound for Pound',note:'',fighters:[]}];
+  }catch(e){ DIVS=[{name:'Pound for Pound',note:'',fighters:[]}]; } drawDivs(); })();
+
+  /* ---- pioneers ---- */
+  const LEGENDS=adminList({
+    listId:'lg_list',
+    empty:'Using the built-in Jeremy Horn and Court McGee entries. Add one here to take over.',
+    title:d=>d.name, sub:d=>[d.tag,d.years,d.gym].filter(Boolean).join(' \u00b7 '),
+    searchText:d=>[d.name,d.tag].join(' '),
+    keep:d=>!!d.name,
+    blank:()=>({name:'',tag:'',years:'',record:'',gym:'',body:'',notesText:''}),
+    fields:[
+      {key:'name',cls:'lg_n',label:'Name'},
+      {key:'tag',cls:'lg_t',label:'Tagline'},
+      {key:'years',cls:'lg_y',label:'Years active'},
+      {key:'record',cls:'lg_r',label:'Record'},
+      {key:'gym',cls:'lg_g',label:'Gym / city'},
+      {key:'body',cls:'lg_b',label:'The write-up (blank line between paragraphs)',type:'area'},
+      {key:'notesText',cls:'lg_notes',label:'Bullet facts, one per line',type:'area'}
+    ]
+  });
+  $('lg_add').addEventListener('click',()=>LEGENDS.add());
+  $('lg_save').addEventListener('click',async()=>{
+    const st=$('lg_status'); say(st,'Saving...');
+    const rows=LEGENDS.get().map(l=>({...l,
+      notes:(l.notesText||'').split(/\n/).map(x=>x.trim()).filter(Boolean)}));
+    const out=await api({legends:rows});
+    say(st, out.ok?('\u2713 Saved '+out.saved+' pioneer(s).'):'\u2717 '+(out.error||'Failed'), out.ok?'ok':'bad');
+  });
+  (async()=>{ try{ const o=await api({getLegends:true});
+    LEGENDS.set((o.ok&&o.legends)?o.legends.map(l=>({...l,notesText:(l.notes||[]).join('\n')})):[]);
+  }catch(e){ LEGENDS.set([]); } })();
 
   /* ---- card import ---- */
   let parsedCard=null;
