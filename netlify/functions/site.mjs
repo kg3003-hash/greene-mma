@@ -363,5 +363,3 @@ Rules:
 
   return new Response(JSON.stringify({ error: "Nothing to do" }), { status: 400 });
 }
-
-}
