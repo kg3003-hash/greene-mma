@@ -279,6 +279,24 @@ Rules:
     return new Response(JSON.stringify({ ok: true, id }), { status: 200 });
   }
 
+  // Delete a newsletter issue
+  if (body.deleteIssue) {
+    await db.collection("issues").doc(String(body.deleteIssue)).delete();
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  }
+  if (body.listIssues) {
+    const snap = await db.collection("issues").orderBy("publishedAt", "desc").limit(60).get();
+    return new Response(JSON.stringify({ ok: true, issues: snap.docs.map((d) => ({
+      id: d.id, subject: d.data().subject,
+      date: d.data().publishedAt ? d.data().publishedAt.toDate().toISOString().slice(0,10) : ""
+    })) }), { status: 200 });
+  }
+  // Remove a subscriber
+  if (body.deleteSubscriber) {
+    await db.collection("subscribers").doc(String(body.deleteSubscriber).toLowerCase()).delete();
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  }
+
   // Utah events calendar
   if (body.events) {
     await db.collection("site").doc("events").set({
@@ -319,4 +337,3 @@ Rules:
 
   return new Response(JSON.stringify({ error: "Nothing to do" }), { status: 400 });
 }
-
