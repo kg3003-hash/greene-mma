@@ -79,6 +79,7 @@ export default async function handler(req) {
       summary: String(a.summary || "").slice(0, 400),
       body: String(a.body).slice(0, 20000),
       category: String(a.category || "The Corner").slice(0, 40),
+      tags: Array.isArray(a.tags) ? a.tags.slice(0, 6).map((t) => String(t).slice(0, 24)) : [],
       sourceName: "Greene MMA",
       sourceUrl: "",
       original: true,
@@ -201,6 +202,19 @@ Rules:
     return new Response(JSON.stringify({ ok: true, card: snap.data() || null }), { status: 200 });
   }
 
+  // Human names for the auto-detected cards (odds feed has no event names)
+  if (body.cardNames) {
+    await db.collection("site").doc("cardnames").set({
+      names: body.cardNames,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  }
+  if (body.getCardNames) {
+    const snap = await db.collection("site").doc("cardnames").get();
+    return new Response(JSON.stringify({ ok: true, names: (snap.data() || {}).names || {} }), { status: 200 });
+  }
+
   // Utah fighter roster
   if (body.fighters || body.addFighters) {
     const incoming = body.fighters || body.addFighters || [];
@@ -250,6 +264,18 @@ Rules:
         next: String(f.next || "").slice(0, 140),
         note: String(f.note || "").slice(0, 300),
         social: String(f.social || "").slice(0, 80),
+        stance: String(f.stance || "").slice(0, 20),
+        height: String(f.height || "").slice(0, 20),
+        reach: String(f.reach || "").slice(0, 20),
+        age: String(f.age || "").slice(0, 10),
+        slpm: String(f.slpm || "").slice(0, 10),
+        strAcc: String(f.strAcc || "").slice(0, 10),
+        sapm: String(f.sapm || "").slice(0, 10),
+        strDef: String(f.strDef || "").slice(0, 10),
+        tdAvg: String(f.tdAvg || "").slice(0, 10),
+        tdAcc: String(f.tdAcc || "").slice(0, 10),
+        tdDef: String(f.tdDef || "").slice(0, 10),
+        subAvg: String(f.subAvg || "").slice(0, 10),
         pro: f.pro !== false,
       })),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -336,4 +362,6 @@ Rules:
   }
 
   return new Response(JSON.stringify({ error: "Nothing to do" }), { status: 400 });
+}
+
 }
