@@ -5,7 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Greene MMA — Fight news from the Greene corner</title>
 <meta name="description" content="MMA news, live underdogs, and the stories the cameras skip. From the Greene corner.">
-<link rel="icon" type="image/svg+xml" href="/assets/greene-mma-avatar.svg">
+<link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0C0E0A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Greene MMA">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Greene MMA">
 <meta property="og:title" content="Greene MMA — Fight news from the Greene corner">
@@ -16,6 +22,8 @@
 <meta name="twitter:title" content="Greene MMA — Fight news from the Greene corner">
 <meta name="twitter:description" content="MMA news, live underdogs, and the stories the cameras skip.">
 <meta name="twitter:image" content="https://mma.greene.bet/assets/share-card.png">
+<!-- AdSense: replace ca-pub-XXXXXXXXXXXXXXXX with your publisher ID, then uncomment -->
+<!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -91,9 +99,33 @@
   nav .links a:hover{color:var(--volt);}
   nav .links a:hover::after{left:0;right:0;}
   nav .links a:focus-visible{outline:2px solid var(--volt);outline-offset:4px;}
+  nav .gbl{
+    position:absolute;right:22px;top:50%;transform:translateY(-50%);
+    display:flex;align-items:center;gap:8px;
+    padding:7px 14px;border:1px solid rgba(201,247,58,.35);
+    font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--volt);white-space:nowrap;
+    transition:background .15s,color .15s,border-color .15s;
+  }
+  nav .gbl svg{width:13px;height:13px;flex-shrink:0;}
+  nav .gbl:hover{background:var(--volt);color:var(--black);border-color:var(--volt);}
+  nav .gbl:hover svg path{stroke:var(--black);}
+  nav .wrap{position:relative;}
+  @media(max-width:980px){nav .gbl{display:none;}}
   @media(max-width:700px){
     nav .links{gap:20px;font-size:12px;letter-spacing:.08em;}
   }
+
+  /* GBL strip above the footer */
+  .gblstrip{border-top:1px solid var(--hair);background:linear-gradient(100deg,#12160E,#0C0E0A 60%);}
+  .gblstrip .wrap{display:flex;align-items:center;gap:26px;padding:34px 22px;flex-wrap:wrap;}
+  .gblstrip svg{width:46px;height:46px;flex-shrink:0;}
+  .gblstrip .txt{flex:1;min-width:240px;}
+  .gblstrip .k{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--volt);font-weight:700;}
+  .gblstrip .h{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:26px;line-height:1.1;margin-top:6px;}
+  .gblstrip .p{color:var(--steel);font-size:16px;margin-top:6px;max-width:520px;}
+  .gblstrip .go{padding:14px 28px;border:2px solid var(--volt);color:var(--volt);font-weight:700;font-size:13.5px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;transition:background .15s,color .15s;}
+  .gblstrip .go:hover{background:var(--volt);color:var(--black);}
 
   /* ---------- MASTHEAD · the logo IS the hero ---------- */
   .masthead{
@@ -134,8 +166,14 @@
   }
 
   .masthead .inner{position:relative;z-index:2;}
-  .masthead .mark{width:clamp(130px,20vw,190px);height:auto;margin:0 auto 40px;display:block;}
-  .masthead .mark path{filter:drop-shadow(0 0 26px rgba(201,247,58,.25));}
+  .masthead .mark{position:relative;width:100%;height:auto;display:block;overflow:visible;}
+  .masthead .markwrap{position:relative;width:clamp(130px,20vw,190px);margin:0 auto 40px;}
+  .masthead .markwrap::before{
+    content:'';position:absolute;left:50%;top:50%;
+    width:220%;height:220%;transform:translate(-50%,-50%);
+    background:radial-gradient(circle, rgba(201,247,58,.20) 0%, rgba(201,247,58,.07) 38%, transparent 68%);
+    pointer-events:none;
+  }
   .masthead h1{
     font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;
     font-size:clamp(56px,11vw,120px);
@@ -347,6 +385,11 @@
   .split .opt{cursor:pointer;user-select:none;}
   .split .opt.picked{background:var(--volt);color:var(--black);border-color:var(--volt);opacity:1 !important;}
 
+  /* ad slots — reserved space so nothing jumps when they load */
+  .adwrap{margin:44px 0;text-align:center;}
+  .adwrap .lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel);opacity:.55;margin-bottom:8px;}
+  .adwrap ins{display:block;min-height:100px;}
+  .adwrap:empty{display:none;}
   @media(prefers-reduced-motion:reduce){
     *{animation:none !important;transition:none !important;}
     .marquee .track{animation:none !important;}
@@ -373,12 +416,14 @@
 <nav>
   <div class="wrap">
     <div class="links">
-      <a href="#feed">News</a>
+      <a href="/news.html">News</a>
       <a href="/fightweek.html">Fight Week</a>
       <a href="/picks.html">Picks</a>
       <a href="/utah.html">Utah</a>
-      <a href="#corner">The Corner</a>
+      <a href="/fighters.html">Fighters</a>
+      <a href="/newsletter.html">The Corner</a>
     </div>
+    <a class="gbl" href="https://greene.bet" target="_blank" rel="noopener"><svg viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="13" stroke-linejoin="miter"/></svg>Play the league</a>
   </div>
 </nav>
 
@@ -394,7 +439,7 @@
     <svg viewBox="0 0 100 100"><polygon points="50,2 84,16 98,50 84,84 50,98 16,84 2,50 16,16"/></svg>
   </div>
   <div class="wrap inner">
-    <svg class="mark" aria-hidden="true" viewBox="0 0 120 120"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>
+    <div class="markwrap"><svg class="mark" aria-hidden="true" viewBox="0 0 120 120"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg></div>
     <h1>Greene <span>MMA</span></h1>
     <div class="tag">Fight news from the <b>Greene corner</b></div>
   </div>
@@ -532,6 +577,25 @@
   </div>
 </section>
 
+<div class="wrap"><div class="adwrap">
+      <div class="lbl">Advertisement</div>
+      <!-- <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="0000000000" data-ad-format="auto" data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script> -->
+    </div></div>
+
+<!-- GBL CROSS-LINK -->
+<div class="gblstrip">
+  <div class="wrap">
+    <svg viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="13" stroke-linejoin="miter"/></svg>
+    <div class="txt">
+      <div class="k">Also from Greene</div>
+      <div class="h">Greene Betting League</div>
+      <div class="p">Same corner, more sports. Free multi-sport fantasy betting with real odds and fake money — no cash in, just bragging rights.</div>
+    </div>
+    <a class="go" href="https://greene.bet" target="_blank" rel="noopener">Play free →</a>
+  </div>
+</div>
+
 <!-- FOOTER -->
 <footer>
   <div class="wrap">
@@ -543,7 +607,9 @@
     </div>
     <div class="fine">
       Fight news from the Greene corner · <a href="https://greene.bet">Part of the greene.bet family</a><br>
-      News · Picks · <a href="/utah.html">Utah</a> · The Greene Corner newsletter<br>
+      News · Picks · <a href="/utah.html">Utah</a>
+      <a href="/fighters.html">Fighters</a> · The Greene Corner newsletter<br>
+      <a href="/partner.html">Advertise with us</a><br>
       © 2026 Greene MMA. Picks are for entertainment. Bet with your head, not over it.
     </div>
   </div>
