@@ -215,6 +215,44 @@ Rules:
     return new Response(JSON.stringify({ ok: true, names: (snap.data() || {}).names || {} }), { status: 200 });
   }
 
+  // Rankings — your own Utah top-tens
+  if (body.rankings) {
+    await db.collection("site").doc("rankings").set({
+      divisions: (body.rankings || []).slice(0, 15).map((d) => ({
+        name: String(d.name || "").slice(0, 60),
+        note: String(d.note || "").slice(0, 200),
+        fighters: (d.fighters || []).slice(0, 15).map((f) => String(f).slice(0, 80)),
+      })),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    return new Response(JSON.stringify({ ok: true, saved: body.rankings.length }), { status: 200 });
+  }
+  if (body.getRankings) {
+    const snap = await db.collection("site").doc("rankings").get();
+    return new Response(JSON.stringify({ ok: true, divisions: (snap.data() || {}).divisions || [] }), { status: 200 });
+  }
+
+  // Legends — the pioneers section
+  if (body.legends) {
+    await db.collection("site").doc("legends").set({
+      legends: (body.legends || []).slice(0, 12).map((l) => ({
+        name: String(l.name || "").slice(0, 80),
+        tag: String(l.tag || "").slice(0, 60),
+        years: String(l.years || "").slice(0, 40),
+        record: String(l.record || "").slice(0, 40),
+        gym: String(l.gym || "").slice(0, 80),
+        body: String(l.body || "").slice(0, 2000),
+        notes: (l.notes || []).slice(0, 6).map((n) => String(n).slice(0, 120)),
+      })),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    return new Response(JSON.stringify({ ok: true, saved: body.legends.length }), { status: 200 });
+  }
+  if (body.getLegends) {
+    const snap = await db.collection("site").doc("legends").get();
+    return new Response(JSON.stringify({ ok: true, legends: (snap.data() || {}).legends || [] }), { status: 200 });
+  }
+
   // Utah fighter roster
   if (body.fighters || body.addFighters) {
     const incoming = body.fighters || body.addFighters || [];
