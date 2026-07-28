@@ -84,6 +84,20 @@
   .ev .go{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--volt);white-space:nowrap;}
   @media(max-width:640px){.ev{grid-template-columns:1fr;gap:10px;}.ev .date{border-right:none;border-bottom:1px solid var(--hair);padding:0 0 10px;}}
 
+  /* local fight card */
+  .bout{border:1px solid var(--hair);background:var(--black-2);margin-bottom:10px;transition:border-color .18s,transform .18s;}
+  .bout:hover{border-color:rgba(201,247,58,.5);transform:translateY(-2px);}
+  .bout.main{border-top:3px solid var(--volt);}
+  .bout .lbl{display:flex;justify-content:space-between;padding:10px 20px;border-bottom:1px solid var(--hair);font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);}
+  .bout .lbl b{color:var(--volt);}
+  .bout .bd{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;padding:20px;}
+  .bout .side{text-align:center;}
+  .bout .side a{display:block;}
+  .bout .side .n{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:clamp(17px,2.4vw,23px);line-height:1.06;}
+  .bout .side .n:hover{color:var(--volt);}
+  .bout .side .r{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--steel);margin-top:5px;}
+  .bout .vs{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--volt);}
+
   /* gyms */
   .gyms{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;}
   .gym{border:1px solid var(--hair);background:var(--black-2);padding:24px;transition:border-color .18s,transform .18s;}
@@ -219,6 +233,18 @@
         <p>Four visits and counting, including UFC 278, 291, and 307 — the top three grossing events in building history. When the UFC comes to town, the whole local scene gets a week of daylight.</p>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- LOCAL FIGHT CARD -->
+<section id="localcard">
+  <div class="wrap">
+    <div class="sechead">
+      <svg class="sicon" viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="14" stroke-linejoin="miter"/></svg>
+      <h2 id="cardtitle">The Next Card</h2>
+      <span class="mono-tag" id="cardmeta"></span>
+    </div>
+    <div id="cardbouts"><div class="empty">No local card loaded yet.</div></div>
   </div>
 </section>
 
@@ -366,6 +392,27 @@ try{
     const db=getFirestore(app);
     // Pull recent stories and filter client-side — avoids needing a composite index
     const snap=await getDocs(query(collection(db,"stories"),orderBy("publishedAt","desc"),limit(60)));
+    // the local fight card
+    try{
+      const cSnap=await getDoc(doc(db,"site","localcard"));
+      const card=cSnap.data();
+      if(card && (card.bouts||[]).length){
+        if(card.event) document.getElementById("cardtitle").textContent=card.event;
+        document.getElementById("cardmeta").textContent=
+          [card.date,card.venue].filter(Boolean).join(" \u00b7 ");
+        const slugOf=f=>((f.first||'')+'-'+(f.last||'')).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+        document.getElementById("cardbouts").innerHTML=card.bouts.map((b,i)=>{
+          const side=f=>'<div class="side"><a href="/fighter.html?f='+encodeURIComponent(slugOf(f))+'">'+
+            '<div class="n">'+esc(((f.first||'')+' '+(f.last||'')).trim())+'</div>'+
+            (f.record?'<div class="r">'+esc(f.record)+'</div>':'')+'</a></div>';
+          return '<div class="bout reveal'+(i===0?' main':'')+'">'+
+            '<div class="lbl"><b>'+(i===0?'Main Event':'Bout '+(i+1))+'</b><span>'+esc(b.weight||'')+'</span></div>'+
+            '<div class="bd">'+side(b.a)+'<div class="vs">vs</div>'+side(b.b)+'</div>'+
+          '</div>';
+        }).join("");
+      }
+    }catch(e){ console.warn("localcard",e); }
+
     // fighter strip
     try{
       const fSnap=await getDoc(doc(db,"site","fighters"));
@@ -373,12 +420,12 @@ try{
       if(fl.length){
         document.getElementById("fighterstrip").innerHTML=
           '<div class="gyms">'+fl.slice(0,6).map(f=>
-            '<div class="gym reveal">'+
+            '<a class="gym reveal" style="display:block" href="/fighter.html?f='+encodeURIComponent(f.slug||((f.first||'')+'-'+(f.last||'')).toLowerCase().replace(/[^a-z0-9]+/g,'-'))+'">'+
               '<div class="n">'+esc(f.first)+' '+esc(f.last)+'</div>'+
               '<div class="c">'+esc(f.record||"")+(f.weight?" · "+esc(f.weight):"")+'</div>'+
               (f.gym?'<div class="d">'+esc(f.gym)+'</div>':'')+
               (f.next?'<p>Next: '+esc(f.next)+'</p>':'')+
-            '</div>').join("")+'</div>';
+            '</a>').join("")+'</div>';
       }
     }catch(e){ console.warn("fighters",e); }
 
