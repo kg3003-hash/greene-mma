@@ -64,6 +64,39 @@
   .adwrap ins{display:block;min-height:100px;}
   .adwrap:empty{display:none;}
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}.eyebrow,h1,.dek{opacity:1;transform:none;}.hero .bigmark path{stroke-dashoffset:0;}.reveal{opacity:1;transform:none;}}
+  /* rankings */
+  .divtabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;}
+  .divtab{padding:9px 16px;border:1px solid var(--hair);background:var(--black-2);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);}
+  .divtab:hover{border-color:var(--volt);color:var(--volt);}
+  .divtab.on{background:var(--volt);border-color:var(--volt);color:var(--black);font-weight:700;}
+  .rank{border:1px solid var(--hair);background:var(--black-2);}
+  .rk{display:grid;grid-template-columns:64px 1fr auto;align-items:center;gap:16px;padding:15px 20px;cursor:pointer;transition:background .15s;}
+  .rk+.rk{border-top:1px solid var(--hair);}
+  .rk:hover{background:rgba(201,247,58,.06);}
+  .rk .num{font-family:'Anton',sans-serif;font-size:30px;color:var(--steel);text-align:center;line-height:1;}
+  .rk.top .num{color:var(--volt);}
+  .rk.top{border-left:3px solid var(--volt);}
+  .rk .nm{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:21px;line-height:1.06;}
+  .rk .meta{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);margin-top:4px;}
+  .rk .rec{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:17px;color:var(--volt);white-space:nowrap;}
+  .divnote{color:var(--steel);font-size:15.5px;margin-bottom:16px;max-width:640px;}
+
+  /* legends */
+  .legends{display:grid;gap:16px;}
+  .lg{border:1px solid var(--hair);background:var(--black-2);padding:0;overflow:hidden;position:relative;}
+  .lg .ghost{position:absolute;right:-40px;top:-30px;width:200px;opacity:.045;pointer-events:none;}
+  .lg .hd{padding:28px 28px 20px;border-bottom:1px solid var(--hair);background:radial-gradient(ellipse 60% 100% at 8% 0%, rgba(201,247,58,.10), transparent 60%);position:relative;}
+  .lg .tag{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--volt);font-weight:700;}
+  .lg .nm{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:clamp(28px,5vw,42px);line-height:1;margin-top:8px;}
+  .lg .sub{font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--steel);margin-top:12px;}
+  .lg .sub b{color:var(--bone);font-weight:400;}
+  .lg .bd{padding:24px 28px;font-size:17px;line-height:1.65;color:var(--bone);}
+  .lg .bd p{margin-bottom:16px;}
+  .lg .bd p:last-child{margin-bottom:0;}
+  .lg .facts{border-top:1px solid var(--hair);padding:20px 28px 24px;display:grid;gap:8px;}
+  .lg .facts div{padding-left:20px;position:relative;color:var(--steel);font-size:15.5px;}
+  .lg .facts div::before{content:'';position:absolute;left:0;top:9px;width:8px;height:8px;background:var(--volt);transform:rotate(22.5deg);}
+
   .roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
   a.f,.f{display:block;border:1px solid var(--hair);background:var(--black-2);padding:24px;transition:border-color .18s,transform .18s;position:relative;overflow:hidden;}
   .f:hover{border-color:rgba(201,247,58,.5);transform:translateY(-2px);}
@@ -167,9 +200,41 @@
   <div class="wrap">
     <div class="eyebrow">The roster</div>
     <h1>Utah <span>Fighters</span></h1>
-    <p class="dek">Everybody fighting out of this state — pros, amateurs, records, gyms, and what comes next. If you are on this list and something is wrong, tell us and we will fix it same day.</p>
+    <p class="dek" style="margin-bottom:22px">Everybody fighting out of this state — pros, amateurs, records, gyms, and what comes next. If you are on this list and something is wrong, tell us and we will fix it same day.</p>
+  </div>
+  <div class="wrap" style="margin-top:-18px">
+    <div class="filters">
+      <a class="fbtn" href="#rankings">Rankings</a>
+      <a class="fbtn" href="#legends">The Pioneers</a>
+      <a class="fbtn" href="#roster">Full roster</a>
+    </div>
   </div>
 </header>
+
+<section id="rankings">
+  <div class="wrap">
+    <div class="sechead">
+      <svg class="sicon" viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="14" stroke-linejoin="miter"/></svg>
+      <h2>Utah Rankings</h2>
+      <span class="mono-tag">Our list, not a computer's</span>
+    </div>
+    <div class="divtabs" id="divtabs"></div>
+    <div class="divnote" id="divnote"></div>
+    <div id="rankbox"><div class="empty">Rankings go up soon.</div></div>
+  </div>
+</section>
+
+<section id="legends">
+  <div class="wrap">
+    <div class="sechead">
+      <svg class="sicon" viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="14" stroke-linejoin="miter"/></svg>
+      <h2>The Pioneers</h2>
+      <span class="mono-tag">Who built this here</span>
+    </div>
+    <p class="divnote">Utah did not get an MMA scene by accident. Two men in particular put it on the map — one by fighting more often than almost anyone alive, the other by winning a national show and then telling the truth about how he got there.</p>
+    <div class="legends" id="legendbox"></div>
+  </div>
+</section>
 
 <section>
   <div class="wrap">
@@ -302,6 +367,92 @@ try{
   const snap=await getDoc(doc(db,"site","fighters"));
   all=((snap.data()||{}).fighters)||[];
   all.sort((a,b)=>(a.last||"").localeCompare(b.last||""));
+
+  /* ---------- RANKINGS ---------- */
+  const rkSnap=await getDoc(doc(db,"site","rankings"));
+  let divisions=((rkSnap.data()||{}).divisions)||[];
+  let activeDiv=0;
+  const findFighter=name=>{
+    const k=String(name||'').toLowerCase().trim();
+    return all.find(f=>((f.first||'')+' '+(f.last||'')).toLowerCase().trim()===k)
+        || all.find(f=>(f.slug||'')===k.replace(/[^a-z0-9]+/g,'-'))
+        || all.find(f=>(f.last||'').toLowerCase()===k);
+  };
+  function renderRank(){
+    if(!divisions.length){
+      document.getElementById("rankbox").innerHTML=
+        '<div class="empty">No rankings published yet.<br>They go up in the Studio.</div>';
+      return;
+    }
+    document.getElementById("divtabs").innerHTML=divisions.map((d,i)=>
+      '<button class="divtab'+(i===activeDiv?' on':'')+'" data-i="'+i+'">'+esc(d.name)+'</button>').join('');
+    const d=divisions[activeDiv];
+    document.getElementById("divnote").textContent=d.note||'';
+    document.getElementById("rankbox").innerHTML='<div class="rank">'+
+      (d.fighters||[]).map((n,i)=>{
+        const f=findFighter(n);
+        return '<div class="rk'+(i===0?' top':'')+'" data-n="'+esc(n)+'">'+
+          '<div class="num">'+(i+1)+'</div>'+
+          '<div><div class="nm">'+esc(f?((f.first||'')+' '+(f.last||'')).trim():n)+'</div>'+
+            (f?'<div class="meta">'+[f.weight,f.gym,f.city].filter(Boolean).map(esc).join(' \u00b7 ')+'</div>':
+                '<div class="meta">Not on the roster yet</div>')+
+          '</div>'+
+          '<div class="rec">'+esc(f&&f.record?f.record:'')+'</div>'+
+        '</div>';
+      }).join('')+'</div>';
+    document.querySelectorAll('#rankbox .rk').forEach(el=>el.addEventListener('click',()=>{
+      const f=findFighter(el.dataset.n);
+      if(f) window.__fighterModal.open(f);
+    }));
+    document.querySelectorAll('.divtab').forEach(b=>b.addEventListener('click',()=>{
+      activeDiv=+b.dataset.i; renderRank();
+    }));
+  }
+  renderRank();
+
+  /* ---------- LEGENDS ---------- */
+  const lgSnap=await getDoc(doc(db,"site","legends"));
+  let legends=((lgSnap.data()||{}).legends)||[];
+  if(!legends.length){
+    legends=[
+      {
+        name:"Jeremy Horn", tag:"The Architect", years:"Pro 1996\u20132020",
+        record:"Roughly 120 pro fights", gym:"Elite Performance \u00b7 Sandy",
+        body:"Horn was born in Omaha, but Utah is where he built something. He came up through Miletich Fighting Systems in Iowa during the era when that gym produced champions on an assembly line, then founded Elite Performance in Sandy in 2006 and turned it into the state's centre of gravity.\n\nThe fight record is almost hard to believe. Around 120 professional bouts, the majority won by submission. He beat Chuck Liddell by arm-triangle at UFC 19, before Liddell became Liddell. He beat Chael Sonnen three separate times. Forrest Griffin, Dean Lister, David Loiseau, Gilbert Yvel \u2014 all on the same resume.\n\nBut the reason he belongs at the top of this page is what came after. He coached. He ran Elite Fight Night, giving Utah fighters somewhere local to build a record instead of driving to Nevada. A lot of people on our roster trace back to his room, whether they trained there or trained with somebody who did.",
+        notes:[
+          "Founded Elite Performance in Sandy, Utah in 2006",
+          "Submitted Chuck Liddell at UFC 19 with an arm-triangle choke",
+          "Beat Chael Sonnen three times",
+          "Ran Elite Fight Night, a home card for Utah fighters",
+          "Fought professionally from 1996 into 2020"
+        ]
+      },
+      {
+        name:"Court McGee", tag:"The Proof", years:"Pro since 2007",
+        record:"22\u201314 as a pro", gym:"The Pit Elevated \u00b7 Provo",
+        body:"McGee is from Ogden, wrestled in Utah, and fought on local cards here before anyone outside the state knew the name. Then he won The Ultimate Fighter in 2010 and Utah had a fighter on national television every week.\n\nWhat makes him matter more than the belt is what he has been open about. McGee is a recovering heroin addict. He did not bury that or wait until retirement to mention it \u2014 he built a second job out of it, speaking to teenagers about addiction and launching the Hope 361 project to help people find a way out.\n\nThere is a detail that ties this page together neatly: early in his career, before the national show and everything after it, McGee lost to Jeremy Horn. Utah MMA is a small room.",
+        notes:[
+          "Born in Ogden, fights out of Provo",
+          "Won The Ultimate Fighter season 11 in 2010",
+          "Speaks publicly about recovery from heroin addiction",
+          "Founded the Hope 361 project for people in recovery",
+          "Lost to Jeremy Horn on the Utah regional scene early on"
+        ]
+      }
+    ];
+  }
+  document.getElementById("legendbox").innerHTML=legends.map(l=>
+    '<div class="lg reveal">'+MARK.replace('<svg','<svg class="ghost"')+
+      '<div class="hd">'+
+        (l.tag?'<div class="tag">'+esc(l.tag)+'</div>':'')+
+        '<div class="nm">'+esc(l.name)+'</div>'+
+        '<div class="sub">'+[l.years,l.record,l.gym].filter(Boolean).map(esc).join('  \u00b7  ')+'</div>'+
+      '</div>'+
+      '<div class="bd">'+(l.body||'').split(/\n\s*\n/).filter(Boolean).map(t=>'<p>'+esc(t)+'</p>').join('')+'</div>'+
+      ((l.notes||[]).length?'<div class="facts">'+l.notes.map(n=>'<div>'+esc(n)+'</div>').join('')+'</div>':'')+
+    '</div>').join('');
+  if(window.__reveal) window.__reveal();
+
   if(!all.length){
     document.getElementById("count").textContent="Roster opening soon";
     document.getElementById("roster").innerHTML=
