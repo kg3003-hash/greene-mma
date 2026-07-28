@@ -79,7 +79,38 @@
   .bout .vs{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel);}
   .headliner{border-top:3px solid var(--volt);}
   .headliner .top{background:rgba(201,247,58,.06);}
+  .cardblock{margin-bottom:52px;}
+  .cardhead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:8px;}
+  .cardhead h2{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:clamp(24px,4vw,34px);line-height:1;}
+  .cardhead .when{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--volt);}
+  .cardhead .n{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--steel);margin-left:auto;}
+  .cardrule{height:2px;background:linear-gradient(90deg,var(--volt),rgba(201,247,58,0));margin-bottom:20px;}
+  .bout .top .pos{color:var(--volt);font-weight:700;}
+  .bout.co{border-top:2px solid rgba(201,247,58,.55);}
+  .bout .f .n{cursor:pointer;}
+  .bout .f .n:hover{color:var(--volt);}
   .updated{font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);margin-top:20px;}
+  /* fighter modal */
+  .fmodal{position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(6,7,5,.86);backdrop-filter:blur(4px);}
+  .fmodal.on{display:flex;}
+  .fmodal .box{width:100%;max-width:520px;max-height:86vh;overflow:auto;background:var(--black-2);border:1px solid rgba(201,247,58,.35);position:relative;}
+  .fmodal .x{position:absolute;top:12px;right:14px;background:none;border:1px solid var(--hair);color:var(--steel);width:32px;height:32px;cursor:pointer;font-family:'JetBrains Mono',monospace;}
+  .fmodal .x:hover{border-color:var(--volt);color:var(--volt);}
+  .fmodal .hd{padding:28px 26px 22px;border-bottom:1px solid var(--hair);background:radial-gradient(ellipse 70% 100% at 12% 0%, rgba(201,247,58,.10), transparent 62%);}
+  .fmodal .nick{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);}
+  .fmodal .nm{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:32px;line-height:1.02;margin-top:5px;}
+  .fmodal .nm span{color:var(--volt);}
+  .fmodal .sub{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);margin-top:10px;}
+  .fmodal .rec{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:26px;color:var(--volt);margin-top:12px;}
+  .fmodal .grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+  .fmodal .cell{padding:16px 26px;border-bottom:1px solid var(--hair);}
+  .fmodal .cell:nth-child(odd){border-right:1px solid var(--hair);}
+  .fmodal .cell .l{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel);}
+  .fmodal .cell .v{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:20px;color:var(--volt);margin-top:5px;}
+  .fmodal .note{padding:20px 26px;color:var(--steel);font-size:15.5px;}
+  .fmodal .go{display:block;margin:0 26px 26px;padding:13px;text-align:center;border:2px solid var(--volt);color:var(--volt);font-weight:700;font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;}
+  .fmodal .go:hover{background:var(--volt);color:var(--black);}
+  .fmodal .empty-stats{padding:24px 26px;color:var(--steel);font-size:15px;}
 </style>
 </head>
 <body>
@@ -97,18 +128,13 @@
   <div class="wrap">
     <div class="eyebrow">The next card</div>
     <h1>Fight <span>Week</span></h1>
-    <p class="dek">Every bout on the next card with live moneylines, soonest first. Lines move — these refresh through the week.</p>
+    <p class="dek">Every upcoming card, main event down to the prelims. Local shows and the big cards both live here, and the lines refresh through the week.</p>
   </div>
 </header>
 
 <section>
   <div class="wrap">
-    <div class="sechead">
-      <svg class="sicon" aria-hidden="true" viewBox="0 0 120 120"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>
-      <h2>The Card</h2>
-      <span class="mono-tag" id="cardtag">Loading</span>
-    </div>
-    <div id="card"><div class="empty">Pulling the card...</div></div>
+    <div id="cards"><div class="empty">Pulling the cards...</div></div>
     <div class="updated" id="updated"></div>
   </div>
 </section>
@@ -168,34 +194,141 @@ const firebaseConfig = {
 };
 const esc=s=>{const d=document.createElement("div");d.textContent=s||"";return d.innerHTML;};
 const fmt=n=>(n>0?"+":"")+n;
+const slugOf=n=>String(n||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+function posLabel(i,total){
+  if(i===0) return 'Main Event';
+  if(i===1) return 'Co-Main Event';
+  if(i>=total-3) return 'Prelims';
+  return 'Main Card';
+}
 try{
   const db=getFirestore(initializeApp(firebaseConfig));
   const fw=(await getDoc(doc(db,"site","fightweek"))).data();
-  const el=document.getElementById("card");
-  if(!fw||!fw.card||!fw.card.length){
-    el.innerHTML='<div class="empty">No upcoming card on the wire right now.<br>Check back when the next one is announced.</div>';
-    document.getElementById("cardtag").textContent="Nothing scheduled";
-  } else {
-    document.getElementById("cardtag").textContent=fw.card.length+" bouts";
-    el.innerHTML=fw.card.map((b,i)=>{
-      const d=new Date(b.startTime);
-      const when=d.toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"})+
-        " · "+d.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
-      return '<div class="bout reveal'+(i===0?' headliner':'')+'">'+
-        '<div class="top"><span>'+(i===0?'Main event':'Bout '+(i+1))+'</span><span class="when">'+when+'</span></div>'+
-        '<div class="body">'+
-          '<div class="f fav"><div class="n">'+esc(b.favourite.name)+'</div><div class="o">'+fmt(b.favourite.odds)+'</div><div class="tag">Favourite</div></div>'+
-          '<div class="vs">vs</div>'+
-          '<div class="f dog"><div class="n">'+esc(b.underdog.name)+'</div><div class="o">'+fmt(b.underdog.odds)+'</div><div class="tag">Underdog</div></div>'+
-        '</div></div>';
-    }).join("");
-    if(fw.updatedAt) document.getElementById("updated").textContent="Lines last refreshed "+new Date(fw.updatedAt.seconds*1000).toLocaleString();
+  const rosterSnap=await getDoc(doc(db,"site","fighters"));
+  const roster=((rosterSnap.data()||{}).fighters)||[];
+  const nameSnap=await getDoc(doc(db,"site","cardnames"));
+  const names=((nameSnap.data()||{}).names)||{};
+  const localSnap=await getDoc(doc(db,"site","localcard"));
+  const local=localSnap.data();
+
+  const wrap=document.getElementById("cards");
+  const blocks=[];
+
+  // A named local card (imported in the studio) always leads
+  if(local && (local.bouts||[]).length){
+    blocks.push({
+      title: local.event || "The Next Card",
+      when: [local.date, local.venue].filter(Boolean).join(" \u00b7 "),
+      bouts: local.bouts.map(b=>({
+        aName:((b.a.first||'')+' '+(b.a.last||'')).trim(),
+        bName:((b.b.first||'')+' '+(b.b.last||'')).trim(),
+        aOdds:b.a.odds||'', bOdds:b.b.odds||'', weight:b.weight||''
+      })),
+      local:true
+    });
   }
+
+  // Odds-derived cards, grouped by date
+  (fw && fw.cards ? fw.cards : []).forEach(c=>{
+    const d=new Date(c.startTime);
+    blocks.push({
+      title: names[c.date] || d.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"}),
+      when: names[c.date] ? d.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"}) : "",
+      bouts: c.bouts.map(b=>({
+        aName:b.favourite.name, bName:b.underdog.name,
+        aOdds:fmt(b.favourite.odds), bOdds:fmt(b.underdog.odds), weight:""
+      }))
+    });
+  });
+
+  if(!blocks.length){
+    wrap.innerHTML='<div class="empty">No upcoming cards on the wire right now.<br>Check back when the next one is announced.</div>';
+  } else {
+    wrap.innerHTML=blocks.map((blk,bi)=>{
+      const total=blk.bouts.length;
+      return '<div class="cardblock">'+
+        '<div class="cardhead"><h2>'+esc(blk.title)+'</h2>'+
+          (blk.when?'<span class="when">'+esc(blk.when)+'</span>':'')+
+          '<span class="n">'+total+' bout'+(total===1?'':'s')+'</span></div>'+
+        '<div class="cardrule"></div>'+
+        blk.bouts.map((b,i)=>
+          '<div class="bout reveal'+(i===0?' headliner':(i===1?' co':''))+'">'+
+            '<div class="top"><span class="pos">'+posLabel(i,total)+'</span>'+
+              '<span class="when">'+esc(b.weight||'')+'</span></div>'+
+            '<div class="body">'+
+              '<div class="f fav"><div class="n" data-n="'+esc(b.aName)+'">'+esc(b.aName)+'</div>'+
+                (b.aOdds?'<div class="o">'+esc(b.aOdds)+'</div>':'')+'</div>'+
+              '<div class="vs">vs</div>'+
+              '<div class="f dog"><div class="n" data-n="'+esc(b.bName)+'">'+esc(b.bName)+'</div>'+
+                (b.bOdds?'<div class="o">'+esc(b.bOdds)+'</div>':'')+'</div>'+
+            '</div></div>').join('')+
+      '</div>';
+    }).join("");
+
+    // clicking a name opens their stats if we have them on the roster
+    document.querySelectorAll('.bout .n[data-n]').forEach(el=>el.addEventListener('click',()=>{
+      const slug=slugOf(el.dataset.n);
+      const match=roster.find(r=>(r.slug||slugOf((r.first||'')+'-'+(r.last||'')))===slug)
+        || roster.find(r=>slugOf((r.first||'')+' '+(r.last||''))===slug);
+      if(match) window.__fighterModal.open(match);
+      else window.__fighterModal.open({first:el.dataset.n,last:'',record:'',note:'This fighter is not on the Utah roster, so we have no stats on file yet.'});
+    }));
+  }
+
+  if(fw && fw.updatedAt) document.getElementById("updated").textContent=
+    "Lines last refreshed "+new Date(fw.updatedAt.seconds*1000).toLocaleString();
+  if(window.__reveal) window.__reveal();
 }catch(e){
-  document.getElementById("card").innerHTML='<div class="empty">Couldn\'t load the card right now.</div>';
+  document.getElementById("cards").innerHTML='<div class="empty">Couldn\'t load the cards right now.</div>';
   console.warn(e);
 }
-if(window.__reveal) window.__reveal();
+</script>
+<script>
+/* ---- shared fighter modal ---- */
+window.__fighterModal=(function(){
+  const esc=s=>{const d=document.createElement("div");d.textContent=s||"";return d.innerHTML;};
+  let el=null;
+  function ensure(){
+    if(el) return el;
+    el=document.createElement('div');
+    el.className='fmodal';
+    el.innerHTML='<div class="box"><button class="x">X</button><div class="inner"></div></div>';
+    document.body.appendChild(el);
+    el.addEventListener('click',e=>{ if(e.target===el||e.target.classList.contains('x')) close(); });
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape') close(); });
+    return el;
+  }
+  function close(){ if(el) el.classList.remove('on'); }
+  function open(f){
+    if(!f) return;
+    ensure();
+    const slug=f.slug||((f.first||'')+'-'+(f.last||'')).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+    const stats=[
+      ['Str. landed / min', f.slpm],['Str. accuracy', f.strAcc],
+      ['Str. absorbed / min', f.sapm],['Str. defence', f.strDef],
+      ['Takedowns / 15min', f.tdAvg],['TD accuracy', f.tdAcc],
+      ['TD defence', f.tdDef],['Sub. attempts / 15min', f.subAvg],
+      ['Height', f.height],['Reach', f.reach],
+      ['Age', f.age],['Stance', f.stance]
+    ].filter(r=>r[1]);
+    el.querySelector('.inner').innerHTML=
+      '<div class="hd">'+
+        (f.nickname?'<div class="nick">"'+esc(f.nickname)+'"</div>':'')+
+        '<div class="nm">'+esc(f.first)+' <span>'+esc(f.last)+'</span></div>'+
+        '<div class="sub">'+[f.weight,f.gym,f.city,(f.pro===false?'Amateur':'Pro')].filter(Boolean).map(esc).join(' \u00b7 ')+'</div>'+
+        (f.record?'<div class="rec">'+esc(f.record)+'</div>':'')+
+        (f.next?'<div class="sub" style="color:var(--volt)">Next: '+esc(f.next)+'</div>':'')+
+      '</div>'+
+      (stats.length
+        ? '<div class="grid">'+stats.map(r=>'<div class="cell"><div class="l">'+esc(r[0])+'</div><div class="v">'+esc(r[1])+'</div></div>').join('')+'</div>'
+        : '<div class="empty-stats">No fight stats recorded for this fighter yet.</div>')+
+      (f.note?'<div class="note">'+esc(f.note)+'</div>':'')+
+      '<a class="go" href="/fighter.html?f='+encodeURIComponent(slug)+'">Full profile \u2192</a>';
+    el.classList.add('on');
+  }
+  return {open,close};
+})();
+
 </script>
 </body>
 </html>
