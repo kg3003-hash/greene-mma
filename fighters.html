@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Utah Fighters — Greene MMA</title>
+<meta name="description" content="Every pro and amateur fighting out of Utah. Records, gyms, and what comes next.">
+<link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0C0E0A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Greene MMA">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Greene MMA">
+<meta property="og:title" content="Utah Fighters — Greene MMA">
+<meta property="og:description" content="Every pro and amateur fighting out of Utah. Records, gyms, and what comes next.">
+<meta property="og:image" content="https://mma.greene.bet/assets/share-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<!-- AdSense: replace ca-pub-XXXXXXXXXXXXXXXX with your publisher ID, then uncomment -->
+<!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{--black:#0C0E0A;--black-2:#13160F;--volt:#C9F73A;--bone:#F2F0E9;--steel:#9AA194;--red:#FF4B3E;--hair:rgba(242,240,233,.14);}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--black);color:var(--bone);font-family:'Barlow',sans-serif;font-size:17.5px;line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;text-decoration:none;}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 22px;}
+  nav{position:sticky;top:0;z-index:50;background:rgba(12,14,10,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--hair);}
+  nav .wrap{display:flex;align-items:center;justify-content:center;height:58px;}
+  nav .links{display:flex;gap:38px;font-weight:600;font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);}
+  nav .links a{position:relative;padding:4px 0;}
+  nav .links a::after{content:'';position:absolute;left:50%;right:50%;bottom:-2px;height:2px;background:var(--volt);transition:left .2s,right .2s;}
+  nav .links a:hover,nav .links a.on{color:var(--volt);}
+  nav .links a:hover::after,nav .links a.on::after{left:0;right:0;}
+  @media(max-width:700px){nav .links{gap:18px;font-size:12px;letter-spacing:.06em;}}
+  .hero{padding:70px 0 52px;border-bottom:1px solid var(--hair);position:relative;overflow:hidden;
+        background:radial-gradient(ellipse 80% 60% at 22% 0%, rgba(201,247,58,.07), transparent 62%);}
+  .hero .bigmark{position:absolute;right:-80px;top:50%;transform:translateY(-50%);width:min(400px,48vw);opacity:.055;pointer-events:none;}
+  .hero .bigmark path{stroke-dasharray:320;stroke-dashoffset:320;animation:draw 1.8s cubic-bezier(.65,0,.35,1) .2s forwards;}
+  @keyframes draw{to{stroke-dashoffset:0;}}
+  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--volt);font-weight:700;display:flex;align-items:center;gap:14px;margin-bottom:20px;opacity:0;animation:rise .5s ease .15s forwards;}
+  .eyebrow::after{content:'';width:70px;height:1px;background:var(--hair);}
+  h1{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:clamp(40px,8vw,84px);line-height:.96;opacity:0;transform:translateY(18px);animation:rise .7s cubic-bezier(.2,.7,.3,1) .3s forwards;}
+  h1 span{color:var(--volt);}
+  .dek{margin-top:20px;max-width:620px;font-size:18.5px;opacity:0;transform:translateY(14px);animation:rise .6s cubic-bezier(.2,.7,.3,1) .5s forwards;}
+  @keyframes rise{to{opacity:1;transform:none;}}
+  section{padding:56px 0;border-bottom:1px solid var(--hair);}
+  .sechead{display:flex;align-items:baseline;gap:16px;margin-bottom:28px;flex-wrap:wrap;}
+  .sechead .sicon{width:20px;height:20px;align-self:center;}
+  .sechead h2{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:clamp(24px,4vw,34px);line-height:1;}
+  .sechead .mono-tag{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);}
+  .empty{border:1px dashed var(--hair);padding:52px 26px;text-align:center;color:var(--steel);font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.08em;text-transform:uppercase;line-height:2;}
+  .reveal{opacity:0;transform:translateY(16px);transition:opacity .55s ease,transform .55s ease;}
+  .reveal.in{opacity:1;transform:none;}
+  footer{padding:46px 0 66px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--steel);line-height:2.1;}
+  footer a{color:var(--bone);} footer a:hover{color:var(--volt);}
+  /* ad slots — reserved space so nothing jumps when they load */
+  .adwrap{margin:44px 0;text-align:center;}
+  .adwrap .lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel);opacity:.55;margin-bottom:8px;}
+  .adwrap ins{display:block;min-height:100px;}
+  .adwrap:empty{display:none;}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}.eyebrow,h1,.dek{opacity:1;transform:none;}.hero .bigmark path{stroke-dashoffset:0;}.reveal{opacity:1;transform:none;}}
+  .roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
+  .f{border:1px solid var(--hair);background:var(--black-2);padding:24px;transition:border-color .18s,transform .18s;position:relative;overflow:hidden;}
+  .f:hover{border-color:rgba(201,247,58,.5);transform:translateY(-2px);}
+  .f .ghost{position:absolute;right:-30px;bottom:-38px;width:130px;opacity:.05;pointer-events:none;}
+  .f .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .f .nick{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);}
+  .f .nm{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:26px;line-height:1.02;margin-top:4px;}
+  .f .nm span{color:var(--volt);}
+  .f .rec{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:22px;color:var(--volt);white-space:nowrap;}
+  .f .meta{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);margin-top:12px;line-height:1.9;}
+  .f .next{margin-top:14px;padding-top:12px;border-top:1px solid var(--hair);font-size:15px;color:var(--bone);}
+  .f .next b{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--volt);display:block;margin-bottom:4px;font-weight:700;}
+  .f .tag{position:absolute;top:0;right:0;background:var(--volt);color:var(--black);font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;padding:4px 10px;font-weight:700;}
+  .f.amateur .rec{color:var(--steel);}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;}
+  .fbtn{padding:9px 16px;border:1px solid var(--hair);background:var(--black-2);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);}
+  .fbtn:hover{border-color:var(--volt);color:var(--volt);}
+  .fbtn.on{background:var(--volt);border-color:var(--volt);color:var(--black);font-weight:700;}
+  .claim{background:var(--volt);color:var(--black);}
+  .claim .in{padding:56px 0;}
+  .claim h2{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:clamp(28px,5vw,42px);line-height:1;}
+  .claim p{margin-top:12px;max-width:560px;font-size:18px;font-weight:500;}
+  .claim .list{margin-top:20px;display:grid;gap:7px;max-width:560px;}
+  .claim .list div{padding-left:20px;position:relative;font-weight:500;font-size:16.5px;}
+  .claim .list div::before{content:'';position:absolute;left:0;top:10px;width:9px;height:9px;background:var(--black);transform:rotate(22.5deg);}
+  .claim a{display:inline-block;margin-top:24px;padding:15px 30px;background:var(--black);color:var(--volt);font-weight:700;font-size:13.5px;letter-spacing:.1em;text-transform:uppercase;}
+  .claim a:hover{background:transparent;color:var(--black);box-shadow:inset 0 0 0 2px var(--black);}
+  .feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
+  a.card{border:1px solid var(--hair);padding:26px;display:flex;flex-direction:column;gap:12px;background:var(--black-2);transition:border-color .18s,transform .18s;}
+  a.card:hover{border-color:rgba(201,247,58,.55);transform:translateY(-3px);}
+  a.card .c{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--volt);font-weight:700;}
+  a.card h3{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:22px;line-height:1.12;}
+  a.card p{font-size:15.5px;color:var(--steel);}
+  a.card .t{margin-top:auto;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);opacity:.8;}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:26px;}
+  .fbtn{padding:9px 16px;border:1px solid var(--hair);background:var(--black-2);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);}
+  .fbtn:hover{border-color:var(--volt);color:var(--volt);}
+  .fbtn.on{background:var(--volt);border-color:var(--volt);color:var(--black);font-weight:700;}
+  #more{display:block;margin:30px auto 0;padding:14px 32px;background:transparent;border:2px solid var(--volt);color:var(--volt);cursor:pointer;font-family:'Barlow',sans-serif;font-weight:700;font-size:13.5px;letter-spacing:.1em;text-transform:uppercase;}
+  #more:hover{background:var(--volt);color:var(--black);}
+  .picks{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;}
+  .pick{border:1px solid var(--hair);border-top:3px solid var(--volt);background:var(--black-2);padding:28px;transition:border-color .18s,transform .18s;}
+  .pick:hover{border-color:rgba(201,247,58,.5);transform:translateY(-3px);}
+  .pick .odds{font-family:'JetBrains Mono',monospace;font-size:38px;font-weight:700;color:var(--volt);line-height:1;}
+  .pick .fighter{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:24px;margin-top:10px;line-height:1.08;}
+  .pick p{font-size:16.5px;color:var(--steel);margin-top:14px;}
+  .pick .conf{margin-top:18px;padding-top:14px;border-top:1px solid var(--hair);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);}
+  .pick .conf b{color:var(--bone);font-weight:700;}
+  .note{margin-top:26px;font-size:15px;color:var(--steel);max-width:640px;}
+  .bout{border:1px solid var(--hair);background:var(--black-2);margin-bottom:12px;transition:border-color .18s,transform .18s;}
+  .bout:hover{border-color:rgba(201,247,58,.5);transform:translateY(-2px);}
+  .bout .top{display:flex;justify-content:space-between;align-items:center;padding:12px 22px;border-bottom:1px solid var(--hair);
+    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);}
+  .bout .top .when{color:var(--volt);font-weight:700;}
+  .bout .body{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;padding:22px;}
+  .bout .f{text-align:center;}
+  .bout .f .n{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:clamp(19px,2.6vw,26px);line-height:1.06;}
+  .bout .f .o{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:22px;margin-top:8px;}
+  .bout .f.dog .o{color:var(--volt);}
+  .bout .f.fav .o{color:var(--steel);}
+  .bout .f .tag{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel);margin-top:6px;}
+  .bout .vs{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel);}
+  .headliner{border-top:3px solid var(--volt);}
+  .headliner .top{background:rgba(201,247,58,.06);}
+  .updated{font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);margin-top:20px;}
+</style>
+</head>
+<body>
+<nav><div class="wrap"><div class="links">
+  <a href="/news.html">News</a>
+  <a href="/fightweek.html">Fight Week</a>
+  <a href="/picks.html">Picks</a>
+  <a href="/utah.html" class="on">Utah</a>
+      <a href="/fighters.html">Fighters</a>
+  <a href="/newsletter.html">The Corner</a>
+</div></div></nav>
+
+<header class="hero">
+  <svg class="bigmark" aria-hidden="true" viewBox="0 0 120 120"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>
+  <div class="wrap">
+    <div class="eyebrow">The roster</div>
+    <h1>Utah <span>Fighters</span></h1>
+    <p class="dek">Everybody fighting out of this state — pros, amateurs, records, gyms, and what comes next. If you are on this list and something is wrong, tell us and we will fix it same day.</p>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="sechead">
+      <svg class="sicon" aria-hidden="true" viewBox="0 0 120 120"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>
+      <h2>The Roster</h2>
+      <span class="mono-tag" id="count">Loading</span>
+    </div>
+    <div class="filters" id="filters"></div>
+    <div class="roster" id="roster"><div class="empty">Loading the roster...</div></div>
+  </div>
+</section>
+
+<section class="claim" style="border:none;padding:0;">
+  <div class="wrap in">
+    <h2>Fight out of Utah?</h2>
+    <p>Get on the roster. It is free, it takes one message, and it puts you in front of the people who actually follow the local scene.</p>
+    <div class="list">
+      <div>Your record, gym, and next fight on the roster</div>
+      <div>A custom hype card for your next announcement, free</div>
+      <div>Coverage on the Local Wire when you fight</div>
+      <div>Corrections same day, no questions</div>
+    </div>
+    <a href="mailto:hello@greene.bet?subject=Utah%20fighter%20-%20add%20me%20to%20the%20roster">Get on the roster</a>
+  </div>
+</section>
+
+<footer><div class="wrap">
+  Greene MMA · <a href="https://greene.bet">Part of the greene.bet family</a><br>
+  <a href="/">News</a> · <a href="/fightweek.html">Fight Week</a> · <a href="/picks.html">Picks</a> · <a href="/utah.html">Utah</a>
+      <a href="/fighters.html">Fighters</a> · <a href="/newsletter.html">Newsletter</a> · <a href="/partner.html">Advertise</a><br>
+  © 2026 Greene MMA. Picks are for entertainment. Bet with your head, not over it.
+</div></footer>
+<script>
+(function(){
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if(!('IntersectionObserver' in window)) return;
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){
+    if(e.isIntersecting){var sib=e.target.parentElement.querySelectorAll('.reveal');
+      var i=Array.prototype.indexOf.call(sib,e.target);
+      e.target.style.transitionDelay=(Math.max(i,0)*70)+'ms';
+      e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12});
+  setTimeout(function(){document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});},60);
+})();
+</script>
+
+</html>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyCN2eOBaQBiZDOexipJ-KS7pqkOaNJq7gU",
+  authDomain: "bragging-rights-public.firebaseapp.com",
+  projectId: "bragging-rights-public",
+  storageBucket: "bragging-rights-public.firebasestorage.app",
+  messagingSenderId: "525120309709",
+  appId: "1:525120309709:web:a21f060511e84bb4a91c84"
+};
+const esc=s=>{const d=document.createElement("div");d.textContent=s||"";return d.innerHTML;};
+const MARK='<svg viewBox="0 0 120 120"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>';
+let all=[], active="All";
+
+function render(){
+  const list = active==="All" ? all
+    : active==="Pro" ? all.filter(f=>f.pro!==false)
+    : active==="Amateur" ? all.filter(f=>f.pro===false)
+    : all.filter(f=>(f.weight||"")===active||(f.gym||"")===active);
+  const el=document.getElementById("roster");
+  document.getElementById("count").textContent=list.length+" fighter"+(list.length===1?"":"s");
+  if(!list.length){
+    el.innerHTML='<div class="empty">Nobody on the roster in this filter yet.</div>';
+    return;
+  }
+  el.innerHTML=list.map(f=>
+    '<div class="f reveal'+(f.pro===false?' amateur':'')+'">'+
+      (f.status&&f.status!=="Active"?'<span class="tag">'+esc(f.status)+'</span>':'')+
+      MARK.replace('<svg','<svg class="ghost"')+
+      '<div class="top"><div>'+
+        (f.nickname?'<div class="nick">"'+esc(f.nickname)+'"</div>':'')+
+        '<div class="nm">'+esc(f.first)+' <span>'+esc(f.last)+'</span></div>'+
+      '</div><div class="rec">'+esc(f.record||"-")+'</div></div>'+
+      '<div class="meta">'+
+        [f.weight,f.gym,f.city,(f.pro===false?"Amateur":"Pro")].filter(Boolean).map(esc).join(" \u00b7 ")+
+      '</div>'+
+      (f.next?'<div class="next"><b>Next fight</b>'+esc(f.next)+'</div>':'')+
+      (f.note?'<div class="next"><b>Note</b>'+esc(f.note)+'</div>':'')+
+    '</div>').join("");
+}
+
+function buildFilters(){
+  const weights=[...new Set(all.map(f=>f.weight).filter(Boolean))];
+  const cats=["All","Pro","Amateur",...weights];
+  document.getElementById("filters").innerHTML=cats.map(c=>
+    '<button class="fbtn'+(c===active?' on':'')+'" data-c="'+esc(c)+'">'+esc(c)+'</button>').join("");
+  document.querySelectorAll(".fbtn").forEach(b=>b.addEventListener("click",()=>{
+    active=b.dataset.c; buildFilters(); render();
+  }));
+}
+
+try{
+  const db=getFirestore(initializeApp(firebaseConfig));
+  const snap=await getDoc(doc(db,"site","fighters"));
+  all=((snap.data()||{}).fighters)||[];
+  all.sort((a,b)=>(a.last||"").localeCompare(b.last||""));
+  if(!all.length){
+    document.getElementById("count").textContent="Roster opening soon";
+    document.getElementById("roster").innerHTML=
+      '<div class="empty">The roster is being built right now.<br>Fight out of Utah? Get on it - see below.</div>';
+  } else { buildFilters(); render(); }
+}catch(e){
+  document.getElementById("roster").innerHTML='<div class="empty">Could not load the roster right now.</div>';
+  console.warn(e);
+}
+</script>
+</body>
+</html>
