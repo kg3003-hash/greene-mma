@@ -82,33 +82,53 @@ export default async function handler() {
   // Soonest first
   bouts.sort((x, y) => new Date(x.startTime) - new Date(y.startTime));
 
-  // The next card = every bout sharing the soonest date
-  const headline = bouts[0] || null;
-  const sameDay = headline
-    ? bouts.filter(
-        (b) =>
-          new Date(b.startTime).toDateString() ===
-          new Date(headline.startTime).toDateString()
-      )
-    : [];
+  // Group into separate cards by date — a UFC event and a regional show on the
+  // same weekend are different cards and should not be merged.
+  const byDay = new Map();
+  for (const b of bouts) {
+    const key = new Date(b.startTime).toISOString().slice(0, 10);
+    if (!byDay.has(key)) byDay.set(key, []);
+    byDay.get(key).push(b);
+  }
 
-  // Biggest underdogs on that card become the Live Dogs
-  const dogs = [...sameDay]
+  const cards = [...byDay.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .slice(0, 4)
+    .map(([date, list]) => {
+      // Main event first. Where start times differ the main event is latest;
+      // where they are identical we keep the order the book returned.
+      const ordered = [...list].sort(
+        (x, y) => new Date(y.startTime) - new Date(x.startTime)
+      );
+      return {
+        date,
+        startTime: ordered[ordered.length - 1].startTime,
+        bouts: ordered.slice(0, 16),
+        boutCount: ordered.length,
+      };
+    });
+
+  const headlineCard = cards[0] || null;
+  const headline = headlineCard ? headlineCard.bouts[0] : null;
+
+  // Biggest underdogs across every upcoming card
+  const dogs = bouts
     .filter((b) => b.underdog.odds > 100)
     .sort((x, y) => y.underdog.odds - x.underdog.odds)
-    .slice(0, 3);
+    .slice(0, 4);
 
   await db.collection("site").doc("fightweek").set({
     headline,
-    card: sameDay.slice(0, 8),
+    cards,
+    card: headlineCard ? headlineCard.bouts : [],
     dogs,
-    boutCount: sameDay.length,
+    boutCount: headlineCard ? headlineCard.boutCount : 0,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
 
-  console.log(`Wrote fight week: ${sameDay.length} bouts, ${dogs.length} dogs.`);
+  console.log(`Wrote ${cards.length} card(s), ${bouts.length} bouts, ${dogs.length} dogs.`);
   return new Response(
-    JSON.stringify({ bouts: sameDay.length, dogs: dogs.length, remaining }),
+    JSON.stringify({ cards: cards.length, bouts: bouts.length, dogs: dogs.length, remaining }),
     { status: 200 }
   );
 }
