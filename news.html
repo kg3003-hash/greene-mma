@@ -202,8 +202,14 @@ const WRESTLE=/\b(wwe|aew|tna|njpw|smackdown|summerslam|wrestlemania|royal rumbl
 let db, cursor=null, all=[], active="All";
 const feed=document.getElementById("feed");
 
+function matches(s){
+  if(active==="All") return true;
+  if(active==="UFC") return s.ufc===true || (s.tags||[]).includes("UFC");
+  if(active==="Utah") return s.utah===true || (s.tags||[]).includes("Utah");
+  return s.category===active || (s.tags||[]).includes(active);
+}
 function render(){
-  const list = active==="All" ? all : all.filter(s=>s.category===active);
+  const list = all.filter(matches);
   feed.innerHTML = list.length ? list.map(s=>
     '<a class="card" href="/story.html?id='+encodeURIComponent(s.id)+'">'+
       '<span class="c">'+esc(s.category)+'</span>'+
@@ -213,7 +219,7 @@ function render(){
     '</a>').join("") : '<div class="empty">Nothing in this category yet.</div>';
 }
 function buildFilters(){
-  const cats=["All",...new Set(all.map(s=>s.category).filter(Boolean))];
+  const cats=["All","UFC","Utah",...new Set(all.map(s=>s.category).filter(Boolean))];
   document.getElementById("filters").innerHTML=cats.map(c=>
     '<button class="fbtn'+(c===active?' on':'')+'" data-c="'+esc(c)+'">'+esc(c)+'</button>').join("");
   document.querySelectorAll(".fbtn").forEach(b=>b.addEventListener("click",()=>{
