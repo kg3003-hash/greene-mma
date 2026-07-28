@@ -65,6 +65,21 @@
   .tgt small{display:block;text-transform:none;letter-spacing:0;font-family:'Barlow',sans-serif;font-size:12.5px;color:var(--steel);opacity:.8;}
   #status{margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.06em;line-height:1.9;white-space:pre-wrap;}
   .ok{color:var(--volt);} .bad{color:#FF4B3E;}
+
+  /* admin list */
+  .alist{border:1px solid var(--hair);max-height:380px;overflow:auto;margin-top:8px;}
+  .aline{display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid var(--hair);cursor:pointer;}
+  .aline:hover{background:rgba(201,247,58,.05);}
+  .aline .t{flex:1;min-width:0;}
+  .aline .t1{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .aline .t2{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--steel);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .aline .act{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--volt);}
+  .aline .del{background:none;border:1px solid var(--hair);color:#FF4B3E;padding:5px 8px;cursor:pointer;font-size:10px;font-family:'JetBrains Mono',monospace;}
+  .aline .del:hover{background:#FF4B3E;color:var(--black);border-color:#FF4B3E;}
+  .aedit{padding:14px 12px;border-bottom:1px solid var(--hair);background:var(--black);}
+  .arow{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+  .arow input{flex:1;}
+  .acount{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--steel);white-space:nowrap;}
 </style>
 </head>
 <body>
@@ -122,6 +137,13 @@
     </div>
 
     <div class="panel">
+      <h2>Past issues</h2>
+      <button class="btn ghost" id="is_load">Load issues</button>
+      <div class="alist" id="is_list" style="margin-top:10px;"></div>
+      <div id="is_status" style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+    </div>
+
+    <div class="panel">
       <h2>Subscribers</h2>
       <button class="btn ghost" id="sub_load">Load list</button>
       <button class="btn ghost" id="sub_csv">Download CSV</button>
@@ -155,17 +177,17 @@
 
     <div class="panel">
       <h2>Utah gyms</h2>
-      <p class="hint" style="margin-top:0">Tick "featured" for paying sponsors — they sort to the top with a badge.</p>
-      <div id="gymrows"></div>
-      <button class="btn ghost" id="g_add">Add gym</button>
-      <button class="btn" id="g_save">Save directory</button>
+      <div class="arow"><input type="text" id="gy_search" placeholder="Search gyms..."><span class="acount" id="gy_count"></span></div>
+      <div class="alist" id="gy_list"></div>
+      <button class="btn ghost" id="gy_add">Add gym</button>
+      <button class="btn" id="gy_save">Save directory</button>
       <div id="g_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
     </div>
 
     <div class="panel">
       <h2>Utah events</h2>
-      <p class="hint" style="margin-top:0">These fill the calendar on the Utah page.</p>
-      <div id="evrows"></div>
+      <div class="arow"><input type="text" id="ev_search" placeholder="Search events..."><span class="acount" id="ev_count"></span></div>
+      <div class="alist" id="ev_list"></div>
       <button class="btn ghost" id="ev_add">Add event</button>
       <button class="btn" id="ev_save">Save calendar</button>
       <div id="ev_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
@@ -254,46 +276,6 @@
       $('a_head').value='';$('a_sum').value='';$('a_body').value='';
     } else say(st,'✗ '+(out.error||'Failed'),'bad');
   });
-
-  /* ---- events ---- */
-  const evrows=$('evrows');
-  function evRow(e){
-    e=e||{};
-    const d=document.createElement('div');
-    d.className='evrow';
-    d.style.cssText='border-top:1px solid var(--hair);padding-top:12px;margin-top:12px;';
-    d.innerHTML=
-      '<div class="row2"><div><label>Event name</label><input class="e_n" type="text" value="'+(e.name||'')+'"></div>'+
-      '<div><label>Date</label><input class="e_d" type="text" value="'+(e.date||'')+'" placeholder="AUG 15"></div></div>'+
-      '<div class="row2"><div><label>Promotion</label><input class="e_p" type="text" value="'+(e.promotion||'')+'"></div>'+
-      '<div><label>City</label><input class="e_c" type="text" value="'+(e.city||'')+'"></div></div>'+
-      '<label>Venue</label><input class="e_v" type="text" value="'+(e.venue||'')+'">'+
-      '<label>Note</label><input class="e_note" type="text" value="'+(e.note||'')+'">'+
-      '<label>Link (optional)</label><input class="e_l" type="text" value="'+(e.link||'')+'">'+
-      '<button class="btn ghost rm" style="margin-top:8px;padding:9px;">Remove</button>';
-    d.querySelector('.rm').addEventListener('click',()=>d.remove());
-    evrows.appendChild(d);
-  }
-  $('ev_add').addEventListener('click',()=>evRow());
-  $('ev_save').addEventListener('click',async()=>{
-    const st=$('ev_status');
-    const events=[...evrows.querySelectorAll('.evrow')].map(r=>({
-      name:r.querySelector('.e_n').value.trim(),
-      date:r.querySelector('.e_d').value.trim(),
-      promotion:r.querySelector('.e_p').value.trim(),
-      city:r.querySelector('.e_c').value.trim(),
-      venue:r.querySelector('.e_v').value.trim(),
-      note:r.querySelector('.e_note').value.trim(),
-      link:r.querySelector('.e_l').value.trim()
-    })).filter(e=>e.name);
-    say(st,'Saving...');
-    const out=await api({events});
-    say(st, out.ok?('✓ Saved '+out.saved+' event(s).'):'✗ '+(out.error||'Failed'), out.ok?'ok':'bad');
-  });
-  // preload existing events
-  (async()=>{ try{ const out=await api({getEvents:true});
-    if(out.ok&&out.events&&out.events.length) out.events.forEach(evRow); else evRow();
-  }catch(e){ evRow(); } })();
 
   /* ---- newsletter ---- */
   $('n_save').addEventListener('click',async()=>{
@@ -489,42 +471,127 @@
   window.__reloadRoster=loadRoster;
   loadRoster();
 
-  /* ---- gyms ---- */
-  const gymrows=$('gymrows');
-  function gymRow(g){
-    g=g||{};
-    const d=document.createElement('div');
-    d.className='gymrow';
-    d.style.cssText='border-top:1px solid var(--hair);padding-top:12px;margin-top:12px;';
-    d.innerHTML=
-      '<div class="row2"><div><label>Gym name</label><input class="g_n" type="text" value="'+(g.name||'')+'"></div>'+
-      '<div><label>City</label><input class="g_c" type="text" value="'+(g.city||'')+'"></div></div>'+
-      '<label>Disciplines</label><input class="g_d" type="text" value="'+(g.disciplines||'')+'" placeholder="BJJ · Muay Thai · MMA">'+
-      '<label>Note</label><textarea class="g_note">'+(g.note||'')+'</textarea>'+
-      '<label>Link</label><input class="g_l" type="text" value="'+(g.link||'')+'">'+
-      '<label class="check" style="margin-top:12px"><input class="g_f" type="checkbox" '+(g.featured?'checked':'')+'><span>Featured sponsor</span></label>'+
-      '<button class="btn ghost rm" style="margin-top:8px;padding:9px;">Remove</button>';
-    d.querySelector('.rm').addEventListener('click',()=>d.remove());
-    gymrows.appendChild(d);
+  /* ---- generic admin list ---- */
+  function adminList(cfg){
+    let DATA=[], open=-1;
+    const box=$(cfg.listId), search=$(cfg.searchId), count=$(cfg.countId);
+    function commit(){
+      if(open<0) return;
+      const get=c=>{const el=box.querySelector('.'+c); return el?el.value:undefined;};
+      if(get(cfg.fields[0].cls)===undefined) return;
+      cfg.fields.forEach(f=>{
+        const v=get(f.cls);
+        if(v!==undefined) DATA[open][f.key] = f.type==='check' ? box.querySelector('.'+f.cls).checked : v.trim();
+      });
+    }
+    function render(){
+      const q=(search&&search.value||'').toLowerCase();
+      const rows=DATA.map((d,i)=>({d,i})).filter(({d})=>!q||cfg.searchText(d).toLowerCase().includes(q));
+      if(count) count.textContent=DATA.length+' total';
+      if(!DATA.length){ box.innerHTML='<div style="padding:16px;color:var(--steel);font-size:13px;">'+(cfg.empty||'Nothing here yet.')+'</div>'; return; }
+      box.innerHTML=rows.map(({d,i})=>{
+        const head='<div class="aline" data-i="'+i+'">'+
+          '<div class="t"><div class="t1">'+(cfg.title(d)||'(untitled)').replace(/</g,'&lt;')+'</div>'+
+          '<div class="t2">'+(cfg.sub(d)||'').replace(/</g,'&lt;')+'</div></div>'+
+          '<span class="act">'+(open===i?'CLOSE':'EDIT')+'</span>'+
+          '<button class="del" data-i="'+i+'">DEL</button></div>';
+        if(open!==i) return head;
+        return head+'<div class="aedit">'+cfg.fields.map(f=>{
+          if(f.type==='check') return '<label class="check" style="margin-top:10px"><input class="'+f.cls+'" type="checkbox" '+(d[f.key]?'checked':'')+'><span>'+f.label+'</span></label>';
+          if(f.type==='area') return '<label>'+f.label+'</label><textarea class="'+f.cls+'">'+(d[f.key]||'')+'</textarea>';
+          return '<label>'+f.label+'</label><input class="'+f.cls+'" type="text" value="'+String(d[f.key]||'').replace(/"/g,'&quot;')+'">';
+        }).join('')+'</div>';
+      }).join('');
+      box.querySelectorAll('.aline').forEach(el=>el.addEventListener('click',e=>{
+        if(e.target.classList.contains('del')) return;
+        const i=+el.dataset.i; commit(); open=(open===i?-1:i); render();
+      }));
+      box.querySelectorAll('.del').forEach(b=>b.addEventListener('click',e=>{
+        e.stopPropagation();
+        const i=+b.dataset.i;
+        DATA.splice(i,1);
+        if(open===i) open=-1; else if(open>i) open--;
+        render();
+      }));
+    }
+    if(search) search.addEventListener('input',()=>{commit();open=-1;render();});
+    return {
+      add(){ commit(); DATA.unshift(cfg.blank()); open=0; if(search) search.value=''; render(); box.scrollTop=0; },
+      get(){ commit(); return DATA.filter(cfg.keep); },
+      set(rows){ DATA=rows||[]; open=-1; render(); },
+      render
+    };
   }
-  $('g_add').addEventListener('click',()=>gymRow());
-  $('g_save').addEventListener('click',async()=>{
-    const st=$('g_status');
-    const gyms=[...gymrows.querySelectorAll('.gymrow')].map(r=>({
-      name:r.querySelector('.g_n').value.trim(),
-      city:r.querySelector('.g_c').value.trim(),
-      disciplines:r.querySelector('.g_d').value.trim(),
-      note:r.querySelector('.g_note').value.trim(),
-      link:r.querySelector('.g_l').value.trim(),
-      featured:r.querySelector('.g_f').checked
-    })).filter(g=>g.name);
-    say(st,'Saving...');
-    const out=await api({gyms});
-    say(st, out.ok?('✓ Saved '+out.saved+' gym(s).'):'✗ '+(out.error||'Failed'), out.ok?'ok':'bad');
+
+  /* ---- gyms ---- */
+  const GYMS=adminList({
+    listId:'gy_list', searchId:'gy_search', countId:'gy_count',
+    empty:'No gyms yet. Add one.',
+    title:d=>d.name, sub:d=>[d.city,d.disciplines,(d.featured?'FEATURED':'')].filter(Boolean).join(' \u00b7 '),
+    searchText:d=>[d.name,d.city,d.disciplines].join(' '),
+    keep:d=>!!d.name,
+    blank:()=>({name:'',city:'',disciplines:'',note:'',link:'',featured:false}),
+    fields:[
+      {key:'name',cls:'gy_n',label:'Gym name'},
+      {key:'city',cls:'gy_c',label:'City'},
+      {key:'disciplines',cls:'gy_d',label:'Disciplines'},
+      {key:'note',cls:'gy_note',label:'Note',type:'area'},
+      {key:'link',cls:'gy_l',label:'Link'},
+      {key:'featured',cls:'gy_f',label:'Featured sponsor',type:'check'}
+    ]
   });
-  (async()=>{ try{ const out=await api({getGyms:true});
-    if(out.ok&&out.gyms&&out.gyms.length) out.gyms.forEach(gymRow); else gymRow();
-  }catch(e){ gymRow(); } })();
+  $('gy_add').addEventListener('click',()=>GYMS.add());
+  $('gy_save').addEventListener('click',async()=>{
+    const st=$('g_status'); say(st,'Saving...');
+    const out=await api({gyms:GYMS.get()});
+    say(st, out.ok?('\u2713 Saved '+out.saved+' gym(s).'):'\u2717 '+(out.error||'Failed'), out.ok?'ok':'bad');
+  });
+  (async()=>{ try{ const o=await api({getGyms:true}); GYMS.set(o.ok?o.gyms:[]);}catch(e){ GYMS.set([]); } })();
+
+  /* ---- events ---- */
+  const EVENTS=adminList({
+    listId:'ev_list', searchId:'ev_search', countId:'ev_count',
+    empty:'No events yet. Add one.',
+    title:d=>d.name, sub:d=>[d.date,d.promotion,d.venue,d.city].filter(Boolean).join(' \u00b7 '),
+    searchText:d=>[d.name,d.promotion,d.venue,d.city,d.date].join(' '),
+    keep:d=>!!d.name,
+    blank:()=>({name:'',date:'',promotion:'',city:'',venue:'',note:'',link:''}),
+    fields:[
+      {key:'name',cls:'ev_n',label:'Event name'},
+      {key:'date',cls:'ev_d',label:'Date'},
+      {key:'promotion',cls:'ev_p',label:'Promotion'},
+      {key:'venue',cls:'ev_v',label:'Venue'},
+      {key:'city',cls:'ev_c',label:'City'},
+      {key:'note',cls:'ev_note',label:'Note'},
+      {key:'link',cls:'ev_l',label:'Link'}
+    ]
+  });
+  $('ev_add').addEventListener('click',()=>EVENTS.add());
+  $('ev_save').addEventListener('click',async()=>{
+    const st=$('ev_status'); say(st,'Saving...');
+    const out=await api({events:EVENTS.get()});
+    say(st, out.ok?('\u2713 Saved '+out.saved+' event(s).'):'\u2717 '+(out.error||'Failed'), out.ok?'ok':'bad');
+  });
+  (async()=>{ try{ const o=await api({getEvents:true}); EVENTS.set(o.ok?o.events:[]);}catch(e){ EVENTS.set([]); } })();
+
+  /* ---- past issues ---- */
+  $('is_load').addEventListener('click',async()=>{
+    const st=$('is_status'), box=$('is_list');
+    say(st,'Loading...');
+    const out=await api({listIssues:true});
+    if(!out.ok){ say(st,'\u2717 '+(out.error||'Failed'),'bad'); return; }
+    say(st,'\u2713 '+out.issues.length+' issue(s)','ok');
+    box.innerHTML=out.issues.map(i=>
+      '<div class="aline" data-id="'+i.id+'"><div class="t"><div class="t1">'+
+      (i.subject||'').replace(/</g,'&lt;')+'</div><div class="t2">'+i.date+'</div></div>'+
+      '<button class="del" data-id="'+i.id+'">DEL</button></div>').join('')
+      || '<div style="padding:16px;color:var(--steel);font-size:13px;">No issues yet.</div>';
+    box.querySelectorAll('.del').forEach(b=>b.addEventListener('click',async e=>{
+      e.stopPropagation();
+      const r=await api({deleteIssue:b.dataset.id});
+      if(r.ok) b.closest('.aline').remove();
+    }));
+  });
 
   /* ---- manage stories ---- */
   $('s_load').addEventListener('click',async()=>{
@@ -591,53 +658,6 @@
   });
 })();
 
-/* ================= PUBLISH ================= */
-(function(){
-  const $=id=>document.getElementById(id);
-  const status=$('status');
-  function log(msg,cls){status.innerHTML+='<span class="'+(cls||'')+'">'+msg+'</span>\n';}
-
-  async function snapshot(fmt){
-    const sel=$('format').value;
-    if(sel!==fmt){ $('format').value=fmt; $('format').dispatchEvent(new Event('input')); await new Promise(r=>setTimeout(r,350)); }
-    const data=document.getElementById('card').toDataURL('image/jpeg',0.92).split(',')[1];
-    if(sel!==fmt){ $('format').value=sel; $('format').dispatchEvent(new Event('input')); }
-    return data;
-  }
-
-  $('publish').addEventListener('click',async()=>{
-    status.innerHTML='';
-    const targets=[];
-    if($('t_x').checked) targets.push('x');
-    if($('t_igfeed').checked) targets.push('ig_feed');
-    if($('t_igstory').checked) targets.push('ig_story');
-    if(!targets.length){log('Pick at least one place to post.','bad');return;}
-
-    $('publish').disabled=true; $('publish').textContent='Publishing...';
-    try{
-      log('Rendering cards...');
-      const postImg=await snapshot('post');
-      const storyImg=targets.includes('ig_story')?await snapshot('story'):null;
-
-      const body={
-        targets,
-        caption:$('caption').value,
-        xHandle:$('xhandle').value.trim(),
-        igHandle:$('ighandle').value.trim(),
-        fighter:($('first').value+' '+$('last').value).trim(),
-        postImage:postImg,
-        storyImage:storyImg
-      };
-      const r=await fetch('/.netlify/functions/publish',{method:'POST',
-        headers:{'content-type':'application/json','x-studio-key':sessionStorage.getItem('gmma_key')||''},
-        body:JSON.stringify(body)});
-      const out=await r.json();
-      (out.results||[]).forEach(x=>log((x.ok?'✓ ':'✗ ')+x.target+' — '+x.message,x.ok?'ok':'bad'));
-      if(out.error) log('✗ '+out.error,'bad');
-    }catch(e){ log('✗ '+e.message,'bad'); }
-    $('publish').disabled=false; $('publish').textContent='Publish now';
-  });
-})();
 </script>
 </body>
 </html>
