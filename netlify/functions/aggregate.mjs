@@ -38,6 +38,12 @@ function isUtah(item){
   return UTAH_TERMS.some(term => hay.includes(term));
 }
 
+const UFC_TERMS = ["ufc","dana white","apex","ufc fight night","dwcs","contender series","octagon"];
+function isUFC(item){
+  const hay = ((item.title || "") + " " + (item.contentSnippet || "")).toLowerCase();
+  return UFC_TERMS.some(t => hay.includes(t));
+}
+
 function isBlocked(item){
   const hay = ((item.title || "") + " " + (item.contentSnippet || "")).toLowerCase();
   return BLOCKLIST.some(term => hay.includes(term));
@@ -146,6 +152,7 @@ export default async function handler() {
           sourceName: feed.name,
           publishedAt: pub,
           utah: isUtah(item),
+          ufc: isUFC(item),
         });
       }
     } catch (err) {
@@ -176,6 +183,7 @@ export default async function handler() {
         sourceName: item.sourceName,
         sourceUrl: item.link,
         utah: item.utah === true,
+        ufc: item.ufc === true,
         publishedAt: admin.firestore.Timestamp.fromDate(item.publishedAt),
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
