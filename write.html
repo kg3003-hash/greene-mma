@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Greene MMA — Writers' Room</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{--black:#0C0E0A;--black-2:#13160F;--volt:#C9F73A;--bone:#F2F0E9;--steel:#9AA194;--red:#FF4B3E;--hair:rgba(242,240,233,.14);}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--black);color:var(--bone);font-family:'Barlow',sans-serif;font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;text-decoration:none;}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 20px;}
+  .top{border-bottom:1px solid var(--hair);}
+  .top .wrap{display:flex;align-items:center;gap:12px;height:62px;}
+  .top svg{width:30px;height:30px;}
+  .top .name{font-family:'Anton',sans-serif;font-size:19px;text-transform:uppercase;}
+  .top .name span{color:var(--volt);}
+  .top .tool{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);}
+  .app{display:grid;grid-template-columns:1fr 380px;gap:24px;padding:26px 0 70px;}
+  @media(max-width:900px){.app{grid-template-columns:1fr;}}
+  .panel{border:1px solid var(--hair);background:var(--black-2);padding:22px;}
+  .panel+.panel{margin-top:14px;}
+  .panel h2{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:20px;margin-bottom:12px;}
+  label{display:block;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);margin:13px 0 5px;}
+  input[type=text],textarea,select{width:100%;padding:11px 12px;background:var(--black);border:1px solid var(--hair);color:var(--bone);font-family:'Barlow',sans-serif;font-size:15px;}
+  input:focus,textarea:focus,select:focus{outline:2px solid var(--volt);outline-offset:1px;border-color:transparent;}
+  textarea{resize:vertical;min-height:70px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px;}
+  .chip{padding:8px 13px;border:1px solid var(--hair);background:var(--black);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);}
+  .chip:hover{border-color:var(--volt);color:var(--volt);}
+  .chip.on{background:var(--volt);border-color:var(--volt);color:var(--black);font-weight:700;}
+  .btn{display:block;width:100%;margin-top:16px;padding:14px;background:var(--volt);color:var(--black);border:none;cursor:pointer;font-family:'Barlow',sans-serif;font-weight:700;font-size:13.5px;letter-spacing:.1em;text-transform:uppercase;}
+  .btn:hover{background:var(--bone);}
+  .btn.ghost{background:transparent;color:var(--volt);border:2px solid var(--volt);}
+  .btn.ghost:hover{background:var(--volt);color:var(--black);}
+  .hint{margin-top:10px;font-size:13px;color:var(--steel);}
+  .alist{border:1px solid var(--hair);max-height:420px;overflow:auto;margin-top:8px;}
+  .aline{display:flex;align-items:center;gap:10px;padding:12px;border-bottom:1px solid var(--hair);cursor:pointer;}
+  .aline:hover{background:rgba(201,247,58,.05);}
+  .aline .t{flex:1;min-width:0;}
+  .aline .t1{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .aline .t2{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--steel);margin-top:3px;}
+  .aline .del{background:none;border:1px solid var(--hair);color:#FF4B3E;padding:5px 8px;cursor:pointer;font-size:10px;font-family:'JetBrains Mono',monospace;}
+  .st{display:inline-block;padding:2px 8px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;border:1px solid var(--hair);color:var(--steel);}
+  .st.sub{border-color:var(--volt);color:var(--volt);}
+  .st.chg{border-color:var(--red);color:var(--red);}
+  #status{margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.9;white-space:pre-wrap;}
+  .ok{color:var(--volt);} .bad{color:#FF4B3E;}
+  .notebox{border:1px solid var(--red);background:rgba(255,75,62,.07);padding:16px;margin-top:12px;font-size:15px;}
+  .notebox b{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);display:block;margin-bottom:6px;}
+  .guide{font-size:14.5px;color:var(--steel);}
+  .guide li{margin-left:18px;margin-bottom:7px;}
+  #gate{position:fixed;inset:0;background:var(--black);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;}
+  #gate .box{width:100%;max-width:340px;text-align:center;}
+  #gate svg{width:70px;height:70px;margin:0 auto 22px;display:block;}
+  #gate h1{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:26px;}
+  #gate h1 span{color:var(--volt);}
+  #gate p{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel);margin:6px 0 20px;}
+  #gate input{width:100%;padding:13px;background:var(--black-2);border:1px solid var(--hair);color:var(--bone);font-family:'JetBrains Mono',monospace;font-size:14px;text-align:center;letter-spacing:.2em;}
+  #gate button{width:100%;margin-top:10px;padding:13px;background:var(--volt);color:var(--black);border:none;cursor:pointer;font-weight:700;font-size:13px;letter-spacing:.1em;text-transform:uppercase;}
+  #gate .err{color:#FF4B3E;font-size:12.5px;margin-top:10px;min-height:18px;}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="box">
+    <svg viewBox="0 0 120 120"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>
+    <h1>Writers' <span>Room</span></h1>
+    <p>Greene MMA</p>
+    <input type="password" id="gatepass" placeholder="PASSCODE" autocomplete="off">
+    <button id="gatego">Enter</button>
+    <div class="err" id="gateerr"></div>
+  </div>
+</div>
+
+<div class="top"><div class="wrap">
+  <svg viewBox="0 0 120 120"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>
+  <div class="name">Greene <span>MMA</span></div>
+  <div class="tool" id="whoami">Writers' Room</div>
+</div></div>
+
+<div class="wrap"><div class="app">
+  <div>
+    <div class="panel">
+      <h2 id="editorTitle">New article</h2>
+      <div id="notehost"></div>
+      <label>Your name (the byline)</label>
+      <input type="text" id="w_author" placeholder="How you want to be credited">
+      <label>Headline</label>
+      <input type="text" id="w_head" placeholder="Short. Punchy. Around 10 words.">
+      <label>Standfirst — the line that shows on cards</label>
+      <textarea id="w_sum" placeholder="One or two sentences, 25-45 words."></textarea>
+      <label>Body</label>
+      <textarea id="w_body" style="min-height:340px" placeholder="Write the piece. Leave a blank line between paragraphs."></textarea>
+      <div class="row2">
+        <div><label>Category</label>
+          <select id="w_cat">
+            <option>The Corner</option><option>Fight booked</option><option>Results</option>
+            <option>Injury report</option><option>Line movement</option><option>Utah</option><option>News</option>
+          </select>
+        </div>
+        <div><label>Utah story?</label>
+          <select id="w_utah"><option value="no">No</option><option value="yes">Yes</option></select>
+        </div>
+      </div>
+      <label>Tags</label>
+      <div class="chips" id="w_tags">
+        <div class="chip" data-t="UFC">UFC</div>
+        <div class="chip" data-t="Utah">Utah</div>
+        <div class="chip" data-t="Regional">Regional</div>
+        <div class="chip" data-t="Interview">Interview</div>
+        <div class="chip" data-t="Opinion">Opinion</div>
+      </div>
+      <button class="btn ghost" id="w_save">Save draft</button>
+      <button class="btn" id="w_submit">Submit for review</button>
+      <button class="btn ghost" id="w_new">Start a new one</button>
+      <div id="status"></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="panel">
+      <h2>Your drafts</h2>
+      <button class="btn ghost" id="w_load" style="margin-top:0">Refresh</button>
+      <div class="alist" id="w_list"></div>
+    </div>
+
+    <div class="panel">
+      <h2>House style</h2>
+      <div class="guide">
+        <ul>
+          <li>Dry and cageside. Like the sharpest person in the group chat who actually watches the prelims.</li>
+          <li>Short sentences. Real stakes.</li>
+          <li>Specific beats generic. Never "a local gym" — name the gym.</li>
+          <li>One smirk per piece, maximum. Most pieces need none.</li>
+          <li>No hype words. Not "shocking", not "massive", not "insane".</li>
+          <li>If there's an underdog angle, it gets the last line.</li>
+          <li>Never quote a source at length. Say it in your own words and link out.</li>
+          <li>Never invent a result, a round, or a method. If it's unclear, leave it out.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const KEY=()=>sessionStorage.getItem('gmma_wkey')||'';
+let currentId=null, DRAFTS=[];
+
+async function api(payload){
+  const r=await fetch('/.netlify/functions/site',{method:'POST',
+    headers:{'content-type':'application/json','x-studio-key':KEY()},
+    body:JSON.stringify(payload)});
+  return r.json();
+}
+const say=(m,c)=>{$('status').innerHTML='<span class="'+(c||'')+'">'+m+'</span>';};
+
+/* ---- gate ---- */
+async function tryKey(k){
+  $('gateerr').textContent='Checking...';
+  try{
+    const r=await fetch('/.netlify/functions/site',{method:'POST',
+      headers:{'content-type':'application/json','x-studio-key':k},
+      body:JSON.stringify({ping:true})});
+    if(r.status===401){ $('gateerr').textContent='Wrong passcode.'; return; }
+    const out=await r.json();
+    sessionStorage.setItem('gmma_wkey',k);
+    $('gate').style.display='none';
+    $('whoami').textContent = out.role==='admin' ? "Writers' Room · admin view" : "Writers' Room";
+    loadDrafts();
+  }catch(e){ $('gateerr').textContent='Cannot reach the server.'; }
+}
+const saved=sessionStorage.getItem('gmma_wkey');
+if(saved) tryKey(saved);
+$('gatego').addEventListener('click',()=>tryKey($('gatepass').value));
+$('gatepass').addEventListener('keydown',e=>{ if(e.key==='Enter') tryKey(e.target.value); });
+
+/* ---- tags ---- */
+$('w_tags').addEventListener('click',e=>{
+  const c=e.target.closest('.chip'); if(c) c.classList.toggle('on');
+});
+function setTags(tags){
+  document.querySelectorAll('#w_tags .chip').forEach(c=>
+    c.classList.toggle('on',(tags||[]).includes(c.dataset.t)));
+}
+const getTags=()=>[...document.querySelectorAll('#w_tags .chip.on')].map(c=>c.dataset.t);
+
+/* ---- editor ---- */
+function clearEditor(){
+  currentId=null;
+  $('editorTitle').textContent='New article';
+  $('w_head').value=''; $('w_sum').value=''; $('w_body').value='';
+  $('w_cat').value='The Corner'; $('w_utah').value='no';
+  setTags([]); $('notehost').innerHTML=''; say('');
+}
+$('w_new').addEventListener('click',clearEditor);
+
+function loadIntoEditor(d){
+  currentId=d.id;
+  $('editorTitle').textContent='Editing draft';
+  $('w_head').value=d.headline||''; $('w_sum').value=d.summary||'';
+  $('w_body').value=d.body||''; $('w_cat').value=d.category||'The Corner';
+  $('w_utah').value=d.utah?'yes':'no';
+  if(d.author) $('w_author').value=d.author;
+  setTags(d.tags);
+  $('notehost').innerHTML = (d.status==='changes requested' && d.note)
+    ? '<div class="notebox"><b>Changes requested</b>'+d.note.replace(/</g,'&lt;')+'</div>' : '';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+async function save(submit){
+  const payload={
+    id:currentId, headline:$('w_head').value.trim(), summary:$('w_sum').value.trim(),
+    body:$('w_body').value.trim(), category:$('w_cat').value,
+    utah:$('w_utah').value==='yes', tags:getTags(),
+    author:$('w_author').value.trim(), submit:!!submit
+  };
+  if(!payload.headline||!payload.body){ say('Headline and body are required.','bad'); return; }
+  say('Saving...');
+  const out=await api({saveDraft:payload});
+  if(out.ok){
+    currentId=out.id;
+    say(submit ? '\u2713 Submitted for review. Kelly gets it next.' : '\u2713 Draft saved.','ok');
+    loadDrafts();
+  } else say('\u2717 '+(out.error||'Failed'),'bad');
+}
+$('w_save').addEventListener('click',()=>save(false));
+$('w_submit').addEventListener('click',()=>save(true));
+
+/* ---- drafts list ---- */
+async function loadDrafts(){
+  const out=await api({listDrafts:true});
+  if(!out.ok) return;
+  DRAFTS=out.drafts||[];
+  const box=$('w_list');
+  if(!DRAFTS.length){ box.innerHTML='<div style="padding:16px;color:var(--steel);font-size:13px;">Nothing here yet. Write something.</div>'; return; }
+  box.innerHTML=DRAFTS.map((d,i)=>{
+    const cls=d.status==='submitted'?'sub':(d.status==='changes requested'?'chg':'');
+    return '<div class="aline" data-i="'+i+'">'+
+      '<div class="t"><div class="t1">'+(d.headline||'(untitled)').replace(/</g,'&lt;')+'</div>'+
+      '<div class="t2"><span class="st '+cls+'">'+(d.status||'draft')+'</span> '+
+        (d.author?('&nbsp;'+d.author.replace(/</g,'&lt;')):'')+'</div></div>'+
+      '<button class="del" data-i="'+i+'">DEL</button></div>';
+  }).join('');
+  box.querySelectorAll('.aline').forEach(el=>el.addEventListener('click',e=>{
+    if(e.target.classList.contains('del')) return;
+    loadIntoEditor(DRAFTS[+el.dataset.i]);
+  }));
+  box.querySelectorAll('.del').forEach(b=>b.addEventListener('click',async e=>{
+    e.stopPropagation();
+    const d=DRAFTS[+b.dataset.i];
+    const r=await api({deleteDraft:d.id});
+    if(r.ok){ if(currentId===d.id) clearEditor(); loadDrafts(); }
+    else say('\u2717 '+(r.error||'Could not delete'),'bad');
+  }));
+}
+$('w_load').addEventListener('click',loadDrafts);
+})();
+</script>
+</body>
+</html>
