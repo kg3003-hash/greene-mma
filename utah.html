@@ -98,6 +98,37 @@
   .bout .side .r{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--steel);margin-top:5px;}
   .bout .vs{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--volt);}
 
+  .fbtn{padding:9px 16px;border:1px solid var(--hair);background:var(--black-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);}
+  .fbtn:hover{border-color:var(--volt);color:var(--volt);}
+
+
+  /* presented-by strip */
+  .presby{display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    border:1px solid var(--hair);border-left:3px solid var(--volt);background:var(--black-2);
+    padding:12px 18px;margin-bottom:16px;
+    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--steel);}
+  .presby b{color:var(--bone);font-weight:400;font-size:13px;letter-spacing:.06em;}
+  .presby a.s{color:var(--volt);}
+  .presby a.s:hover{color:var(--bone);}
+  .presby .sell{margin-left:auto;color:var(--volt);opacity:.75;}
+  .presby .sell:hover{opacity:1;}
+
+  /* featured gym showcase */
+  .feat{border:1px solid rgba(201,247,58,.35);background:linear-gradient(120deg,#151A0E,#0C0E0A 62%);position:relative;overflow:hidden;}
+  .feat .ghost{position:absolute;right:-50px;bottom:-60px;width:260px;opacity:.055;pointer-events:none;}
+  .feat .inner{padding:34px;position:relative;display:grid;grid-template-columns:1fr auto;gap:26px;align-items:center;}
+  @media(max-width:720px){.feat .inner{grid-template-columns:1fr;}}
+  .feat .badge{display:inline-block;background:var(--volt);color:var(--black);font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;padding:4px 10px;font-weight:700;}
+  .feat h3{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:clamp(26px,4.4vw,38px);line-height:1.04;margin-top:12px;}
+  .feat .city{font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--volt);margin-top:8px;}
+  .feat .disc{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);margin-top:10px;}
+  .feat p{color:var(--bone);font-size:16.5px;margin-top:14px;max-width:560px;}
+  .feat .cta{display:inline-block;padding:14px 28px;border:2px solid var(--volt);color:var(--volt);font-weight:700;font-size:13px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;}
+  .feat .cta:hover{background:var(--volt);color:var(--black);}
+  .feat.sample{border-style:dashed;}
+  .feat.sample .badge{background:transparent;color:var(--volt);border:1px solid rgba(201,247,58,.5);}
+  .feat .samplenote{margin-top:16px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.06em;color:var(--steel);}
+
   /* gyms */
   .gyms{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;}
   .gym{border:1px solid var(--hair);background:var(--black-2);padding:24px;transition:border-color .18s,transform .18s;}
@@ -199,12 +230,26 @@
   .fmodal .go{display:block;margin:0 26px 26px;padding:13px;text-align:center;border:2px solid var(--volt);color:var(--volt);font-weight:700;font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;}
   .fmodal .go:hover{background:var(--volt);color:var(--black);}
   .fmodal .empty-stats{padding:24px 26px;color:var(--steel);font-size:15px;}
+
+  nav .wrap{position:relative;}
+  nav .home{position:absolute;left:22px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:10px;}
+  nav .home svg{width:28px;height:28px;flex-shrink:0;transition:transform .2s;}
+  nav .home:hover svg{transform:rotate(-22.5deg);}
+  nav .home .wm{font-family:'Anton',sans-serif;font-size:17px;letter-spacing:.02em;text-transform:uppercase;color:var(--bone);white-space:nowrap;}
+  nav .home .wm b{color:var(--volt);font-weight:400;}
+  nav .home:hover .wm{color:var(--volt);}
+  @media(max-width:1080px){nav .home .wm{display:none;}}
+  @media(max-width:620px){
+    nav .home{left:14px;}
+    nav .wrap{justify-content:flex-end;padding-left:56px;}
+  }
 </style>
 </head>
 <body>
 
 <nav>
   <div class="wrap">
+    <a class="home" href="/" aria-label="Greene MMA home"><svg viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg><span class="wm">Greene <b>MMA</b></span></a>
     <a href="/" style="display:flex;align-items:center;gap:14px;">
       <svg class="mark" viewBox="0 0 120 120" aria-label="Greene MMA"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>
       <span class="name">Greene <span>MMA</span></span>
@@ -224,60 +269,30 @@
   <svg class="bigmark" viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>
   <div class="wrap">
     <div class="eyebrow">Regional desk</div>
-    <h1>Utah <span>MMA</span></h1>
-    <p class="dek">This is the desk for Utah fighting. Who is on the next SteelFist card, which local prospect just moved to 6-0, which gym is producing them, and when the next show is. National outlets cover the UFC. Somebody should be covering the people in this state who are trying to get there — so that is what this page does.</p>
+    <h1 data-copy="utah.heading">Utah MMA</h1>
+    <p class="dek" data-copy="utah.intro">Utah’s MMA roots run deep through legends like Jeremy Horn and Court McGee—fighters who set the standard for toughness, volume, and quiet professionalism. Today that same foundation fuels a new generation. This section exists to put the spotlight on the next wave of Utah talent ready to carry the torch.</p>
+  </div>
+  <div class="wrap" style="margin-top:26px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <a class="fbtn" href="#featured">Gyms</a>
+      <a class="fbtn" href="#promotions">Promotions</a>
+      <a class="fbtn" href="#localcard">Next card</a>
+      <a class="fbtn" href="#events">Events</a>
+      <a class="fbtn" href="#fighters">Fighters</a>
+      <a class="fbtn" href="#localfeed">Local wire</a>
+    </div>
   </div>
 </header>
 
-<!-- PROMOTIONS -->
-<section>
+<!-- FEATURED GYM -->
+<section id="featured">
   <div class="wrap">
     <div class="sechead">
       <svg class="sicon" viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="14" stroke-linejoin="miter"/></svg>
-      <h2>The Promotions</h2>
-      <span class="mono-tag">Who runs the cards here</span>
+      <h2>Featured Gym</h2>
+      <a class="mono-tag" href="/partner.html" style="margin-left:auto;color:var(--volt);">This spot could be yours &rarr;</a>
     </div>
-    <div class="promos">
-      <div class="promo">
-        <h3>SteelFist Fight Night</h3>
-        <div class="where">Union Event Center · Salt Lake City</div>
-        <p>Utah's longest-running live combat sports show. Mixed cards — MMA, kickboxing, and Muay Thai on the same night — and the most reliable place in the state to watch a prospect's third pro fight.</p>
-      </div>
-      <div class="promo">
-        <h3>Fierce Fighting Championship</h3>
-        <div class="where">Mountain America Center · Regional</div>
-        <p>Built on the bones of Showdown Fights, and currently the biggest promotion operating in the region. Heavyweight-heavy cards and a real title picture.</p>
-      </div>
-      <div class="promo">
-        <h3>UFC at the Delta Center</h3>
-        <div class="where">Salt Lake City · Occasional</div>
-        <p>Four visits and counting, including UFC 278, 291, and 307 — the top three grossing events in building history. When the UFC comes to town, the whole local scene gets a week of daylight.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- LOCAL FIGHT CARD -->
-<section id="localcard">
-  <div class="wrap">
-    <div class="sechead">
-      <svg class="sicon" viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="14" stroke-linejoin="miter"/></svg>
-      <h2 id="cardtitle">The Next Card</h2>
-      <span class="mono-tag" id="cardmeta"></span>
-    </div>
-    <div id="cardbouts"><div class="empty">No local card loaded yet.</div></div>
-  </div>
-</section>
-
-<!-- FIGHTERS STRIP -->
-<section id="fighters">
-  <div class="wrap">
-    <div class="sechead">
-      <svg class="sicon" viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="14" stroke-linejoin="miter"/></svg>
-      <h2>Utah Fighters</h2>
-      <a class="mono-tag" href="/fighters.html" style="margin-left:auto;color:var(--volt);">Full roster \u2192</a>
-    </div>
-    <div id="fighterstrip"><div class="empty">Building the roster. Fight out of Utah? Get on it.</div></div>
+    <div id="featuredbox"></div>
   </div>
 </section>
 
@@ -299,6 +314,31 @@
   </div>
 </section>
 
+<!-- PROMOTIONS -->
+<section id="promotions">
+  <div class="wrap">
+    <div class="sechead">
+      <svg class="sicon" viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="14" stroke-linejoin="miter"/></svg>
+      <h2>The Promotions</h2>
+      <span class="mono-tag">Who runs the cards here</span>
+    </div>
+    <div class="promos" id="promobox"></div>
+  </div>
+</section>
+
+<!-- LOCAL FIGHT CARD -->
+<section id="localcard">
+  <div class="wrap">
+    <div class="sechead">
+      <svg class="sicon" viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="14" stroke-linejoin="miter"/></svg>
+      <h2 id="cardtitle">The Next Card</h2>
+      <span class="mono-tag" id="cardmeta"></span>
+    </div>
+    <div id="cardsponsor"></div>
+    <div id="cardbouts"><div class="empty">No local card loaded yet.</div></div>
+  </div>
+</section>
+
 <!-- EVENTS -->
 <section id="events">
   <div class="wrap">
@@ -310,6 +350,19 @@
     <div id="eventlist">
       <div class="empty">No local cards on the calendar yet.<br>Announced events land here.</div>
     </div>
+  </div>
+</section>
+
+<!-- FIGHTERS STRIP -->
+<section id="fighters">
+  <div class="wrap">
+    <div class="sechead">
+      <svg class="sicon" viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="14" stroke-linejoin="miter"/></svg>
+      <h2>Utah Fighters</h2>
+      <a class="mono-tag" href="/fighters.html" style="margin-left:auto;color:var(--volt);">Full roster &amp; rankings &rarr;</a>
+    </div>
+    <div id="rankpreview"></div>
+    <div id="fighterstrip"><div class="empty">Building the roster. Fight out of Utah? Get on it.</div></div>
   </div>
 </section>
 
@@ -428,6 +481,24 @@ try{
     const db=getFirestore(app);
     // Pull recent stories and filter client-side — avoids needing a composite index
     const snap=await getDocs(query(collection(db,"stories"),orderBy("publishedAt","desc"),limit(60)));
+
+    // presented-by slot
+    try{
+      const spSnap=await getDoc(doc(db,"site","sponsors"));
+      const sp=(spSnap.data()||{})["localcard"]||{};
+      const host=document.getElementById("cardsponsor");
+      if(host){
+        if(sp.name){
+          host.innerHTML='<div class="presby">Presented by <b>'+
+            (sp.link?'<a class="s" href="'+esc(sp.link)+'" target="_blank" rel="noopener">'+esc(sp.name)+'</a>':esc(sp.name))+
+            '</b></div>';
+        } else {
+          host.innerHTML='<div class="presby">Presented by <b>your gym</b>'+
+            '<a class="sell" href="/partner.html">Claim this slot \u2192</a></div>';
+        }
+      }
+    }catch(e){ console.warn("sponsor",e); }
+
     // the local fight card
     try{
       const cSnap=await getDoc(doc(db,"site","localcard"));
@@ -460,6 +531,25 @@ try{
       }
     }catch(e){ console.warn("localcard",e); }
 
+    // top-5 rankings preview
+    try{
+      const rSnap=await getDoc(doc(db,"site","rankings"));
+      const divs=((rSnap.data()||{}).divisions)||[];
+      if(divs.length && (divs[0].fighters||[]).length){
+        const d=divs[0];
+        document.getElementById("rankpreview").innerHTML=
+          '<div style="border:1px solid var(--hair);background:var(--black-2);margin-bottom:16px;">'+
+          '<div style="padding:12px 20px;border-bottom:1px solid var(--hair);font-family:\'JetBrains Mono\',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--volt);font-weight:700;">'+
+            esc(d.name)+'</div>'+
+          d.fighters.slice(0,5).map((n,i)=>
+            '<div style="display:flex;gap:16px;align-items:center;padding:11px 20px;'+(i?'border-top:1px solid var(--hair);':'')+'">'+
+              '<span style="font-family:\'Anton\',sans-serif;font-size:20px;color:'+(i===0?'var(--volt)':'var(--steel)')+';width:26px;">'+(i+1)+'</span>'+
+              '<span style="font-family:\'Anton\',sans-serif;text-transform:uppercase;font-size:17px;">'+esc(n)+'</span>'+
+            '</div>').join('')+
+          '</div>';
+      }
+    }catch(e){ console.warn("rankpreview",e); }
+
     // fighter strip
     try{
       const fSnap=await getDoc(doc(db,"site","fighters"));
@@ -476,6 +566,58 @@ try{
             '</a>').join("")+'</div>';
       }
     }catch(e){ console.warn("fighters",e); }
+
+    // promotions (saved list wins, otherwise the built-ins)
+    try{
+      const pSnap=await getDoc(doc(db,"site","promotions"));
+      const saved=((pSnap.data()||{}).promotions)||[];
+      const SEEDP=[
+        {name:"SteelFist Fight Night",where:"Union Event Center \u00b7 Salt Lake City",
+         note:"Utah's longest-running live combat sports show. Mixed cards \u2014 MMA, kickboxing and Muay Thai on the same night \u2014 and the most reliable place in the state to watch a prospect's third pro fight."},
+        {name:"Fierce Fighting Championship",where:"Mountain America Center \u00b7 Regional",
+         note:"Built on the bones of Showdown Fights, and currently the biggest promotion operating in the region. Heavyweight-heavy cards and a real title picture."},
+        {name:"UFC at the Delta Center",where:"Salt Lake City \u00b7 Occasional",
+         note:"Four visits and counting, including UFC 278, 291 and 307. When the UFC comes to town the whole local scene gets a week of daylight."}
+      ];
+      const list=saved.length?saved:SEEDP;
+      document.getElementById("promobox").innerHTML=list.map(p=>
+        '<div class="promo reveal"><h3>'+esc(p.name)+'</h3>'+
+          (p.where?'<div class="where">'+esc(p.where)+'</div>':'')+
+          (p.note?'<p>'+esc(p.note)+'</p>':'')+
+          (p.link?'<a class="go" href="'+esc(p.link)+'" target="_blank" rel="noopener" style="display:inline-block;margin-top:12px;font-family:\'JetBrains Mono\',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--volt);">Details \u2192</a>':'')+
+        '</div>').join("");
+    }catch(e){ console.warn("promotions",e); }
+
+    // featured gym slot — a paying sponsor, or a worked example of the unit
+    try{
+      const gSnapF=await getDoc(doc(db,"site","gyms"));
+      const savedF=((gSnapF.data()||{}).gyms)||[];
+      const star=savedF.find(g=>g.featured);
+      const box=document.getElementById("featuredbox");
+      const MARKSVG='<svg viewBox="0 0 120 120" class="ghost" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>';
+      if(star){
+        box.innerHTML='<div class="feat reveal">'+MARKSVG+'<div class="inner"><div>'+
+          '<span class="badge">Featured gym</span>'+
+          '<h3>'+esc(star.name)+'</h3>'+
+          (star.city?'<div class="city">'+esc(star.city)+'</div>':'')+
+          (star.disciplines?'<div class="disc">'+esc(star.disciplines)+'</div>':'')+
+          (star.note?'<p>'+esc(star.note)+'</p>':'')+
+        '</div>'+
+        (star.link?'<a class="cta" href="'+esc(star.link)+'" target="_blank" rel="noopener">Visit the gym</a>':'')+
+        '</div></div>';
+      } else {
+        box.innerHTML='<div class="feat sample reveal">'+MARKSVG+'<div class="inner"><div>'+
+          '<span class="badge">Example placement</span>'+
+          '<h3>Your gym, right here</h3>'+
+          '<div class="city">Your city \u00b7 Utah</div>'+
+          '<div class="disc">BJJ \u00b7 Muay Thai \u00b7 Wrestling \u00b7 MMA</div>'+
+          '<p>Top of the page, above every other gym in the state, with your pitch and a link straight to your site. Your fighters go on the Utah roster with your gym named, and we make them a free hype card every time one of them is booked.</p>'+
+          '<div class="samplenote">$100 a month \u00b7 no contract \u00b7 cancel any time</div>'+
+        '</div>'+
+        '<a class="cta" href="/partner.html">See the details</a>'+
+        '</div></div>';
+      }
+    }catch(e){ console.warn("featured",e); }
 
     // gym directory (seeded list, overridden by anything saved in the studio)
     const SEED=[
@@ -580,6 +722,33 @@ window.__fighterModal=(function(){
   return {open,close};
 })();
 
+</script>
+<script>
+/* Site copy — any element with data-copy gets its text from the studio,
+   falling back to whatever is written in the HTML. */
+(async function(){
+  var nodes=document.querySelectorAll('[data-copy]');
+  if(!nodes.length) return;
+  try{
+    var m=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    var f=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+    var app=m.initializeApp({
+      apiKey:"AIzaSyCN2eOBaQBiZDOexipJ-KS7pqkOaNJq7gU",
+      authDomain:"bragging-rights-public.firebaseapp.com",
+      projectId:"bragging-rights-public",
+      storageBucket:"bragging-rights-public.firebasestorage.app",
+      messagingSenderId:"525120309709",
+      appId:"1:525120309709:web:a21f060511e84bb4a91c84"
+    },"copyapp");
+    var db=f.getFirestore(app);
+    var snap=await f.getDoc(f.doc(db,"site","copy"));
+    var blocks=(snap.data()||{}).blocks||{};
+    nodes.forEach(function(el){
+      var v=blocks[el.getAttribute('data-copy')];
+      if(v && String(v).trim()) el.textContent=v;
+    });
+  }catch(e){ /* fallback text stays */ }
+})();
 </script>
 </body>
 </html>
