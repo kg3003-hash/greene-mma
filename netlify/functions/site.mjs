@@ -43,12 +43,146 @@ export default async function handler(req) {
     return new Response(JSON.stringify({ ok: true }), { status: 200 });
   }
 
-  // ---- Everything below needs the studio key ----
-  if (req.headers.get("x-studio-key") !== process.env.STUDIO_KEY) {
+  // ---- Identity ----
+  // ADMIN  = STUDIO_KEY   (full control)
+  // WRITER = WRITER_KEY   (drafts only, and only their own)
+  const key = req.headers.get("x-studio-key") || "";
+  let role = null;
+  if (process.env.STUDIO_KEY && key === process.env.STUDIO_KEY) role = "admin";
+  else if (process.env.WRITER_KEY && key === process.env.WRITER_KEY) role = "writer";
+
+  if (!role) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
   }
 
-  if (body.ping) return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  if (body.ping) {
+    return new Response(JSON.stringify({ ok: true, role }), { status: 200 });
+  }
+
+  const isAdmin = role === "admin";
+  const deny = () =>
+    new Response(JSON.stringify({ error: "Your account cannot do that." }), { status: 403 });
+
+  // ================= DRAFTS (writer + admin) =================
+  // A writer may create, edit, list and delete ONLY their own drafts.
+  // Only an admin can publish one.
+  if (body.saveDraft) {
+    const d = body.saveDraft;
+    if (!d.headline || !d.body) {
+      return new Response(JSON.stringify({ error: "Headline and body are required." }), { status: 400 });
+    }
+    const id = d.id || "draft-" + Date.now();
+    const existing = await db.collection("drafts").doc(id).get();
+    if (existing.exists && !isAdmin && existing.data().authorRole !== "writer") return deny();
+    await db.collection("drafts").doc(id).set({
+      headline: String(d.headline).slice(0, 160),
+      summary: String(d.summary || "").slice(0, 400),
+      body: String(d.body).slice(0, 20000),
+      category: String(d.category || "The Corner").slice(0, 40),
+      tags: Array.isArray(d.tags) ? d.tags.slice(0, 6).map((t) => String(t).slice(0, 24)) : [],
+      utah: d.utah === true,
+      author: String(d.author || (isAdmin ? "Greene MMA" : "Staff writer")).slice(0, 60),
+      authorRole: isAdmin ? "admin" : "writer",
+      status: d.submit ? "submitted" : "draft",
+      note: String(d.note || "").slice(0, 400),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: existing.exists
+        ? existing.data().createdAt
+        : admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    return new Response(JSON.stringify({ ok: true, id, status: d.submit ? "submitted" : "draft" }), { status: 200 });
+  }
+
+  if (body.listDrafts) {
+    let q = db.collection("drafts").orderBy("updatedAt", "desc").limit(60);
+    const snap = await q.get();
+    let rows = snap.docs.map((x) => ({ id: x.id, ...x.data() }));
+    if (!isAdmin) rows = rows.filter((r) => r.authorRole === "writer");
+    return new Response(JSON.stringify({
+      ok: true,
+      drafts: rows.map((r) => ({
+        id: r.id, headline: r.headline, summary: r.summary, body: r.body,
+        category: r.category, tags: r.tags || [], utah: r.utah === true,
+        author: r.author, status: r.status, note: r.note || "",
+      })),
+    }), { status: 200 });
+  }
+
+  if (body.deleteDraft) {
+    const ref = db.collection("drafts").doc(String(body.deleteDraft));
+    const snap = await ref.get();
+    if (!snap.exists) return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    if (!isAdmin && snap.data().authorRole !== "writer") return deny();
+    await ref.delete();
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  }
+
+  // Admin only: turn a draft into a live story
+  if (body.publishDraft) {
+    if (!isAdmin) return deny();
+    const ref = db.collection("drafts").doc(String(body.publishDraft));
+    const snap = await ref.get();
+    if (!snap.exists) return new Response(JSON.stringify({ error: "Draft not found." }), { status: 404 });
+    const d = snap.data();
+    const slug = String(d.headline).toLowerCase().replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "").slice(0, 60) || "story-" + Date.now();
+    await db.collection("stories").doc("gm-" + slug).set({
+      headline: d.headline, summary: d.summary || "", body: d.body,
+      category: d.category || "The Corner", tags: d.tags || [],
+      sourceName: "Greene MMA", sourceUrl: "", original: true,
+      author: d.author || "Greene MMA",
+      utah: d.utah === true,
+      publishedAt: admin.firestore.Timestamp.now(),
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    await ref.delete();
+    return new Response(JSON.stringify({ ok: true, id: "gm-" + slug }), { status: 200 });
+  }
+
+  // Admin only: send a draft back with a note
+  if (body.rejectDraft) {
+    if (!isAdmin) return deny();
+    await db.collection("drafts").doc(String(body.rejectDraft.id)).set({
+      status: "changes requested",
+      note: String(body.rejectDraft.note || "").slice(0, 400),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  }
+
+  // Everything past this point is admin only
+  if (!isAdmin) return deny();
+
+  // ================= SITE COPY =================
+  if (body.copy) {
+    await db.collection("site").doc("copy").set({
+      blocks: body.copy,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  }
+  if (body.getCopy) {
+    const snap = await db.collection("site").doc("copy").get();
+    return new Response(JSON.stringify({ ok: true, blocks: (snap.data() || {}).blocks || {} }), { status: 200 });
+  }
+
+  // ================= PROMOTIONS =================
+  if (body.promotions) {
+    await db.collection("site").doc("promotions").set({
+      promotions: (body.promotions || []).slice(0, 20).map((p) => ({
+        name: String(p.name || "").slice(0, 80),
+        where: String(p.where || "").slice(0, 100),
+        note: String(p.note || "").slice(0, 400),
+        link: String(p.link || "").slice(0, 300),
+      })),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    return new Response(JSON.stringify({ ok: true, saved: body.promotions.length }), { status: 200 });
+  }
+  if (body.getPromotions) {
+    const snap = await db.collection("site").doc("promotions").get();
+    return new Response(JSON.stringify({ ok: true, promotions: (snap.data() || {}).promotions || [] }), { status: 200 });
+  }
 
   // Save written picks (overrides / annotates the auto-pulled odds)
   if (body.picks) {
@@ -213,6 +347,25 @@ Rules:
   if (body.getCardNames) {
     const snap = await db.collection("site").doc("cardnames").get();
     return new Response(JSON.stringify({ ok: true, names: (snap.data() || {}).names || {} }), { status: 200 });
+  }
+
+  // Sponsor slots — small "presented by" placements
+  if (body.sponsors) {
+    const clean = (x) => ({
+      name: String((x && x.name) || "").slice(0, 80),
+      link: String((x && x.link) || "").slice(0, 300),
+    });
+    await db.collection("site").doc("sponsors").set({
+      localcard: clean(body.sponsors.localcard),
+      fightweek: clean(body.sponsors.fightweek),
+      newsletter: clean(body.sponsors.newsletter),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  }
+  if (body.getSponsors) {
+    const snap = await db.collection("site").doc("sponsors").get();
+    return new Response(JSON.stringify({ ok: true, sponsors: snap.data() || {} }), { status: 200 });
   }
 
   // Rankings — your own Utah top-tens
