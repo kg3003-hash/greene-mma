@@ -74,6 +74,10 @@
   .signup button{padding:16px 30px;background:var(--black);color:var(--volt);border:2px solid var(--black);font-weight:700;font-size:14px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;}
   .signup button:hover{background:transparent;color:var(--black);}
   .signup .fine{margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:rgba(12,14,10,.62);}
+  .presby{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid var(--hair);border-left:3px solid var(--volt);background:var(--black-2);padding:12px 18px;margin-bottom:16px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--steel);}
+  .presby b{color:var(--bone);font-weight:400;font-size:13px;letter-spacing:.06em;}
+  .presby a.s{color:var(--volt);}
+  .presby .sell{margin-left:auto;color:var(--volt);opacity:.75;}
   .issue{border:1px solid var(--hair);background:var(--black-2);padding:26px;margin-bottom:12px;transition:border-color .18s,transform .18s;cursor:pointer;}
   .issue:hover{border-color:rgba(201,247,58,.5);transform:translateY(-2px);}
   .issue .d{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--volt);}
@@ -120,10 +124,24 @@
   .headliner{border-top:3px solid var(--volt);}
   .headliner .top{background:rgba(201,247,58,.06);}
   .updated{font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);margin-top:20px;}
+
+  nav .wrap{position:relative;}
+  nav .home{position:absolute;left:22px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:10px;}
+  nav .home svg{width:28px;height:28px;flex-shrink:0;transition:transform .2s;}
+  nav .home:hover svg{transform:rotate(-22.5deg);}
+  nav .home .wm{font-family:'Anton',sans-serif;font-size:17px;letter-spacing:.02em;text-transform:uppercase;color:var(--bone);white-space:nowrap;}
+  nav .home .wm b{color:var(--volt);font-weight:400;}
+  nav .home:hover .wm{color:var(--volt);}
+  @media(max-width:1080px){nav .home .wm{display:none;}}
+  @media(max-width:620px){
+    nav .home{left:14px;}
+    nav .wrap{justify-content:flex-end;padding-left:56px;}
+  }
 </style>
 </head>
 <body>
-<nav><div class="wrap"><div class="links">
+<nav><div class="wrap">
+    <a class="home" href="/" aria-label="Greene MMA home"><svg viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg><span class="wm">Greene <b>MMA</b></span></a><div class="links">
   <a href="/news.html">News</a>
   <a href="/fightweek.html">Fight Week</a>
   <a href="/picks.html">Picks</a>
@@ -137,7 +155,7 @@
   <div class="wrap">
     <div class="eyebrow">The newsletter</div>
     <h1>The Greene <span>Corner</span></h1>
-    <p class="dek">One email a week. Three stories, one live dog, one fighter you don't know yet — but will.</p>
+    <p class="dek" data-copy="newsletter.intro">One email a week. Three stories, one live dog, one fighter you don't know yet — but will.</p>
   </div>
 </header>
 
@@ -160,6 +178,7 @@
       <h2>The Archive</h2>
       <span class="mono-tag">Every issue, click to read</span>
     </div>
+    <div id="nlsponsor"></div>
     <div id="issues"><div class="empty">Loading past issues...</div></div>
   </div>
 </section>
@@ -208,7 +227,7 @@
 </html>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, doc, getDoc, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const firebaseConfig = {
   apiKey: "AIzaSyCN2eOBaQBiZDOexipJ-KS7pqkOaNJq7gU",
   authDomain: "bragging-rights-public.firebaseapp.com",
@@ -234,6 +253,15 @@ document.getElementById("go").addEventListener("click",async()=>{
 
 try{
   const db=getFirestore(initializeApp(firebaseConfig));
+  try{
+    const spSnap=await getDoc(doc(db,"site","sponsors"));
+    const sp=(spSnap.data()||{}).newsletter||{};
+    const host=document.getElementById("nlsponsor");
+    if(host) host.innerHTML = sp.name
+      ? '<div class="presby">This issue presented by <b>'+(sp.link?'<a class="s" href="'+esc(sp.link)+'" target="_blank" rel="noopener">'+esc(sp.name)+'</a>':esc(sp.name))+'</b></div>'
+      : '<div class="presby">Issues can be sponsored<a class="sell" href="/partner.html">Claim this slot \u2192</a></div>';
+  }catch(e){}
+
   const snap=await getDocs(query(collection(db,"issues"),orderBy("publishedAt","desc"),limit(30)));
   const el=document.getElementById("issues");
   if(!snap.docs.length){
@@ -255,6 +283,33 @@ try{
   console.warn(e);
 }
 if(window.__reveal) window.__reveal();
+</script>
+<script>
+/* Site copy — any element with data-copy gets its text from the studio,
+   falling back to whatever is written in the HTML. */
+(async function(){
+  var nodes=document.querySelectorAll('[data-copy]');
+  if(!nodes.length) return;
+  try{
+    var m=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    var f=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+    var app=m.initializeApp({
+      apiKey:"AIzaSyCN2eOBaQBiZDOexipJ-KS7pqkOaNJq7gU",
+      authDomain:"bragging-rights-public.firebaseapp.com",
+      projectId:"bragging-rights-public",
+      storageBucket:"bragging-rights-public.firebasestorage.app",
+      messagingSenderId:"525120309709",
+      appId:"1:525120309709:web:a21f060511e84bb4a91c84"
+    },"copyapp");
+    var db=f.getFirestore(app);
+    var snap=await f.getDoc(f.doc(db,"site","copy"));
+    var blocks=(snap.data()||{}).blocks||{};
+    nodes.forEach(function(el){
+      var v=blocks[el.getAttribute('data-copy')];
+      if(v && String(v).trim()) el.textContent=v;
+    });
+  }catch(e){ /* fallback text stays */ }
+})();
 </script>
 </body>
 </html>
