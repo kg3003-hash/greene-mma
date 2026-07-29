@@ -154,6 +154,17 @@
   .adslot{margin:36px 0;min-height:90px;display:flex;align-items:center;justify-content:center;}
   .adslot.empty-ad{display:none;}
 
+  /* our own writing */
+  .mine{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;}
+  a.mine-card{display:flex;flex-direction:column;gap:12px;border:1px solid var(--hair);
+    border-top:3px solid var(--volt);background:var(--black-2);padding:26px;
+    transition:border-color .18s,transform .18s;}
+  a.mine-card:hover{border-color:rgba(201,247,58,.55);transform:translateY(-3px);}
+  a.mine-card .c{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--volt);font-weight:700;}
+  a.mine-card h3{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:23px;line-height:1.12;}
+  a.mine-card p{font-size:16px;color:var(--steel);}
+  a.mine-card .by{margin-top:auto;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--steel);opacity:.85;}
+
   /* feed */
   .feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px;}
   .card{border:1px solid var(--hair);padding:26px;display:flex;flex-direction:column;gap:13px;background:var(--black-2);transition:border-color .15s,transform .15s;}
@@ -274,6 +285,7 @@
       <a class="fbtn" href="#localcard">Next card</a>
       <a class="fbtn" href="#events">Events</a>
       <a class="fbtn" href="#fighters">Fighters</a>
+      <a class="fbtn" href="#ourutah">Our writing</a>
       <a class="fbtn" href="#localfeed">Local wire</a>
     </div>
   </div>
@@ -358,6 +370,18 @@
     </div>
     <div id="rankpreview"></div>
     <div id="fighterstrip"><div class="empty">Building the roster. Fight out of Utah? Get on it.</div></div>
+  </div>
+</section>
+
+<!-- OUR UTAH WRITING -->
+<section id="ourutah">
+  <div class="wrap">
+    <div class="sechead">
+      <svg class="sicon" viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="14" stroke-linejoin="miter"/></svg>
+      <h2>From the Greene Corner</h2>
+      <span class="mono-tag">Our own Utah writing</span>
+    </div>
+    <div id="ourfeed"></div>
   </div>
 </section>
 
@@ -656,7 +680,26 @@ try{
       }
     }catch(e){ console.warn("events",e); }
 
-    const local=snap.docs.map(d=>d.data()).filter(s=>s.utah===true).slice(0,12);
+    const allStories=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const isUtah=x=>x.utah===true||(x.tags||[]).includes("Utah");
+
+    // our own Utah writing
+    const mine=allStories.filter(x=>x.original===true && isUtah(x)).slice(0,6);
+    const mineBox=document.getElementById("ourfeed");
+    if(mine.length){
+      mineBox.innerHTML='<div class="mine">'+mine.map(x=>
+        '<a class="mine-card reveal" href="/story.html?id='+encodeURIComponent(x.id)+'">'+
+          '<span class="c">'+esc(x.category||'The Corner')+'</span>'+
+          '<h3>'+esc(x.headline)+'</h3>'+
+          (x.summary?'<p>'+esc(x.summary)+'</p>':'')+
+          '<span class="by">'+(x.author?('By '+esc(x.author)+' \u00b7 '):'')+timeAgo(x.publishedAt.toDate())+'</span>'+
+        '</a>').join('')+'</div>';
+    } else {
+      mineBox.innerHTML='<div class="empty">Nothing written yet.<br>Articles tagged Utah in the Studio land here.</div>';
+    }
+
+    // aggregated wire, minus anything we wrote ourselves
+    const local=allStories.filter(x=>isUtah(x) && x.original!==true).slice(0,12);
     if(local.length){
       document.getElementById("feedgrid").innerHTML=local.map(s=>
         '<article class="card">'+

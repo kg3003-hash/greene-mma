@@ -43,7 +43,19 @@
   .cat.live{color:var(--red);}
   h1{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:clamp(34px,6vw,58px);line-height:1.02;margin-top:18px;}
   .meta{margin-top:22px;font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:.06em;color:var(--steel);display:flex;gap:20px;flex-wrap:wrap;}
-  .body{padding:8px 0 44px;font-size:20px;line-height:1.62;}
+  .body{padding:8px 0 44px;font-size:20px;line-height:1.68;}
+  .body p{margin-bottom:22px;}
+  .body h2{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:30px;line-height:1.12;margin:34px 0 16px;}
+  .body h3{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:23px;line-height:1.14;margin:28px 0 12px;color:var(--volt);}
+  .body strong{font-weight:700;color:#fff;}
+  .body em{font-style:italic;}
+  .body u{text-decoration:underline;text-decoration-color:var(--volt);text-underline-offset:3px;}
+  .body a{color:var(--volt);text-decoration:underline;text-underline-offset:3px;}
+  .body a:hover{color:var(--bone);}
+  .body ul,.body ol{margin:0 0 22px 22px;}
+  .body li{margin-bottom:9px;}
+  .body blockquote{border-left:3px solid var(--volt);padding:6px 0 6px 20px;margin:26px 0;color:var(--bone);font-size:22px;line-height:1.5;}
+  .body hr{border:none;border-top:1px solid var(--hair);margin:34px 0;}
   .rule{height:1px;background:var(--hair);margin:8px 0 32px;}
   .src{border:1px solid var(--hair);border-left:3px solid var(--volt);background:var(--black-2);padding:24px;margin-bottom:44px;}
   .src .lbl{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel);}
@@ -194,19 +206,20 @@ try{
   const others=rel.docs.filter(d=>d.id!==id).slice(0,3)
     .map(d=>({id:d.id,...d.data()}));
 
-  const paras = (s.body||"").split(/\n\s*\n/).filter(Boolean)
-    .map(t=>'<p style="margin-bottom:22px">'+esc(t)+'</p>').join("");
+  const paras = window.gmFormat ? window.gmFormat(s.body||"") : "";
 
   app.innerHTML=
     '<header class="hero"><div class="wrap reveal">'+
       '<span class="cat'+live+'">'+esc(s.category)+'</span>'+
       '<h1>'+esc(s.headline)+'</h1>'+
-      '<div class="meta"><span>'+timeAgo(s.publishedAt.toDate())+'</span><span>via '+esc(s.sourceName)+'</span></div>'+
+      '<div class="meta"><span>'+timeAgo(s.publishedAt.toDate())+'</span>'+
+        (s.original && s.author ? '<span>by '+esc(s.author)+'</span>' : '<span>via '+esc(s.sourceName)+'</span>')+
+      '</div>'+
     '</div></header>'+
     '<div class="wrap"><div class="rule"></div>'+
       '<div class="body reveal">'+(s.original&&paras?paras:esc(s.summary))+'</div>'+
       (s.original
-        ? '<div class="src reveal"><div class="lbl">Written by</div><div class="name">Greene MMA</div>'+
+        ? '<div class="src reveal"><div class="lbl">Written by</div><div class="name">'+esc(s.author||'Greene MMA')+'</div>'+
           '<p>From the Greene corner. If we got something wrong, tell us.</p></div>'
         : '<div class="src reveal">'+
           '<div class="lbl">Original reporting</div>'+
@@ -229,14 +242,65 @@ try{
     '</div></div>':'');
 
 }catch(err){
-  const paras = (s.body||"").split(/\n\s*\n/).filter(Boolean)
-    .map(t=>'<p style="margin-bottom:22px">'+esc(t)+'</p>').join("");
+  const paras = window.gmFormat ? window.gmFormat(s.body||"") : "";
 
   app.innerHTML='<div class="wrap"><div class="loading">Story not found.<br><br>'+
     '<a class="back" href="/">← Back to the news</a></div></div>';
   console.warn(err);
 }
 if(window.__reveal) window.__reveal();
+</script>
+<script>
+/* ---------- Greene MMA text formatting ----------
+   Simple, safe markup. Everything is HTML-escaped first, so nothing a writer
+   types can inject markup — only the patterns below become formatting.
+
+     ## Heading          ### Smaller heading
+     **bold**            *italic*            __underline__
+     > quote
+     - bullet            1. numbered
+     [link text](https://example.com)
+     ---                 horizontal rule
+*/
+window.gmFormat=function(src){
+  const esc=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const inline=t=>{
+    t=t.replace(/\[([^\]]{1,120})\]\((https?:\/\/[^\s)]{1,300})\)/g,
+      (m,txt,url)=>'<a href="'+url+'" target="_blank" rel="noopener">'+txt+'</a>');
+    t=t.replace(/\*\*([^*]{1,300})\*\*/g,'<strong>$1</strong>');
+    t=t.replace(/__([^_]{1,300})__/g,'<u>$1</u>');
+    t=t.replace(/(^|[^*])\*([^*\n]{1,300})\*/g,'$1<em>$2</em>');
+    return t;
+  };
+  const lines=esc(String(src||'')).split(/\r?\n/);
+  let out=[], list=null, para=[];
+  const flushPara=()=>{ if(para.length){ out.push('<p>'+inline(para.join(' '))+'</p>'); para=[]; } };
+  const flushList=()=>{ if(list){ out.push('</'+list+'>'); list=null; } };
+  for(const raw of lines){
+    const line=raw.trim();
+    if(!line){ flushPara(); flushList(); continue; }
+    let m;
+    if(/^---+$/.test(line)){ flushPara(); flushList(); out.push('<hr>'); continue; }
+    if((m=line.match(/^###\s+(.*)$/))){ flushPara(); flushList(); out.push('<h3>'+inline(m[1])+'</h3>'); continue; }
+    if((m=line.match(/^##\s+(.*)$/))){ flushPara(); flushList(); out.push('<h2>'+inline(m[1])+'</h2>'); continue; }
+    if((m=line.match(/^&gt;\s?(.*)$/))){ flushPara(); flushList(); out.push('<blockquote>'+inline(m[1])+'</blockquote>'); continue; }
+    if((m=line.match(/^[-*]\s+(.*)$/))){
+      flushPara();
+      if(list!=='ul'){ flushList(); out.push('<ul>'); list='ul'; }
+      out.push('<li>'+inline(m[1])+'</li>'); continue;
+    }
+    if((m=line.match(/^\d+[.)]\s+(.*)$/))){
+      flushPara();
+      if(list!=='ol'){ flushList(); out.push('<ol>'); list='ol'; }
+      out.push('<li>'+inline(m[1])+'</li>'); continue;
+    }
+    flushList();
+    para.push(line);
+  }
+  flushPara(); flushList();
+  return out.join('\n');
+};
+
 </script>
 </body>
 </html>
