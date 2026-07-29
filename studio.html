@@ -104,6 +104,32 @@
 <div class="wrap"><div class="app">
   <div>
     <div class="panel">
+      <h2>Submitted drafts</h2>
+      <p class="hint" style="margin-top:0">Anything a writer sends over lands here. Publishing turns it into a live story with their byline.</p>
+      <button class="btn ghost" id="dr_load" style="margin-top:0">Load drafts</button>
+      <div class="alist" id="dr_list"></div>
+      <div id="dr_preview"></div>
+      <div id="dr_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Site copy</h2>
+      <p class="hint" style="margin-top:0">Headings and intro paragraphs across the site. Leave a box empty and the built-in wording stays.</p>
+      <div id="copyfields"></div>
+      <button class="btn" id="cp_save">Save copy</button>
+      <div id="cp_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Utah promotions</h2>
+      <p class="hint" style="margin-top:0">The promotions block on the Utah page. Empty means the built-in SteelFist / Fierce FC / UFC entries show.</p>
+      <div class="alist" id="pr_list"></div>
+      <button class="btn ghost" id="pr_add">Add promotion</button>
+      <button class="btn" id="pr_save">Save promotions</button>
+      <div id="pr_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+    </div>
+
+    <div class="panel">
       <h2>Write an article</h2>
       <label>Headline</label><input type="text" id="a_head" placeholder="Short. Punchy. Max ~10 words.">
       <label>Standfirst (shows on cards + previews)</label>
@@ -157,6 +183,28 @@
       <button class="btn ghost" id="sub_csv">Download CSV</button>
       <div id="sub_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
       <div id="sub_box" style="margin-top:10px;max-height:180px;overflow:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--steel);"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Sponsor slots</h2>
+      <p class="hint" style="margin-top:0">Small "presented by" lines. Leave a name blank and the slot shows a "claim this spot" prompt instead.</p>
+      <label>Utah — next card</label>
+      <div class="row2">
+        <div><input type="text" id="sp_lc_n" placeholder="Gym or business name"></div>
+        <div><input type="text" id="sp_lc_l" placeholder="https://"></div>
+      </div>
+      <label>Fight Week page</label>
+      <div class="row2">
+        <div><input type="text" id="sp_fw_n" placeholder="Gym or business name"></div>
+        <div><input type="text" id="sp_fw_l" placeholder="https://"></div>
+      </div>
+      <label>Newsletter issue</label>
+      <div class="row2">
+        <div><input type="text" id="sp_nl_n" placeholder="Gym or business name"></div>
+        <div><input type="text" id="sp_nl_l" placeholder="https://"></div>
+      </div>
+      <button class="btn" id="sp_save">Save sponsors</button>
+      <div id="sp_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
     </div>
 
     <div class="panel">
@@ -274,6 +322,13 @@
         headers:{'content-type':'application/json','x-studio-key':k},
         body:JSON.stringify({ping:true})});
       if(r.status===401){document.getElementById('gateerr').textContent='Wrong passcode.';return false;}
+      const out=await r.json();
+      if(out.role==='writer'){
+        sessionStorage.setItem('gmma_wkey',k);
+        document.getElementById('gateerr').textContent='Taking you to the Writers\u2019 Room...';
+        location.href='/write.html';
+        return true;
+      }
       sessionStorage.setItem('gmma_key',k); gate.style.display='none'; return true;
     }catch(e){
       document.getElementById('gateerr').textContent='Cannot reach the server.';return false;
@@ -353,6 +408,126 @@
     a.href=URL.createObjectURL(b); a.download='greene-mma-subscribers.csv'; a.click();
     URL.revokeObjectURL(a.href);
   });
+
+  /* ---- submitted drafts ---- */
+  let DRAFTS=[];
+  $('dr_load').addEventListener('click',loadDrafts);
+  async function loadDrafts(){
+    const st=$('dr_status'); say(st,'Loading...');
+    const out=await api({listDrafts:true});
+    if(!out.ok){ say(st,'\u2717 '+(out.error||'Failed'),'bad'); return; }
+    DRAFTS=out.drafts||[];
+    say(st,'\u2713 '+DRAFTS.length+' draft(s)','ok');
+    const box=$('dr_list');
+    box.innerHTML = DRAFTS.length ? DRAFTS.map((d,i)=>
+      '<div class="aline" data-i="'+i+'"><div class="t">'+
+        '<div class="t1">'+(d.headline||'(untitled)').replace(/</g,'&lt;')+'</div>'+
+        '<div class="t2">'+(d.status||'draft').toUpperCase()+' \u00b7 '+(d.author||'unknown').replace(/</g,'&lt;')+'</div>'+
+      '</div><span class="act">OPEN</span></div>').join('')
+      : '<div style="padding:16px;color:var(--steel);font-size:13px;">Nothing submitted.</div>';
+    box.querySelectorAll('.aline').forEach(el=>el.addEventListener('click',()=>preview(DRAFTS[+el.dataset.i])));
+  }
+  function preview(d){
+    $('dr_preview').innerHTML=
+      '<div style="border:1px solid var(--hair);padding:18px;margin-top:12px;background:var(--black);">'+
+        '<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;letter-spacing:.14em;color:var(--volt);">'+
+          (d.category||'')+' \u00b7 by '+(d.author||'unknown').replace(/</g,'&lt;')+'</div>'+
+        '<div style="font-family:\'Anton\',sans-serif;text-transform:uppercase;font-size:22px;margin-top:8px;line-height:1.1;">'+
+          (d.headline||'').replace(/</g,'&lt;')+'</div>'+
+        '<div style="color:var(--steel);margin-top:8px;font-size:14.5px;">'+(d.summary||'').replace(/</g,'&lt;')+'</div>'+
+        '<div style="margin-top:14px;font-size:14.5px;max-height:260px;overflow:auto;white-space:pre-wrap;border-top:1px solid var(--hair);padding-top:12px;">'+
+          (d.body||'').replace(/</g,'&lt;')+'</div>'+
+        '<label>Note back to the writer (for changes)</label>'+
+        '<input type="text" id="dr_note" placeholder="What needs fixing">'+
+        '<button class="btn" id="dr_pub">Publish it</button>'+
+        '<button class="btn ghost" id="dr_rej">Request changes</button>'+
+      '</div>';
+    $('dr_pub').addEventListener('click',async()=>{
+      const st=$('dr_status'); say(st,'Publishing...');
+      const out=await api({publishDraft:d.id});
+      if(out.ok){ say(st,'\u2713 Live at /story.html?id='+out.id,'ok'); $('dr_preview').innerHTML=''; loadDrafts(); }
+      else say(st,'\u2717 '+(out.error||'Failed'),'bad');
+    });
+    $('dr_rej').addEventListener('click',async()=>{
+      const st=$('dr_status');
+      const out=await api({rejectDraft:{id:d.id,note:$('dr_note').value.trim()}});
+      say(st, out.ok?'\u2713 Sent back with your note.':'\u2717 '+(out.error||'Failed'), out.ok?'ok':'bad');
+      $('dr_preview').innerHTML=''; loadDrafts();
+    });
+  }
+
+  /* ---- site copy ---- */
+  const COPY_FIELDS=[
+    ['home.tagline','Homepage tagline'],
+    ['home.utah.heading','Homepage Utah block heading'],
+    ['home.utah.body','Homepage Utah block paragraph'],
+    ['utah.heading','Utah page heading'],
+    ['utah.intro','Utah page intro'],
+    ['fighters.intro','Fighters page intro'],
+    ['picks.heading','Picks page heading'],
+    ['picks.intro','Picks page intro'],
+    ['fightweek.intro','Fight Week intro'],
+    ['news.intro','News page intro'],
+    ['newsletter.intro','Newsletter page intro'],
+    ['partner.intro','Partner page intro']
+  ];
+  $('copyfields').innerHTML=COPY_FIELDS.map(([k,l])=>
+    '<label>'+l+'</label><textarea data-k="'+k+'" style="min-height:56px"></textarea>').join('');
+  $('cp_save').addEventListener('click',async()=>{
+    const st=$('cp_status'); say(st,'Saving...');
+    const blocks={};
+    document.querySelectorAll('#copyfields textarea').forEach(t=>{
+      const v=t.value.trim(); if(v) blocks[t.dataset.k]=v;
+    });
+    const out=await api({copy:blocks});
+    say(st, out.ok?'\u2713 Copy saved \u2014 live on the site.':'\u2717 '+(out.error||'Failed'), out.ok?'ok':'bad');
+  });
+  (async()=>{ try{ const o=await api({getCopy:true});
+    if(o.ok&&o.blocks) document.querySelectorAll('#copyfields textarea').forEach(t=>{
+      if(o.blocks[t.dataset.k]) t.value=o.blocks[t.dataset.k];
+    });
+  }catch(e){} })();
+
+  /* ---- promotions ---- */
+  const PROMOS=adminList({
+    listId:'pr_list',
+    empty:'Using the built-in promotions. Add one here to take over.',
+    title:d=>d.name, sub:d=>d.where, searchText:d=>[d.name,d.where].join(' '),
+    keep:d=>!!d.name,
+    blank:()=>({name:'',where:'',note:'',link:''}),
+    fields:[
+      {key:'name',cls:'pr_n',label:'Promotion'},
+      {key:'where',cls:'pr_w',label:'Venue / area'},
+      {key:'note',cls:'pr_note',label:'Description',type:'area'},
+      {key:'link',cls:'pr_l',label:'Link'}
+    ]
+  });
+  $('pr_add').addEventListener('click',()=>PROMOS.add());
+  $('pr_save').addEventListener('click',async()=>{
+    const st=$('pr_status'); say(st,'Saving...');
+    const out=await api({promotions:PROMOS.get()});
+    say(st, out.ok?('\u2713 Saved '+out.saved+' promotion(s).'):'\u2717 '+(out.error||'Failed'), out.ok?'ok':'bad');
+  });
+  (async()=>{ try{ const o=await api({getPromotions:true}); PROMOS.set((o.ok&&o.promotions)?o.promotions:[]);}catch(e){ PROMOS.set([]); } })();
+
+  /* ---- sponsor slots ---- */
+  $('sp_save').addEventListener('click',async()=>{
+    const st=$('sp_status'); say(st,'Saving...');
+    const out=await api({sponsors:{
+      localcard:{name:$('sp_lc_n').value.trim(),link:$('sp_lc_l').value.trim()},
+      fightweek:{name:$('sp_fw_n').value.trim(),link:$('sp_fw_l').value.trim()},
+      newsletter:{name:$('sp_nl_n').value.trim(),link:$('sp_nl_l').value.trim()}
+    }});
+    say(st, out.ok?'\u2713 Sponsor slots saved.':'\u2717 '+(out.error||'Failed'), out.ok?'ok':'bad');
+  });
+  (async()=>{ try{ const o=await api({getSponsors:true});
+    if(o.ok&&o.sponsors){
+      const p=o.sponsors;
+      if(p.localcard){ $('sp_lc_n').value=p.localcard.name||''; $('sp_lc_l').value=p.localcard.link||''; }
+      if(p.fightweek){ $('sp_fw_n').value=p.fightweek.name||''; $('sp_fw_l').value=p.fightweek.link||''; }
+      if(p.newsletter){ $('sp_nl_n').value=p.newsletter.name||''; $('sp_nl_l').value=p.newsletter.link||''; }
+    }
+  }catch(e){} })();
 
   /* ---- rankings ---- */
   let DIVS=[], curDiv=0;
