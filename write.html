@@ -14,22 +14,23 @@
   *{margin:0;padding:0;box-sizing:border-box;}
   body{background:var(--black);color:var(--bone);font-family:'Barlow',sans-serif;font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;}
   a{color:inherit;text-decoration:none;}
-  .wrap{max-width:1120px;margin:0 auto;padding:0 20px;}
+  .wrap{max-width:1560px;margin:0 auto;padding:0 24px;}
   .top{border-bottom:1px solid var(--hair);}
   .top .wrap{display:flex;align-items:center;gap:12px;height:62px;}
   .top svg{width:30px;height:30px;}
   .top .name{font-family:'Anton',sans-serif;font-size:19px;text-transform:uppercase;}
   .top .name span{color:var(--volt);}
   .top .tool{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);}
-  .app{display:grid;grid-template-columns:1fr 380px;gap:24px;padding:26px 0 70px;}
+  .app{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:26px;padding:24px 0 80px;align-items:start;}
+  .app > div:last-child{position:sticky;top:18px;}
   @media(max-width:900px){.app{grid-template-columns:1fr;}}
-  .panel{border:1px solid var(--hair);background:var(--black-2);padding:22px;}
+  .panel{border:1px solid var(--hair);background:var(--black-2);padding:26px 28px;}
   .panel+.panel{margin-top:14px;}
   .panel h2{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:20px;margin-bottom:12px;}
   label{display:block;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);margin:13px 0 5px;}
-  input[type=text],textarea,select{width:100%;padding:11px 12px;background:var(--black);border:1px solid var(--hair);color:var(--bone);font-family:'Barlow',sans-serif;font-size:15px;}
+  input[type=text],textarea,select{width:100%;padding:12px 14px;background:var(--black);border:1px solid var(--hair);color:var(--bone);font-family:'Barlow',sans-serif;font-size:16px;}
   input:focus,textarea:focus,select:focus{outline:2px solid var(--volt);outline-offset:1px;border-color:transparent;}
-  textarea{resize:vertical;min-height:70px;}
+  textarea{resize:vertical;min-height:96px;line-height:1.65;}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px;}
   .chip{padding:8px 13px;border:1px solid var(--hair);background:var(--black);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);}
@@ -98,7 +99,7 @@
       <label>Standfirst — the line that shows on cards</label>
       <textarea id="w_sum" placeholder="One or two sentences, 25-45 words."></textarea>
       <label>Body</label>
-      <textarea id="w_body" style="min-height:340px" placeholder="Write the piece. Leave a blank line between paragraphs."></textarea>
+      <textarea id="w_body" style="min-height:560px;font-size:17px" placeholder="Write the piece. Leave a blank line between paragraphs."></textarea>
       <div class="row2">
         <div><label>Category</label>
           <select id="w_cat">

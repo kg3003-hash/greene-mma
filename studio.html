@@ -11,7 +11,7 @@
   :root{--black:#0C0E0A;--black-2:#13160F;--volt:#C9F73A;--bone:#F2F0E9;--steel:#9AA194;--hair:rgba(242,240,233,.14);}
   *{margin:0;padding:0;box-sizing:border-box;}
   body{background:var(--black);color:var(--bone);font-family:'Barlow',sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;}
-  .wrap{max-width:1180px;margin:0 auto;padding:0 20px;}
+  .wrap{max-width:1680px;margin:0 auto;padding:0 24px;}
   .top{border-bottom:1px solid var(--hair);}
   .top .wrap{display:flex;align-items:center;gap:12px;height:62px;}
   .top svg{width:30px;height:30px;}
@@ -21,12 +21,12 @@
   .app{display:grid;grid-template-columns:390px 1fr;gap:28px;padding:30px 0 70px;}
   @media(max-width:900px){.app{grid-template-columns:1fr;}.stage{position:static !important;}}
   .panel{border:1px solid var(--hair);background:var(--black-2);padding:22px;}
-  .panel+.panel{margin-top:16px;}
+  .panel+.panel{margin-top:18px;}
   .panel h2{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:20px;margin-bottom:14px;}
   label{display:block;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);margin:13px 0 6px;}
   input[type=text],textarea,select{width:100%;padding:11px 12px;background:var(--black);border:1px solid var(--hair);color:var(--bone);font-family:'Barlow',sans-serif;font-size:15px;}
   input:focus,textarea:focus,select:focus{outline:2px solid var(--volt);outline-offset:1px;border-color:transparent;}
-  textarea{resize:vertical;min-height:60px;}
+  textarea{resize:vertical;min-height:96px;line-height:1.6;}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   input[type=range]{width:100%;accent-color:var(--volt);margin-top:4px;}
   .drop{border:2px dashed var(--hair);padding:24px 16px;text-align:center;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);transition:border-color .15s,color .15s;}
@@ -67,7 +67,7 @@
   .ok{color:var(--volt);} .bad{color:#FF4B3E;}
 
   /* admin list */
-  .alist{border:1px solid var(--hair);max-height:380px;overflow:auto;margin-top:8px;}
+  .alist{border:1px solid var(--hair);max-height:460px;overflow:auto;margin-top:8px;}
   .aline{display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid var(--hair);cursor:pointer;}
   .aline:hover{background:rgba(201,247,58,.05);}
   .aline .t{flex:1;min-width:0;}
@@ -82,7 +82,7 @@
   .acount{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--steel);white-space:nowrap;}
 
   /* ---- tabbed workspace ---- */
-  .ws{display:grid;grid-template-columns:196px 1fr;gap:24px;align-items:start;}
+  .ws{display:grid;grid-template-columns:210px minmax(0,1fr);gap:26px;align-items:start;}
   @media(max-width:900px){.ws{grid-template-columns:1fr;}}
   .side{position:sticky;top:18px;border:1px solid var(--hair);background:var(--black-2);}
   @media(max-width:900px){.side{position:static;display:flex;overflow-x:auto;}}
@@ -98,7 +98,10 @@
   .side .grp{padding:11px 16px 7px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel);opacity:.6;border-bottom:1px solid var(--hair);}
   @media(max-width:900px){.side .grp{display:none;}}
   .tabpane{display:none;}
-  .tabpane.on{display:block;}
+  .tabpane.on{display:grid;grid-template-columns:repeat(auto-fit,minmax(430px,1fr));gap:18px;align-items:start;}
+  .tabpane .panel{margin-top:0;}
+  /* editors that need the whole width */
+  .tabpane .panel.wide{grid-column:1 / -1;}
   .tabpane .panel:first-child{margin-top:0;}
   .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;}
   @media(max-width:1180px){.cols{grid-template-columns:1fr;}}
@@ -128,13 +131,13 @@
     <div class="side" id="sidenav"></div>
     <div id="panes">
 <div class="tabpane" data-p="write">
-<div class="panel">
+<div class="panel wide">
       <h2>Write an article</h2>
       <label>Headline</label><input type="text" id="a_head" placeholder="Short. Punchy. Max ~10 words.">
       <label>Standfirst (shows on cards + previews)</label>
       <textarea id="a_sum" placeholder="One or two sentences. 25-45 words."></textarea>
       <label>Body</label>
-      <textarea id="a_body" style="min-height:220px" placeholder="Write the piece. Blank line between paragraphs."></textarea>
+      <textarea id="a_body" style="min-height:460px" placeholder="Write the piece. Blank line between paragraphs."></textarea>
       <div class="row2">
         <div><label>Category</label>
           <select id="a_cat">
@@ -158,7 +161,7 @@
       <div id="a_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
     </div>
 
-<div class="panel">
+<div class="panel wide">
       <h2>Submitted drafts</h2>
       <p class="hint" style="margin-top:0">Anything a writer sends over lands here. Publishing turns it into a live story with their byline.</p>
       <button class="btn ghost" id="dr_load" style="margin-top:0">Load drafts</button>
@@ -212,7 +215,7 @@
         <input type="text" id="ft_search" placeholder="Search name, gym, weight..." style="flex:1">
         <span id="ft_count" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--steel);white-space:nowrap;"></span>
       </div>
-      <div id="ftlist" style="max-height:420px;overflow:auto;border:1px solid var(--hair);"></div>
+      <div id="ftlist" style="max-height:520px;overflow:auto;border:1px solid var(--hair);"></div>
       <button class="btn ghost" id="ft_add">Add fighter</button>
       <button class="btn ghost" id="ft_dedupe">Remove duplicates</button>
       <button class="btn" id="ft_save">Save roster</button>
@@ -278,12 +281,12 @@
 
 </div>
 <div class="tabpane" data-p="news">
-<div class="panel">
+<div class="panel wide">
       <h2>Newsletter issue</h2>
       <label>Subject</label><input type="text" id="n_sub" placeholder="This week in the Greene corner">
       <label>Preview line</label><input type="text" id="n_prev" placeholder="Shows under the subject in the archive">
       <label>Body</label>
-      <textarea id="n_body" style="min-height:200px" placeholder="Blank line between paragraphs."></textarea>
+      <textarea id="n_body" style="min-height:400px" placeholder="Blank line between paragraphs."></textarea>
       <button class="btn" id="n_save">Save to archive</button>
       <div id="n_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
       <p class="hint">Saves the issue to the public archive at /newsletter.html. To actually email it, export your list below and paste it into your sending provider.</p>
@@ -306,7 +309,7 @@
 
 </div>
 <div class="tabpane" data-p="site">
-<div class="panel">
+<div class="panel wide">
       <h2>Site copy</h2>
       <p class="hint" style="margin-top:0">Headings and intro paragraphs across the site. Leave a box empty and the built-in wording stays.</p>
       <div id="copyfields"></div>
@@ -341,14 +344,7 @@
     </div>
   </div>
 
-  <div class="stage">
-      <div class="panel" style="width:100%;text-align:center;">
-        <svg viewBox="0 0 120 120" style="width:70px;height:70px;margin:0 auto 18px;display:block;"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>
-        <h2>Card Studio</h2>
-        <p class="hint" style="margin-top:0">Tale of the tape, clash posters, solo cards, and publishing to X and Instagram all live in the Card Studio now.</p>
-        <a class="btn" href="/cards.html" style="text-decoration:none;">Open Card Studio</a>
-      </div>
-    </div>
+  
 </div></div>
 
 <script>
@@ -358,7 +354,10 @@
   const nav=document.getElementById('sidenav');
   if(!nav) return;
   nav.innerHTML='<div class="grp">Workspace</div>'+
-    GROUPS.map(([k,l],i)=>'<button data-p="'+k+'"'+(i===0?' class="on"':'')+'>'+l+'</button>').join('');
+    GROUPS.map(([k,l],i)=>'<button data-p="'+k+'"'+(i===0?' class="on"':'')+'>'+l+'</button>').join('')+
+    '<div class="grp" style="border-top:1px solid var(--hair)">Tools</div>'+
+    '<a href="/cards.html" style="display:block;padding:13px 16px;color:var(--volt);font-family:\'JetBrains Mono\',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;">Card Studio &rarr;</a>'+
+    '<a href="/" style="display:block;padding:13px 16px;border-top:1px solid var(--hair);color:var(--steel);font-family:\'JetBrains Mono\',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;">View site &rarr;</a>';
   function show(k){
     document.querySelectorAll('.tabpane').forEach(p=>p.classList.toggle('on',p.dataset.p===k));
     nav.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.p===k));
@@ -531,8 +530,9 @@
     ['newsletter.intro','Newsletter page intro'],
     ['partner.intro','Partner page intro']
   ];
+  $('copyfields').style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:0 20px;';
   $('copyfields').innerHTML=COPY_FIELDS.map(([k,l])=>
-    '<label>'+l+'</label><textarea data-k="'+k+'" style="min-height:56px"></textarea>').join('');
+    '<div><label>'+l+'</label><textarea data-k="'+k+'" style="min-height:84px"></textarea></div>').join('');
   $('cp_save').addEventListener('click',async()=>{
     const st=$('cp_status'); say(st,'Saving...');
     const blocks={};
