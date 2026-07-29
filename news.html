@@ -102,10 +102,24 @@
   .headliner{border-top:3px solid var(--volt);}
   .headliner .top{background:rgba(201,247,58,.06);}
   .updated{font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);margin-top:20px;}
+
+  nav .wrap{position:relative;}
+  nav .home{position:absolute;left:22px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:10px;}
+  nav .home svg{width:28px;height:28px;flex-shrink:0;transition:transform .2s;}
+  nav .home:hover svg{transform:rotate(-22.5deg);}
+  nav .home .wm{font-family:'Anton',sans-serif;font-size:17px;letter-spacing:.02em;text-transform:uppercase;color:var(--bone);white-space:nowrap;}
+  nav .home .wm b{color:var(--volt);font-weight:400;}
+  nav .home:hover .wm{color:var(--volt);}
+  @media(max-width:1080px){nav .home .wm{display:none;}}
+  @media(max-width:620px){
+    nav .home{left:14px;}
+    nav .wrap{justify-content:flex-end;padding-left:56px;}
+  }
 </style>
 </head>
 <body>
-<nav><div class="wrap"><div class="links">
+<nav><div class="wrap">
+    <a class="home" href="/" aria-label="Greene MMA home"><svg viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg><span class="wm">Greene <b>MMA</b></span></a><div class="links">
   <a href="/news.html" class="on">News</a>
   <a href="/fightweek.html">Fight Week</a>
   <a href="/picks.html">Picks</a>
@@ -119,7 +133,7 @@
   <div class="wrap">
     <div class="eyebrow">The archive</div>
     <h1>All <span>News</span></h1>
-    <p class="dek">Everything from the Greene corner, newest first.</p>
+    <p class="dek" data-copy="news.intro">Everything from the Greene corner, newest first.</p>
   </div>
 </header>
 
@@ -246,6 +260,33 @@ try{
   console.warn(e);
 }
 if(window.__reveal) window.__reveal();
+</script>
+<script>
+/* Site copy — any element with data-copy gets its text from the studio,
+   falling back to whatever is written in the HTML. */
+(async function(){
+  var nodes=document.querySelectorAll('[data-copy]');
+  if(!nodes.length) return;
+  try{
+    var m=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    var f=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+    var app=m.initializeApp({
+      apiKey:"AIzaSyCN2eOBaQBiZDOexipJ-KS7pqkOaNJq7gU",
+      authDomain:"bragging-rights-public.firebaseapp.com",
+      projectId:"bragging-rights-public",
+      storageBucket:"bragging-rights-public.firebasestorage.app",
+      messagingSenderId:"525120309709",
+      appId:"1:525120309709:web:a21f060511e84bb4a91c84"
+    },"copyapp");
+    var db=f.getFirestore(app);
+    var snap=await f.getDoc(f.doc(db,"site","copy"));
+    var blocks=(snap.data()||{}).blocks||{};
+    nodes.forEach(function(el){
+      var v=blocks[el.getAttribute('data-copy')];
+      if(v && String(v).trim()) el.textContent=v;
+    });
+  }catch(e){ /* fallback text stays */ }
+})();
 </script>
 </body>
 </html>
