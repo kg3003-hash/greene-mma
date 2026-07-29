@@ -31,7 +31,7 @@
   .wrap{max-width:1060px;margin:0 auto;padding:0 22px;}
   nav{position:sticky;top:0;z-index:50;background:rgba(12,14,10,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--hair);}
   nav .wrap{display:flex;align-items:center;justify-content:center;height:58px;}
-  nav .links{display:flex;gap:38px;font-weight:600;font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);}
+  nav .links{display:flex;flex:1;justify-content:center;gap:clamp(14px,2.4vw,34px);font-weight:600;font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);}
   nav .links a{position:relative;padding:4px 0;}
   nav .links a::after{content:'';position:absolute;left:50%;right:50%;bottom:-2px;height:2px;background:var(--volt);transition:left .2s,right .2s;}
   nav .links a:hover,nav .links a.on{color:var(--volt);}
@@ -100,17 +100,16 @@
   .headliner .top{background:rgba(201,247,58,.06);}
   .updated{font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);margin-top:20px;}
 
-  nav .wrap{position:relative;}
-  nav .home{position:absolute;left:22px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:10px;}
+  nav .wrap{position:relative;display:flex;align-items:center;gap:18px;}
+  nav .home{display:flex;align-items:center;gap:10px;flex-shrink:0;}
   nav .home svg{width:28px;height:28px;flex-shrink:0;transition:transform .2s;}
   nav .home:hover svg{transform:rotate(-22.5deg);}
   nav .home .wm{font-family:'Anton',sans-serif;font-size:17px;letter-spacing:.02em;text-transform:uppercase;color:var(--bone);white-space:nowrap;}
   nav .home .wm b{color:var(--volt);font-weight:400;}
   nav .home:hover .wm{color:var(--volt);}
-  @media(max-width:1080px){nav .home .wm{display:none;}}
-  @media(max-width:620px){
-    nav .home{left:14px;}
-    nav .wrap{justify-content:flex-end;padding-left:56px;}
+  @media(max-width:1140px){nav .home .wm{display:none;}}
+  @media(max-width:700px){
+    nav .links{gap:12px;font-size:11.5px;letter-spacing:.04em;}
   }
 </style>
 </head>

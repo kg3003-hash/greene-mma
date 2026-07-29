@@ -80,6 +80,28 @@
   .arow{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
   .arow input{flex:1;}
   .acount{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--steel);white-space:nowrap;}
+
+  /* ---- tabbed workspace ---- */
+  .ws{display:grid;grid-template-columns:196px 1fr;gap:24px;align-items:start;}
+  @media(max-width:900px){.ws{grid-template-columns:1fr;}}
+  .side{position:sticky;top:18px;border:1px solid var(--hair);background:var(--black-2);}
+  @media(max-width:900px){.side{position:static;display:flex;overflow-x:auto;}}
+  .side button{
+    display:block;width:100%;text-align:left;padding:13px 16px;background:none;border:none;
+    border-bottom:1px solid var(--hair);color:var(--steel);cursor:pointer;
+    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+    white-space:nowrap;
+  }
+  @media(max-width:900px){.side button{border-bottom:none;border-right:1px solid var(--hair);width:auto;}}
+  .side button:hover{color:var(--volt);background:rgba(201,247,58,.05);}
+  .side button.on{background:var(--volt);color:var(--black);font-weight:700;}
+  .side .grp{padding:11px 16px 7px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel);opacity:.6;border-bottom:1px solid var(--hair);}
+  @media(max-width:900px){.side .grp{display:none;}}
+  .tabpane{display:none;}
+  .tabpane.on{display:block;}
+  .tabpane .panel:first-child{margin-top:0;}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;}
+  @media(max-width:1180px){.cols{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
@@ -102,34 +124,11 @@
 </div></div>
 
 <div class="wrap"><div class="app">
-  <div>
-    <div class="panel">
-      <h2>Submitted drafts</h2>
-      <p class="hint" style="margin-top:0">Anything a writer sends over lands here. Publishing turns it into a live story with their byline.</p>
-      <button class="btn ghost" id="dr_load" style="margin-top:0">Load drafts</button>
-      <div class="alist" id="dr_list"></div>
-      <div id="dr_preview"></div>
-      <div id="dr_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
-    </div>
-
-    <div class="panel">
-      <h2>Site copy</h2>
-      <p class="hint" style="margin-top:0">Headings and intro paragraphs across the site. Leave a box empty and the built-in wording stays.</p>
-      <div id="copyfields"></div>
-      <button class="btn" id="cp_save">Save copy</button>
-      <div id="cp_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
-    </div>
-
-    <div class="panel">
-      <h2>Utah promotions</h2>
-      <p class="hint" style="margin-top:0">The promotions block on the Utah page. Empty means the built-in SteelFist / Fierce FC / UFC entries show.</p>
-      <div class="alist" id="pr_list"></div>
-      <button class="btn ghost" id="pr_add">Add promotion</button>
-      <button class="btn" id="pr_save">Save promotions</button>
-      <div id="pr_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
-    </div>
-
-    <div class="panel">
+  <div class="ws">
+    <div class="side" id="sidenav"></div>
+    <div id="panes">
+<div class="tabpane" data-p="write">
+<div class="panel">
       <h2>Write an article</h2>
       <label>Headline</label><input type="text" id="a_head" placeholder="Short. Punchy. Max ~10 words.">
       <label>Standfirst (shows on cards + previews)</label>
@@ -159,7 +158,127 @@
       <div id="a_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
     </div>
 
-    <div class="panel">
+<div class="panel">
+      <h2>Submitted drafts</h2>
+      <p class="hint" style="margin-top:0">Anything a writer sends over lands here. Publishing turns it into a live story with their byline.</p>
+      <button class="btn ghost" id="dr_load" style="margin-top:0">Load drafts</button>
+      <div class="alist" id="dr_list"></div>
+      <div id="dr_preview"></div>
+      <div id="dr_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+    </div>
+
+<div class="panel">
+      <h2>Manage stories</h2>
+      <p class="hint" style="margin-top:0">Delete stray items — old wrestling posts, bad rewrites.</p>
+      <button class="btn ghost" id="s_load">Load recent stories</button>
+      <div id="s_list" style="margin-top:12px;"></div>
+    </div>
+
+</div>
+<div class="tabpane" data-p="fights">
+<div class="panel">
+      <h2>Import a fight card</h2>
+      <p class="hint" style="margin-top:0">Copy a card from anywhere — a promotion's post, a listing site, an email — paste it here, and it gets read into structured bouts. Those bouts then load straight into the Card Studio.</p>
+      <label>Paste the card</label>
+      <textarea id="imp_text" style="min-height:150px" placeholder="SteelFist Fight Night 116&#10;Aug 15 · Union Event Center, SLC&#10;&#10;155 lbs: Dusty Marks (12-2) vs Marcus Reyes (15-1)&#10;170 lbs: ..."></textarea>
+      <button class="btn" id="imp_go">Read the card</button>
+      <div id="imp_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+      <div id="imp_out" style="margin-top:12px;"></div>
+      <button class="btn ghost" id="imp_save" style="display:none">Save card + add fighters to roster</button>
+    </div>
+
+<div class="panel">
+      <h2>Name the cards</h2>
+      <p class="hint" style="margin-top:0">The odds feed gives dates, not event names. Name them here and the Fight Week page uses your name instead. Put "Utah" or a local promotion in the name and the card gets the volt highlight.</p>
+      <div id="cn_list"></div>
+      <button class="btn" id="cn_save">Save card names</button>
+      <div id="cn_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+    </div>
+
+<div class="panel">
+      <h2>This week's picks</h2>
+      <p class="hint" style="margin-top:0">Live Dogs shows the biggest underdogs from the odds feed until you write your own. Yours replace them.</p>
+      <div id="pickrows"></div>
+      <button class="btn ghost" id="addpick">Add another pick</button>
+      <button class="btn" id="savepicks">Save picks to site</button>
+      <div id="pickstatus" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+    </div>
+
+</div>
+<div class="tabpane" data-p="utah">
+<div class="panel">
+      <h2>Utah fighter roster</h2>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+        <input type="text" id="ft_search" placeholder="Search name, gym, weight..." style="flex:1">
+        <span id="ft_count" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--steel);white-space:nowrap;"></span>
+      </div>
+      <div id="ftlist" style="max-height:420px;overflow:auto;border:1px solid var(--hair);"></div>
+      <button class="btn ghost" id="ft_add">Add fighter</button>
+      <button class="btn ghost" id="ft_dedupe">Remove duplicates</button>
+      <button class="btn" id="ft_save">Save roster</button>
+      <div id="ft_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+    </div>
+
+<div class="panel">
+      <h2>Utah rankings</h2>
+      <p class="hint" style="margin-top:0">Your list. Type a fighter's name exactly as it appears on the roster and it links up automatically.</p>
+      <label>Division</label>
+      <select id="rk_div"></select>
+      <div class="arow" style="margin-top:10px;">
+        <input type="text" id="rk_divname" placeholder="New division name (e.g. Pound for Pound)">
+        <button class="btn ghost" id="rk_adddiv" style="margin:0;width:auto;padding:10px 14px;">Add</button>
+      </div>
+      <label>Note under the heading (optional)</label>
+      <input type="text" id="rk_note">
+      <div class="alist" id="rk_list" style="margin-top:10px;"></div>
+      <div class="arow" style="margin-top:10px;">
+        <input type="text" id="rk_name" placeholder="Fighter name">
+        <button class="btn ghost" id="rk_add" style="margin:0;width:auto;padding:10px 14px;">Add</button>
+      </div>
+      <button class="btn ghost" id="rk_deldiv">Delete this division</button>
+      <button class="btn" id="rk_save">Save rankings</button>
+      <div id="rk_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+    </div>
+
+<div class="panel">
+      <h2>Pioneers</h2>
+      <p class="hint" style="margin-top:0">The legends section on the Fighters page. Leave this empty and it shows the built-in Jeremy Horn and Court McGee entries.</p>
+      <div class="alist" id="lg_list"></div>
+      <button class="btn ghost" id="lg_add">Add pioneer</button>
+      <button class="btn" id="lg_save">Save pioneers</button>
+      <div id="lg_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+    </div>
+
+<div class="panel">
+      <h2>Utah gyms</h2>
+      <div class="arow"><input type="text" id="gy_search" placeholder="Search gyms..."><span class="acount" id="gy_count"></span></div>
+      <div class="alist" id="gy_list"></div>
+      <button class="btn ghost" id="gy_add">Add gym</button>
+      <button class="btn" id="gy_save">Save directory</button>
+      <div id="g_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+    </div>
+
+<div class="panel">
+      <h2>Utah events</h2>
+      <div class="arow"><input type="text" id="ev_search" placeholder="Search events..."><span class="acount" id="ev_count"></span></div>
+      <div class="alist" id="ev_list"></div>
+      <button class="btn ghost" id="ev_add">Add event</button>
+      <button class="btn" id="ev_save">Save calendar</button>
+      <div id="ev_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+    </div>
+
+<div class="panel">
+      <h2>Utah promotions</h2>
+      <p class="hint" style="margin-top:0">The promotions block on the Utah page. Empty means the built-in SteelFist / Fierce FC / UFC entries show.</p>
+      <div class="alist" id="pr_list"></div>
+      <button class="btn ghost" id="pr_add">Add promotion</button>
+      <button class="btn" id="pr_save">Save promotions</button>
+      <div id="pr_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+    </div>
+
+</div>
+<div class="tabpane" data-p="news">
+<div class="panel">
       <h2>Newsletter issue</h2>
       <label>Subject</label><input type="text" id="n_sub" placeholder="This week in the Greene corner">
       <label>Preview line</label><input type="text" id="n_prev" placeholder="Shows under the subject in the archive">
@@ -170,14 +289,14 @@
       <p class="hint">Saves the issue to the public archive at /newsletter.html. To actually email it, export your list below and paste it into your sending provider.</p>
     </div>
 
-    <div class="panel">
+<div class="panel">
       <h2>Past issues</h2>
       <button class="btn ghost" id="is_load">Load issues</button>
       <div class="alist" id="is_list" style="margin-top:10px;"></div>
       <div id="is_status" style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
     </div>
 
-    <div class="panel">
+<div class="panel">
       <h2>Subscribers</h2>
       <button class="btn ghost" id="sub_load">Load list</button>
       <button class="btn ghost" id="sub_csv">Download CSV</button>
@@ -185,7 +304,17 @@
       <div id="sub_box" style="margin-top:10px;max-height:180px;overflow:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--steel);"></div>
     </div>
 
-    <div class="panel">
+</div>
+<div class="tabpane" data-p="site">
+<div class="panel">
+      <h2>Site copy</h2>
+      <p class="hint" style="margin-top:0">Headings and intro paragraphs across the site. Leave a box empty and the built-in wording stays.</p>
+      <div id="copyfields"></div>
+      <button class="btn" id="cp_save">Save copy</button>
+      <div id="cp_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+    </div>
+
+<div class="panel">
       <h2>Sponsor slots</h2>
       <p class="hint" style="margin-top:0">Small "presented by" lines. Leave a name blank and the slot shows a "claim this spot" prompt instead.</p>
       <label>Utah — next card</label>
@@ -207,96 +336,8 @@
       <div id="sp_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
     </div>
 
-    <div class="panel">
-      <h2>Utah rankings</h2>
-      <p class="hint" style="margin-top:0">Your list. Type a fighter's name exactly as it appears on the roster and it links up automatically.</p>
-      <label>Division</label>
-      <select id="rk_div"></select>
-      <div class="arow" style="margin-top:10px;">
-        <input type="text" id="rk_divname" placeholder="New division name (e.g. Pound for Pound)">
-        <button class="btn ghost" id="rk_adddiv" style="margin:0;width:auto;padding:10px 14px;">Add</button>
-      </div>
-      <label>Note under the heading (optional)</label>
-      <input type="text" id="rk_note">
-      <div class="alist" id="rk_list" style="margin-top:10px;"></div>
-      <div class="arow" style="margin-top:10px;">
-        <input type="text" id="rk_name" placeholder="Fighter name">
-        <button class="btn ghost" id="rk_add" style="margin:0;width:auto;padding:10px 14px;">Add</button>
-      </div>
-      <button class="btn ghost" id="rk_deldiv">Delete this division</button>
-      <button class="btn" id="rk_save">Save rankings</button>
-      <div id="rk_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
-    </div>
+</div>
 
-    <div class="panel">
-      <h2>Pioneers</h2>
-      <p class="hint" style="margin-top:0">The legends section on the Fighters page. Leave this empty and it shows the built-in Jeremy Horn and Court McGee entries.</p>
-      <div class="alist" id="lg_list"></div>
-      <button class="btn ghost" id="lg_add">Add pioneer</button>
-      <button class="btn" id="lg_save">Save pioneers</button>
-      <div id="lg_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
-    </div>
-
-    <div class="panel">
-      <h2>Import a fight card</h2>
-      <p class="hint" style="margin-top:0">Copy a card from anywhere — a promotion's post, a listing site, an email — paste it here, and it gets read into structured bouts. Those bouts then load straight into the Card Studio.</p>
-      <label>Paste the card</label>
-      <textarea id="imp_text" style="min-height:150px" placeholder="SteelFist Fight Night 116&#10;Aug 15 · Union Event Center, SLC&#10;&#10;155 lbs: Dusty Marks (12-2) vs Marcus Reyes (15-1)&#10;170 lbs: ..."></textarea>
-      <button class="btn" id="imp_go">Read the card</button>
-      <div id="imp_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
-      <div id="imp_out" style="margin-top:12px;"></div>
-      <button class="btn ghost" id="imp_save" style="display:none">Save card + add fighters to roster</button>
-    </div>
-
-    <div class="panel">
-      <h2>Utah fighter roster</h2>
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
-        <input type="text" id="ft_search" placeholder="Search name, gym, weight..." style="flex:1">
-        <span id="ft_count" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--steel);white-space:nowrap;"></span>
-      </div>
-      <div id="ftlist" style="max-height:420px;overflow:auto;border:1px solid var(--hair);"></div>
-      <button class="btn ghost" id="ft_add">Add fighter</button>
-      <button class="btn ghost" id="ft_dedupe">Remove duplicates</button>
-      <button class="btn" id="ft_save">Save roster</button>
-      <div id="ft_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
-    </div>
-
-    <div class="panel">
-      <h2>Utah gyms</h2>
-      <div class="arow"><input type="text" id="gy_search" placeholder="Search gyms..."><span class="acount" id="gy_count"></span></div>
-      <div class="alist" id="gy_list"></div>
-      <button class="btn ghost" id="gy_add">Add gym</button>
-      <button class="btn" id="gy_save">Save directory</button>
-      <div id="g_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
-    </div>
-
-    <div class="panel">
-      <h2>Utah events</h2>
-      <div class="arow"><input type="text" id="ev_search" placeholder="Search events..."><span class="acount" id="ev_count"></span></div>
-      <div class="alist" id="ev_list"></div>
-      <button class="btn ghost" id="ev_add">Add event</button>
-      <button class="btn" id="ev_save">Save calendar</button>
-      <div id="ev_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
-    </div>
-
-    <div class="panel">
-      <h2>Manage stories</h2>
-      <p class="hint" style="margin-top:0">Delete stray items — old wrestling posts, bad rewrites.</p>
-      <button class="btn ghost" id="s_load">Load recent stories</button>
-      <div id="s_list" style="margin-top:12px;"></div>
-    </div>
-
-    <div class="panel">
-      <h2>This week's picks</h2>
-      <p class="hint" style="margin-top:0">Live Dogs shows the biggest underdogs from the odds feed until you write your own. Yours replace them.</p>
-      <div id="pickrows"></div>
-      <button class="btn ghost" id="addpick">Add another pick</button>
-      <button class="btn" id="savepicks">Save picks to site</button>
-      <div id="pickstatus" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
-    </div>
-
-    
-      <p class="hint">Tag the fighter when you post. For most undercard guys this is the best graphic anyone has ever made of them.</p>
     </div>
   </div>
 
@@ -311,6 +352,25 @@
 </div></div>
 
 <script>
+/* ================= TABS ================= */
+(function(){
+  const GROUPS=[['write','Content'],['fights','Fight week'],['utah','Utah'],['news','Newsletter'],['site','Site']];
+  const nav=document.getElementById('sidenav');
+  if(!nav) return;
+  nav.innerHTML='<div class="grp">Workspace</div>'+
+    GROUPS.map(([k,l],i)=>'<button data-p="'+k+'"'+(i===0?' class="on"':'')+'>'+l+'</button>').join('');
+  function show(k){
+    document.querySelectorAll('.tabpane').forEach(p=>p.classList.toggle('on',p.dataset.p===k));
+    nav.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.p===k));
+    try{ localStorage.setItem('gmma_tab',k); }catch(e){}
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  nav.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>show(b.dataset.p)));
+  let start='write';
+  try{ const sv=localStorage.getItem('gmma_tab'); if(sv) start=sv; }catch(e){}
+  show(start);
+})();
+
 /* ================= GATE ================= */
 (function(){
   const gate=document.getElementById('gate');
@@ -509,6 +569,43 @@
     say(st, out.ok?('\u2713 Saved '+out.saved+' promotion(s).'):'\u2717 '+(out.error||'Failed'), out.ok?'ok':'bad');
   });
   (async()=>{ try{ const o=await api({getPromotions:true}); PROMOS.set((o.ok&&o.promotions)?o.promotions:[]);}catch(e){ PROMOS.set([]); } })();
+
+  /* ---- card names ---- */
+  (async()=>{
+    try{
+      const [namesOut, fwSnapRes] = await Promise.all([
+        api({getCardNames:true}),
+        fetch('https://firestore.googleapis.com/v1/projects/bragging-rights-public/databases/(default)/documents/site/fightweek')
+          .then(r=>r.json()).catch(()=>null)
+      ]);
+      const names=(namesOut.ok&&namesOut.names)?namesOut.names:{};
+      let dates=[];
+      try{
+        const cards=fwSnapRes.fields.cards.arrayValue.values||[];
+        dates=cards.map(c=>c.mapValue.fields.date.stringValue);
+      }catch(e){ dates=Object.keys(names); }
+      if(!dates.length) dates=Object.keys(names);
+      const box=$('cn_list');
+      if(!dates.length){
+        box.innerHTML='<div style="padding:12px;color:var(--steel);font-size:13px;">No cards on the wire right now. Run the odds function and come back.</div>';
+        return;
+      }
+      box.innerHTML=dates.map(d=>{
+        const nice=new Date(d+'T12:00:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
+        return '<label>'+nice+' <span style="color:var(--steel)">('+d+')</span></label>'+
+          '<input type="text" data-d="'+d+'" value="'+String(names[d]||'').replace(/"/g,'&quot;')+'" placeholder="e.g. UFC 320 or SteelFist 116">';
+      }).join('');
+    }catch(e){ console.warn('cardnames',e); }
+  })();
+  $('cn_save').addEventListener('click',async()=>{
+    const st=$('cn_status'); say(st,'Saving...');
+    const names={};
+    document.querySelectorAll('#cn_list input[data-d]').forEach(i=>{
+      const v=i.value.trim(); if(v) names[i.dataset.d]=v;
+    });
+    const out=await api({cardNames:names});
+    say(st, out.ok?'\u2713 Card names saved.':'\u2717 '+(out.error||'Failed'), out.ok?'ok':'bad');
+  });
 
   /* ---- sponsor slots ---- */
   $('sp_save').addEventListener('click',async()=>{

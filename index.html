@@ -100,8 +100,7 @@
   nav .links a:hover::after{left:0;right:0;}
   nav .links a:focus-visible{outline:2px solid var(--volt);outline-offset:4px;}
   nav .gbl{
-    position:absolute;right:22px;top:50%;transform:translateY(-50%);
-    display:flex;align-items:center;gap:8px;
+    display:flex;align-items:center;gap:8px;flex-shrink:0;
     padding:7px 14px;border:1px solid rgba(201,247,58,.35);
     font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.12em;
     text-transform:uppercase;color:var(--volt);white-space:nowrap;
@@ -111,7 +110,7 @@
   nav .gbl:hover{background:var(--volt);color:var(--black);border-color:var(--volt);}
   nav .gbl:hover svg path{stroke:var(--black);}
   nav .wrap{position:relative;}
-  @media(max-width:980px){nav .gbl{display:none;}}
+  @media(max-width:1240px){nav .gbl{display:none;}}
   @media(max-width:700px){
     nav .links{gap:20px;font-size:12px;letter-spacing:.08em;}
   }
@@ -414,17 +413,16 @@
     .reveal{opacity:1;transform:none;}
   }
 
-  nav .wrap{position:relative;}
-  nav .home{position:absolute;left:22px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:10px;}
+  nav .wrap{position:relative;display:flex;align-items:center;gap:18px;}
+  nav .home{display:flex;align-items:center;gap:10px;flex-shrink:0;}
   nav .home svg{width:28px;height:28px;flex-shrink:0;transition:transform .2s;}
   nav .home:hover svg{transform:rotate(-22.5deg);}
   nav .home .wm{font-family:'Anton',sans-serif;font-size:17px;letter-spacing:.02em;text-transform:uppercase;color:var(--bone);white-space:nowrap;}
   nav .home .wm b{color:var(--volt);font-weight:400;}
   nav .home:hover .wm{color:var(--volt);}
-  @media(max-width:1080px){nav .home .wm{display:none;}}
-  @media(max-width:620px){
-    nav .home{left:14px;}
-    nav .wrap{justify-content:flex-end;padding-left:56px;}
+  @media(max-width:1140px){nav .home .wm{display:none;}}
+  @media(max-width:700px){
+    nav .links{gap:12px;font-size:11.5px;letter-spacing:.04em;}
   }
 </style>
 </head>
