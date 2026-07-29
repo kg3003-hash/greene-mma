@@ -79,6 +79,18 @@
   .bout .vs{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel);}
   .headliner{border-top:3px solid var(--volt);}
   .headliner .top{background:rgba(201,247,58,.06);}
+
+  /* presented-by strip */
+  .presby{display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    border:1px solid var(--hair);border-left:3px solid var(--volt);background:var(--black-2);
+    padding:12px 18px;margin-bottom:16px;
+    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--steel);}
+  .presby b{color:var(--bone);font-weight:400;font-size:13px;letter-spacing:.06em;}
+  .presby a.s{color:var(--volt);}
+  .presby a.s:hover{color:var(--bone);}
+  .presby .sell{margin-left:auto;color:var(--volt);opacity:.75;}
+  .presby .sell:hover{opacity:1;}
+
   .cardblock{margin-bottom:52px;}
   .cardhead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:8px;}
   .cardhead h2{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:clamp(24px,4vw,34px);line-height:1;}
@@ -111,10 +123,24 @@
   .fmodal .go{display:block;margin:0 26px 26px;padding:13px;text-align:center;border:2px solid var(--volt);color:var(--volt);font-weight:700;font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;}
   .fmodal .go:hover{background:var(--volt);color:var(--black);}
   .fmodal .empty-stats{padding:24px 26px;color:var(--steel);font-size:15px;}
+
+  nav .wrap{position:relative;}
+  nav .home{position:absolute;left:22px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:10px;}
+  nav .home svg{width:28px;height:28px;flex-shrink:0;transition:transform .2s;}
+  nav .home:hover svg{transform:rotate(-22.5deg);}
+  nav .home .wm{font-family:'Anton',sans-serif;font-size:17px;letter-spacing:.02em;text-transform:uppercase;color:var(--bone);white-space:nowrap;}
+  nav .home .wm b{color:var(--volt);font-weight:400;}
+  nav .home:hover .wm{color:var(--volt);}
+  @media(max-width:1080px){nav .home .wm{display:none;}}
+  @media(max-width:620px){
+    nav .home{left:14px;}
+    nav .wrap{justify-content:flex-end;padding-left:56px;}
+  }
 </style>
 </head>
 <body>
-<nav><div class="wrap"><div class="links">
+<nav><div class="wrap">
+    <a class="home" href="/" aria-label="Greene MMA home"><svg viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg><span class="wm">Greene <b>MMA</b></span></a><div class="links">
   <a href="/#feed">News</a>
   <a href="/fightweek.html" class="on">Fight Week</a>
   <a href="/picks.html">Picks</a>
@@ -128,12 +154,13 @@
   <div class="wrap">
     <div class="eyebrow">The next card</div>
     <h1>Fight <span>Week</span></h1>
-    <p class="dek">Every upcoming card, main event down to the prelims. Local shows and the big cards both live here, and the lines refresh through the week.</p>
+    <p class="dek" data-copy="fightweek.intro">Every upcoming card, main event down to the prelims. Local shows and the big cards both live here, and the lines refresh through the week.</p>
   </div>
 </header>
 
 <section>
   <div class="wrap">
+    <div id="fwsponsor"></div>
     <div id="cards"><div class="empty">Pulling the cards...</div></div>
     <div class="updated" id="updated"></div>
   </div>
@@ -210,6 +237,17 @@ try{
   const names=((nameSnap.data()||{}).names)||{};
   const localSnap=await getDoc(doc(db,"site","localcard"));
   const local=localSnap.data();
+
+  try{
+    const spSnap=await getDoc(doc(db,"site","sponsors"));
+    const sp=(spSnap.data()||{}).fightweek||{};
+    const host=document.getElementById("fwsponsor");
+    if(host){
+      host.innerHTML = sp.name
+        ? '<div class="presby">Fight week presented by <b>'+(sp.link?'<a class="s" href="'+esc(sp.link)+'" target="_blank" rel="noopener">'+esc(sp.name)+'</a>':esc(sp.name))+'</b></div>'
+        : '<div class="presby">Fight week presented by <b>your gym</b><a class="sell" href="/partner.html">Claim this slot \u2192</a></div>';
+    }
+  }catch(e){ console.warn("sponsor",e); }
 
   const wrap=document.getElementById("cards");
   const blocks=[];
@@ -329,6 +367,33 @@ window.__fighterModal=(function(){
   return {open,close};
 })();
 
+</script>
+<script>
+/* Site copy — any element with data-copy gets its text from the studio,
+   falling back to whatever is written in the HTML. */
+(async function(){
+  var nodes=document.querySelectorAll('[data-copy]');
+  if(!nodes.length) return;
+  try{
+    var m=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    var f=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+    var app=m.initializeApp({
+      apiKey:"AIzaSyCN2eOBaQBiZDOexipJ-KS7pqkOaNJq7gU",
+      authDomain:"bragging-rights-public.firebaseapp.com",
+      projectId:"bragging-rights-public",
+      storageBucket:"bragging-rights-public.firebasestorage.app",
+      messagingSenderId:"525120309709",
+      appId:"1:525120309709:web:a21f060511e84bb4a91c84"
+    },"copyapp");
+    var db=f.getFirestore(app);
+    var snap=await f.getDoc(f.doc(db,"site","copy"));
+    var blocks=(snap.data()||{}).blocks||{};
+    nodes.forEach(function(el){
+      var v=blocks[el.getAttribute('data-copy')];
+      if(v && String(v).trim()) el.textContent=v;
+    });
+  }catch(e){ /* fallback text stays */ }
+})();
 </script>
 </body>
 </html>
