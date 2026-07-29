@@ -198,7 +198,14 @@ export default async function handler(req) {
     return new Response(JSON.stringify({ ok: true, saved: body.picks.length }), { status: 200 });
   }
 
-  // Publish an original article written in the studio
+  // Load one story for editing
+  if (body.getStory) {
+    const snap = await db.collection("stories").doc(String(body.getStory)).get();
+    if (!snap.exists) return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
+    return new Response(JSON.stringify({ ok: true, story: { id: snap.id, ...snap.data() } }), { status: 200 });
+  }
+
+  // Publish an original article, or update one that already exists
   if (body.article) {
     const a = body.article;
     if (!a.headline || !a.body) {
@@ -207,6 +214,7 @@ export default async function handler(req) {
     const slug = String(a.headline)
       .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60)
       || "story-" + Date.now();
+    // Keep the original id when editing so the URL never changes
     const id = a.id || `gm-${slug}`;
     await db.collection("stories").doc(id).set({
       headline: String(a.headline).slice(0, 160),
@@ -217,8 +225,9 @@ export default async function handler(req) {
       sourceName: "Greene MMA",
       sourceUrl: "",
       original: true,
+      author: String(a.author || "Greene MMA").slice(0, 60),
       utah: a.utah === true,
-      publishedAt: admin.firestore.Timestamp.now(),
+      ...(a.keepDate ? {} : { publishedAt: admin.firestore.Timestamp.now() }),
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
     return new Response(JSON.stringify({ ok: true, id }), { status: 200 });
