@@ -441,7 +441,7 @@ try{
       }).join('')+'</div>';
     document.querySelectorAll('#rankbox .rk').forEach(el=>el.addEventListener('click',()=>{
       const f=findFighter(el.dataset.n);
-      if(f) window.__fighterModal.open(f);
+      window.__fighterModal.open(f||{_stub:el.dataset.n,_div:d.name});
     }));
     document.querySelectorAll('.divtab').forEach(b=>b.addEventListener('click',()=>{
       activeDiv=+b.dataset.i; renderRank();
@@ -522,6 +522,17 @@ window.__fighterModal=(function(){
   function open(f){
     if(!f) return;
     ensure();
+    if(f._stub){
+      el.querySelector('.inner').innerHTML=
+        '<div class="hd">'+
+          '<div class="nm">'+esc(f._stub)+'</div>'+
+          (f._div?'<div class="sub">'+esc(f._div)+'</div>':'')+
+        '</div>'+
+        '<div class="empty-stats">Ranked, but no profile on the roster yet.<br>Record and fight stats land as soon as they\u2019re added.</div>';
+      el.classList.add('on');
+      document.body.style.overflow='hidden';
+      return;
+    }
     const slug=f.slug||((f.first||'')+'-'+(f.last||'')).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
     const stats=[
       ['Str. landed / min', f.slpm],['Str. accuracy', f.strAcc],
