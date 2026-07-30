@@ -89,7 +89,12 @@ export default async function handler(req) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
   }
 
-  const body = await req.json();
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    return new Response(JSON.stringify({ error: "Bad JSON" }), { status: 400 });
+  }
   if (body.ping) return new Response(JSON.stringify({ ok: true }), { status: 200 });
 
   const results = [];
@@ -139,3 +144,4 @@ export default async function handler(req) {
     headers: { "content-type": "application/json" },
   });
 }
+
