@@ -201,3 +201,4 @@ export default async function handler() {
 
 // Every 2 hours. Netlify reads this cron config automatically.
 export const config = { schedule: "0 */2 * * *" };
+
