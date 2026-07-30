@@ -162,21 +162,22 @@
   @keyframes drift2{0%,100%{transform:translate(0,0) rotate(0deg);}50%{transform:translate(-22px,26px) rotate(-10deg);}}
   @keyframes drift3{0%,100%{transform:translate(0,0) rotate(0deg);}50%{transform:translate(18px,-16px) rotate(6deg);}}
 
-  /* pulse rings behind the mark — SVG so the stroke stays a true octagon */
-  .masthead .rings{
-    position:absolute;left:50%;top:calc(96px + clamp(65px,10vw,95px));
-    width:clamp(130px,20vw,190px);aspect-ratio:1;
-    transform:translate(-50%,-50%);pointer-events:none;z-index:1;
+  /* Pulse rings behind the mark. They live inside .markwrap and trace the
+     logo's own octagon — same vertices, same flat-top orientation, same
+     viewBox — so each pulse starts exactly on the logo's edges and expands
+     with every edge parallel to the mark. */
+  .masthead .markwrap .ring{
+    position:absolute;inset:0;width:100%;height:100%;
+    overflow:visible;pointer-events:none;
   }
-  .masthead .rings svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
-  .masthead .rings polygon{
-    fill:none;stroke:var(--volt);stroke-width:1.5;
+  .masthead .markwrap .ring polygon{
+    fill:none;stroke:var(--volt);stroke-width:1.5;stroke-linejoin:miter;
     transform-origin:50% 50%;opacity:0;
     animation:pulsering 5s ease-out infinite;
   }
-  .masthead .rings svg:nth-child(2) polygon{animation-delay:2.5s;}
+  .masthead .markwrap .ring:nth-of-type(2) polygon{animation-delay:2.5s;}
   @keyframes pulsering{
-    0%{transform:scale(1.05);opacity:.20;}
+    0%{transform:scale(1);opacity:.22;}
     60%{opacity:.05;}
     100%{transform:scale(2.2);opacity:0;}
   }
@@ -505,12 +506,11 @@
     <svg class="o2" viewBox="0 0 100 100"><polygon points="50,2 84,16 98,50 84,84 50,98 16,84 2,50 16,16"/></svg>
     <svg class="o3" viewBox="0 0 100 100"><polygon points="50,2 84,16 98,50 84,84 50,98 16,84 2,50 16,16"/></svg>
   </div>
-  <div class="rings" aria-hidden="true">
-    <svg viewBox="0 0 100 100"><polygon points="50,2 84,16 98,50 84,84 50,98 16,84 2,50 16,16"/></svg>
-    <svg viewBox="0 0 100 100"><polygon points="50,2 84,16 98,50 84,84 50,98 16,84 2,50 16,16"/></svg>
-  </div>
   <div class="wrap inner">
-    <div class="markwrap"><svg class="mark" aria-hidden="true" viewBox="0 0 120 120"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg></div>
+    <div class="markwrap">
+      <svg class="ring" viewBox="0 0 120 120" aria-hidden="true"><polygon points="104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37" vector-effect="non-scaling-stroke"/></svg>
+      <svg class="ring" viewBox="0 0 120 120" aria-hidden="true"><polygon points="104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37" vector-effect="non-scaling-stroke"/></svg>
+      <svg class="mark" aria-hidden="true" viewBox="0 0 120 120"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg></div>
     <h1>Greene <span>MMA</span></h1>
     <div class="tag" data-copy="home.tagline">Fight news from the <b>Greene corner</b></div>
   </div>
