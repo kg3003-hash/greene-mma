@@ -21,6 +21,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <!-- AdSense: replace ca-pub-XXXXXXXXXXXXXXXX with your publisher ID, then uncomment -->
 <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -45,8 +46,39 @@
   @media(max-width:800px){nav .links{display:none;}}
 
   /* hero */
-  .hero{padding:80px 0 64px;border-bottom:1px solid var(--hair);position:relative;overflow:hidden;
+  .hero{padding:80px 0 64px;border-bottom:1px solid var(--hair);position:relative;overflow:hidden;min-height:470px;
+        display:flex;flex-direction:column;justify-content:center;
         background:radial-gradient(ellipse 80% 60% at 20% 0%, rgba(201,247,58,.08), transparent 62%);}
+  .hero .wrap{position:relative;z-index:2;width:100%;}
+
+  /* ---------- THE STATE ---------- */
+  .utahmap{position:absolute;z-index:1;top:50%;transform:translateY(-50%);
+    right:clamp(8px,4vw,72px);width:clamp(250px,26vw,330px);height:auto;pointer-events:none;}
+  .utahmap .state{stroke-dasharray:1750;stroke-dashoffset:1750;
+    animation:utdraw 2s cubic-bezier(.65,0,.35,1) .2s forwards;}
+  @keyframes utdraw{to{stroke-dashoffset:0;}}
+  .utahmap .topo{opacity:0;animation:utfade 1.2s ease 1.5s forwards;}
+  .utahmap .topo path{opacity:.09;}
+  .utahmap .city{opacity:0;animation:utfade .7s ease var(--d,1s) forwards;}
+  .utahmap .city circle{fill:var(--steel);}
+  .utahmap .city text{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase;fill:var(--steel);}
+  .utahmap .slc{opacity:0;animation:utfade .8s ease 1.35s forwards;}
+  .utahmap .slc .big{font-family:'Anton',sans-serif;font-size:22px;letter-spacing:.02em;fill:var(--bone);text-transform:uppercase;}
+  .utahmap .slc .sub{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.14em;fill:var(--volt);text-transform:uppercase;font-weight:700;}
+  .utahmap .pulse{transform-box:fill-box;transform-origin:center;animation:utpulse 2.6s ease-out 2s infinite;}
+  @keyframes utfade{to{opacity:1;}}
+  @keyframes utpulse{0%{transform:scale(.5);opacity:.9;}70%{transform:scale(2.4);opacity:0;}100%{transform:scale(2.4);opacity:0;}}
+  @media(max-width:1120px){.utahmap{opacity:.8;}}
+  @media(max-width:920px){
+    .utahmap{width:270px;right:-70px;opacity:.3;}
+    .utahmap .city text,.utahmap .slc .big,.utahmap .slc .sub{display:none;}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .utahmap .state{animation:none;stroke-dashoffset:0;}
+    .utahmap .topo,.utahmap .city,.utahmap .slc{animation:none;opacity:1;}
+    .utahmap .pulse{animation:none;opacity:0;}
+  }
   .eyebrow{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--volt);font-weight:700;display:flex;align-items:center;gap:14px;margin-bottom:22px;}
   .eyebrow::after{content:'';width:70px;height:1px;background:var(--hair);}
   .hero h1{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:clamp(44px,9vw,96px);line-height:.95;}
@@ -176,13 +208,17 @@
   .empty{border:1px dashed var(--hair);padding:44px 26px;text-align:center;color:var(--steel);font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.08em;text-transform:uppercase;}
 
   /* fighters CTA */
-  .corner{background:var(--volt);color:var(--black);}
-  .corner .inner{padding:66px 0;}
+  .corner{background:var(--volt);color:var(--black);position:relative;overflow:hidden;}
+  .corner .inner{padding:66px 0;position:relative;z-index:2;}
+  .utghost{position:absolute;z-index:1;right:clamp(-60px,2vw,60px);top:50%;transform:translateY(-50%) rotate(4deg);
+    width:clamp(220px,24vw,320px);height:auto;opacity:.14;pointer-events:none;}
   .corner h2{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:clamp(30px,5.2vw,48px);line-height:1;}
   .corner p{margin-top:14px;max-width:560px;font-size:18.5px;font-weight:500;}
   .corner .list{margin-top:22px;display:grid;gap:8px;max-width:560px;}
   .corner .list div{padding-left:20px;position:relative;font-weight:500;font-size:17px;}
   .corner .list div::before{content:'';position:absolute;left:0;top:11px;width:9px;height:9px;background:var(--black);transform:rotate(22.5deg);}
+  .corner .gymline{margin-top:30px;padding-top:22px;border-top:1px solid rgba(12,14,10,.25);font-size:16px;font-weight:500;max-width:560px;}
+  .corner .gymline a{font-weight:700;text-decoration:underline;text-underline-offset:3px;}
   .corner .cta{margin-top:28px;display:inline-block;padding:16px 32px;background:var(--black);color:var(--volt);font-weight:700;font-size:14px;letter-spacing:.1em;text-transform:uppercase;}
   .corner .cta:hover{background:transparent;color:var(--black);box-shadow:inset 0 0 0 2px var(--black);}
 
@@ -254,6 +290,23 @@
     nav .links{gap:12px;font-size:11.5px;letter-spacing:.04em;}
   }
 </style>
+<style>
+/* ---- Mobile nav fix: the six links can't fit under ~560px, so on small
+   screens the row scrolls sideways with an edge fade (same cue as the
+   marquee) instead of clipping or forcing the page to scroll sideways. ---- */
+@media(max-width:700px){
+  nav .wrap{gap:12px;padding:0 16px;}
+  nav .links{
+    flex:1 1 auto;min-width:0;justify-content:flex-start;
+    overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+    gap:24px;font-size:12px;letter-spacing:.08em;padding:6px 0;
+    -webkit-mask-image:linear-gradient(90deg,#000 84%,transparent);
+    mask-image:linear-gradient(90deg,#000 84%,transparent);
+  }
+  nav .links::-webkit-scrollbar{display:none;}
+  nav .links a{flex-shrink:0;white-space:nowrap;}
+}
+</style>
 </head>
 <body>
 
@@ -272,7 +325,43 @@
 </nav>
 
 <header class="hero">
-  <svg class="bigmark" viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>
+  <!-- Utah, drawn to scale. The octagon marks Salt Lake City — home base. -->
+  <svg class="utahmap" viewBox="-20 -20 430 545" aria-hidden="true">
+    <defs>
+      <clipPath id="utclip"><path d="M0,0 H225 V100 H375 V500 H0 Z"/></clipPath>
+      <radialGradient id="slcglow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#C9F73A" stop-opacity=".28"/>
+        <stop offset="100%" stop-color="#C9F73A" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <!-- topo contours, clipped to the state — the Wasatch runs down the middle -->
+    <g class="topo" clip-path="url(#utclip)" fill="none" stroke="#C9F73A" stroke-width="1">
+      <path d="M-10,60 C60,50 110,78 165,58 C215,40 280,66 385,52"/>
+      <path d="M-10,130 C50,118 105,150 160,128 C210,108 285,140 385,124"/>
+      <path d="M-10,200 C55,188 100,222 162,198 C218,176 290,210 385,194"/>
+      <path d="M-10,270 C60,260 108,292 168,268 C222,248 288,278 385,264"/>
+      <path d="M-10,340 C55,332 112,360 172,338 C226,318 292,346 385,334"/>
+      <path d="M-10,410 C60,404 118,428 178,408 C230,390 295,414 385,404"/>
+      <path d="M-10,470 C65,466 125,484 185,468 C235,454 298,472 385,464"/>
+    </g>
+    <!-- the state outline draws itself on -->
+    <path class="state" d="M0,0 H225 V100 H375 V500 H0 Z" pathLength="1750"
+      fill="none" stroke="#C9F73A" stroke-width="7" stroke-linejoin="miter"/>
+    <!-- gym cities -->
+    <g class="city" style="--d:.9s"><circle cx="156" cy="78" r="3.5"/><text x="168" y="82">Ogden</text></g>
+    <g class="city" style="--d:1.05s"><circle cx="179" cy="177" r="3.5"/><text x="191" y="181">Provo</text></g>
+    <g class="city" style="--d:1.2s"><circle cx="46" cy="478" r="3.5"/><text x="58" y="472">St. George</text></g>
+    <!-- Salt Lake City: the Greene corner -->
+    <g class="slc">
+      <circle cx="162" cy="124" r="60" fill="url(#slcglow)"/>
+      <circle class="pulse" cx="162" cy="124" r="12" fill="none" stroke="#C9F73A" stroke-width="1.5"/>
+      <g transform="translate(162,124) scale(.24) translate(-60,-60)">
+        <path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="14" stroke-linejoin="miter"/>
+      </g>
+      <text class="big" x="184" y="120">SLC</text>
+      <text class="sub" x="184" y="134">The Greene corner</text>
+    </g>
+  </svg>
   <div class="wrap">
     <div class="eyebrow">Regional desk</div>
     <h1 data-copy="utah.heading">Utah MMA</h1>
@@ -407,6 +496,12 @@
 
 <!-- FIGHTER CTA -->
 <section class="corner" style="border:none;padding:0;">
+  <svg class="utghost" viewBox="0 0 375 500" aria-hidden="true">
+    <path d="M0,0 H225 V100 H375 V500 H0 Z" fill="none" stroke="#0C0E0A" stroke-width="10" stroke-linejoin="miter"/>
+    <g transform="translate(162,124) scale(.3) translate(-60,-60)">
+      <path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#0C0E0A" stroke-width="14" stroke-linejoin="miter"/>
+    </g>
+  </svg>
   <div class="wrap inner">
     <h2>Fighting in Utah?</h2>
     <p>If you've got a fight booked in this state, we'll cover it — and we'll make you a graphic for it. Free, no catch, no watermark but ours.</p>
@@ -417,6 +512,7 @@
       <div>You keep the file and post it wherever you want</div>
     </div>
     <a class="cta" href="mailto:hello@greene.bet?subject=Utah%20fighter%20-%20hype%20card">Get in the Greene corner</a>
+    <div class="gymline">Run a gym? The featured slot at the top of this page is <b>$100 a month</b>, no contract. <a href="/partner.html">See the details &rarr;</a></div>
   </div>
 </section>
 
@@ -428,9 +524,8 @@
     </div>
     <div class="fine">
       Fight news from the Greene corner · <a href="https://greene.bet">Part of the greene.bet family</a><br>
-      <a href="/">News</a> · <a href="/picks.html">Picks</a> · <a href="/utah.html">Utah</a>
-      <a href="/fighters.html">Fighters</a> · <a href="/newsletter.html">The Greene Corner newsletter</a><br>
-      <a href="/partner.html">Advertise with us</a><br>
+      <a href="/news.html">News</a> · <a href="/fightweek.html">Fight Week</a> · <a href="/picks.html">Picks</a> · <a href="/utah.html">Utah</a> · <a href="/fighters.html">Fighters</a> · <a href="/newsletter.html">Newsletter</a> · <a href="/partner.html">Advertise</a><br>
+      <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a><br>
       © 2026 Greene MMA. Picks are for entertainment. Bet with your head, not over it.
     </div>
   </div>
@@ -492,15 +587,12 @@ function timeAgo(d){
   const h=Math.floor(m/60); if(h<24) return h+"h ago";
   return Math.floor(h/24)+"d ago";
 }
-function esc(str){const d=document.createElement("div");d.textContent=str||"";return d.innerHTML;}
+function esc(str){return String(str==null?'':str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 try{
   if(firebaseConfig.projectId!=="PASTE_ME"){
     const app=initializeApp(firebaseConfig);
     const db=getFirestore(app);
-    // Pull recent stories and filter client-side — avoids needing a composite index
-    const snap=await getDocs(query(collection(db,"stories"),orderBy("publishedAt","desc"),limit(60)));
-
     // presented-by slot
     try{
       const spSnap=await getDoc(doc(db,"site","sponsors"));
@@ -543,7 +635,10 @@ try{
         document.querySelectorAll('#cardbouts a[data-fi]').forEach(a=>a.addEventListener('click',ev=>{
           ev.preventDefault();
           const f=window.__cardFighters[+a.dataset.fi];
-          const match=(window.__roster||[]).find(r=>(r.slug||'')===slugOf(f));
+          const keyOf=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+          const k=keyOf((f.first||'')+' '+(f.last||''));
+          const match=(window.__roster||[]).find(r=>keyOf((r.first||'')+' '+(r.last||''))===k)
+            || (window.__roster||[]).find(r=>keyOf(r.slug)===k);
           window.__fighterModal.open(match||f);
         }));
         if(window.__reveal) window.__reveal();
@@ -680,7 +775,14 @@ try{
       }
     }catch(e){ console.warn("events",e); }
 
-    const allStories=snap.docs.map(d=>({id:d.id,...d.data()}));
+    // Pull recent stories and filter client-side — avoids needing a composite index.
+    // Guarded on its own: if this read fails, the gym directory, events and
+    // sponsor slots above have already rendered.
+    let allStories=[];
+    try{
+      const snap=await getDocs(query(collection(db,"stories"),orderBy("publishedAt","desc"),limit(60)));
+      allStories=snap.docs.map(d=>({id:d.id,...d.data()}));
+    }catch(e){ console.warn("stories",e); }
     const isUtah=x=>x.utah===true||(x.tags||[]).includes("Utah");
 
     // our own Utah writing
@@ -692,7 +794,7 @@ try{
           '<span class="c">'+esc(x.category||'The Corner')+'</span>'+
           '<h3>'+esc(x.headline)+'</h3>'+
           (x.summary?'<p>'+esc(x.summary)+'</p>':'')+
-          '<span class="by">'+(x.author?('By '+esc(x.author)+' \u00b7 '):'')+timeAgo(x.publishedAt.toDate())+'</span>'+
+          '<span class="by">'+(x.author?('By '+esc(x.author)+' \u00b7 '):'')+(x.publishedAt&&x.publishedAt.toDate?timeAgo(x.publishedAt.toDate()):'')+'</span>'+
         '</a>').join('')+'</div>';
     } else {
       mineBox.innerHTML='<div class="empty">Nothing written yet.<br>Articles tagged Utah in the Studio land here.</div>';
@@ -707,7 +809,7 @@ try{
           '<h3>'+esc(s.headline)+'</h3>'+
           '<p>'+esc(s.summary)+'</p>'+
           '<a class="time" href="'+esc(s.sourceUrl)+'" target="_blank" rel="noopener">'+
-            timeAgo(s.publishedAt.toDate())+' · via '+esc(s.sourceName)+' →</a>'+
+            (s.publishedAt&&s.publishedAt.toDate?timeAgo(s.publishedAt.toDate()):'')+' · via '+esc(s.sourceName)+' →</a>'+
         '</article>').join("");
     }
   }
@@ -717,7 +819,7 @@ if(window.__reveal) window.__reveal();
 <script>
 /* ---- shared fighter modal ---- */
 window.__fighterModal=(function(){
-  const esc=s=>{const d=document.createElement("div");d.textContent=s||"";return d.innerHTML;};
+  const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   let el=null;
   function ensure(){
     if(el) return el;

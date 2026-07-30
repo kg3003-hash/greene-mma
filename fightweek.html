@@ -20,6 +20,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <!-- AdSense: replace ca-pub-XXXXXXXXXXXXXXXX with your publisher ID, then uncomment -->
 <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -141,11 +142,28 @@
     nav .links{gap:12px;font-size:11.5px;letter-spacing:.04em;}
   }
 </style>
+<style>
+/* ---- Mobile nav fix: the six links can't fit under ~560px, so on small
+   screens the row scrolls sideways with an edge fade (same cue as the
+   marquee) instead of clipping or forcing the page to scroll sideways. ---- */
+@media(max-width:700px){
+  nav .wrap{gap:12px;padding:0 16px;}
+  nav .links{
+    flex:1 1 auto;min-width:0;justify-content:flex-start;
+    overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+    gap:24px;font-size:12px;letter-spacing:.08em;padding:6px 0;
+    -webkit-mask-image:linear-gradient(90deg,#000 84%,transparent);
+    mask-image:linear-gradient(90deg,#000 84%,transparent);
+  }
+  nav .links::-webkit-scrollbar{display:none;}
+  nav .links a{flex-shrink:0;white-space:nowrap;}
+}
+</style>
 </head>
 <body>
 <nav><div class="wrap">
     <a class="home" href="/" aria-label="Greene MMA home"><svg viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg><span class="wm">Greene <b>MMA</b></span></a><div class="links">
-  <a href="/#feed">News</a>
+  <a href="/news.html">News</a>
   <a href="/fightweek.html" class="on">Fight Week</a>
   <a href="/picks.html">Picks</a>
   <a href="/utah.html">Utah</a>
@@ -172,8 +190,8 @@
 
 <footer><div class="wrap">
   Greene MMA · <a href="https://greene.bet">Part of the greene.bet family</a><br>
-  <a href="/">News</a> · <a href="/fightweek.html">Fight Week</a> · <a href="/picks.html">Picks</a> · <a href="/utah.html">Utah</a>
-      <a href="/fighters.html">Fighters</a> · <a href="/newsletter.html">Newsletter</a> · <a href="/partner.html">Advertise</a><br>
+  <a href="/news.html">News</a> · <a href="/fightweek.html">Fight Week</a> · <a href="/picks.html">Picks</a> · <a href="/utah.html">Utah</a> · <a href="/fighters.html">Fighters</a> · <a href="/newsletter.html">Newsletter</a> · <a href="/partner.html">Advertise</a><br>
+  <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a><br>
   © 2026 Greene MMA. Picks are for entertainment. Bet with your head, not over it.
 </div></footer>
 <script>
@@ -223,7 +241,7 @@ const firebaseConfig = {
   messagingSenderId: "525120309709",
   appId: "1:525120309709:web:a21f060511e84bb4a91c84"
 };
-const esc=s=>{const d=document.createElement("div");d.textContent=s||"";return d.innerHTML;};
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const fmt=n=>(n>0?"+":"")+n;
 const slugOf=n=>String(n||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 function posLabel(i,total){
@@ -261,7 +279,8 @@ try{
     blocks.push({
       title: local.event || "The Next Card",
       when: [local.date, local.venue].filter(Boolean).join(" \u00b7 "),
-      sortKey: local.sortDate || "0000-00-00",
+      // Sort by the card's written date when it parses; otherwise pin first.
+      sortKey: local.sortDate || (()=>{const d=new Date(local.date||"");return isNaN(d)?"0000-00-00":d.toISOString().slice(0,10);})(),
       bouts: local.bouts.map(b=>({
         aName:((b.a.first||'')+' '+(b.a.last||'')).trim(),
         bName:((b.b.first||'')+' '+(b.b.last||'')).trim(),
@@ -316,10 +335,12 @@ try{
     }).join("");
 
     // clicking a name opens their stats if we have them on the roster
+    const keyOf=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
     document.querySelectorAll('.bout .n[data-n]').forEach(el=>el.addEventListener('click',()=>{
-      const slug=slugOf(el.dataset.n);
-      const match=roster.find(r=>(r.slug||slugOf((r.first||'')+'-'+(r.last||'')))===slug)
-        || roster.find(r=>slugOf((r.first||'')+' '+(r.last||''))===slug);
+      const k=keyOf(el.dataset.n);
+      const match=roster.find(r=>keyOf((r.first||'')+' '+(r.last||''))===k)
+        || roster.find(r=>keyOf(r.slug)===k)
+        || roster.find(r=>keyOf(r.nickname)===k);
       if(match) window.__fighterModal.open(match);
       else window.__fighterModal.open({first:el.dataset.n,last:'',record:'',note:'This fighter is not on the Utah roster, so we have no stats on file yet.'});
     }));
@@ -336,7 +357,7 @@ try{
 <script>
 /* ---- shared fighter modal ---- */
 window.__fighterModal=(function(){
-  const esc=s=>{const d=document.createElement("div");d.textContent=s||"";return d.innerHTML;};
+  const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   let el=null;
   function ensure(){
     if(el) return el;

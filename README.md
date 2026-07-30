@@ -107,7 +107,12 @@ Private hype card generator + publisher. Not linked anywhere on the site.
 1. Get approved at google.com/adsense (needs a live site with real content — you have that).
 2. In every HTML file, find `ca-pub-XXXXXXXXXXXXXXXX` and replace with your publisher ID.
 3. Uncomment the `<script>` line in the head and the `<ins>` block in the body.
+4. Create `/ads.txt` in the repo root containing exactly one line (with your real pub ID):
+   `google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0`
+   AdSense checks for this file and will nag until it exists.
 One slot per page, below the fold, with reserved height so nothing jumps.
+
+**Before applying:** `/privacy.html` and `/terms.html` are live and linked in every footer — AdSense requires a discoverable privacy policy that discloses Google's ad cookies and the opt-out links, and ours does. If the site starts drawing EEA/UK traffic, turn on Google's consent message under AdSense → Privacy & messaging (no code changes needed).
 
 ---
 

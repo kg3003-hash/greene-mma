@@ -240,7 +240,7 @@ function loadIntoEditor(d){
   if(d.author) $('w_author').value=d.author;
   setTags(d.tags);
   $('notehost').innerHTML = (d.status==='changes requested' && d.note)
-    ? '<div class="notebox"><b>Changes requested</b>'+d.note.replace(/</g,'&lt;')+'</div>' : '';
+    ? '<div class="notebox"><b>Changes requested</b><br>'+d.note.replace(/</g,'&lt;')+'</div>' : '';
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -309,7 +309,7 @@ window.gmFormat=function(src){
   const esc=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const inline=t=>{
     t=t.replace(/\[([^\]]{1,120})\]\((https?:\/\/[^\s)]{1,300})\)/g,
-      (m,txt,url)=>'<a href="'+url+'" target="_blank" rel="noopener">'+txt+'</a>');
+      (m,txt,url)=>'<a href="'+url.replace(/"/g,'%22')+'" target="_blank" rel="noopener">'+txt.replace(/"/g,'&quot;')+'</a>');
     t=t.replace(/\*\*([^*]{1,300})\*\*/g,'<strong>$1</strong>');
     t=t.replace(/__([^_]{1,300})__/g,'<u>$1</u>');
     t=t.replace(/(^|[^*])\*([^*\n]{1,300})\*/g,'$1<em>$2</em>');

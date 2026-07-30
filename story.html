@@ -17,6 +17,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <!-- AdSense: replace ca-pub-XXXXXXXXXXXXXXXX with your publisher ID, then uncomment -->
 <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -28,6 +29,8 @@
   .wrap{max-width:760px;margin:0 auto;padding:0 22px;}
   .wide{max-width:1060px;}
 
+  /* reading progress — thin volt line under the nav */
+  .progress{position:fixed;top:0;left:0;height:3px;width:0;background:var(--volt);z-index:60;transition:width .08s linear;box-shadow:0 0 12px rgba(201,247,58,.5);}
   nav{position:sticky;top:0;z-index:50;background:rgba(12,14,10,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--hair);}
   nav .wrap{display:flex;align-items:center;gap:14px;height:66px;}
   nav .mark{width:34px;height:34px;}
@@ -98,8 +101,26 @@
     nav .links{gap:12px;font-size:11.5px;letter-spacing:.04em;}
   }
 </style>
+<style>
+/* ---- Mobile nav fix: the six links can't fit under ~560px, so on small
+   screens the row scrolls sideways with an edge fade (same cue as the
+   marquee) instead of clipping or forcing the page to scroll sideways. ---- */
+@media(max-width:700px){
+  nav .wrap{gap:12px;padding:0 16px;}
+  nav .links{
+    flex:1 1 auto;min-width:0;justify-content:flex-start;
+    overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+    gap:24px;font-size:12px;letter-spacing:.08em;padding:6px 0;
+    -webkit-mask-image:linear-gradient(90deg,#000 84%,transparent);
+    mask-image:linear-gradient(90deg,#000 84%,transparent);
+  }
+  nav .links::-webkit-scrollbar{display:none;}
+  nav .links a{flex-shrink:0;white-space:nowrap;}
+}
+</style>
 </head>
 <body>
+<div class="progress" id="progress" aria-hidden="true"></div>
 
 <nav>
   <div class="wrap wide">
@@ -108,7 +129,7 @@
       <span class="name">Greene <span>MMA</span></span>
     </a>
     <div class="links">
-      <a href="/#feed">News</a>
+      <a href="/news.html">News</a>
       <a href="/picks.html">Picks</a>
       <a href="/fightweek.html">Fight Week</a>
       <a href="/utah.html">Utah</a>
@@ -123,7 +144,8 @@
 <footer>
   <div class="wrap wide">
     Greene MMA · <a href="https://greene.bet">Part of the greene.bet family</a><br>
-    <a href="/partner.html">Advertise with us</a><br>
+    <a href="/news.html">News</a> · <a href="/fightweek.html">Fight Week</a> · <a href="/picks.html">Picks</a> · <a href="/utah.html">Utah</a> · <a href="/fighters.html">Fighters</a> · <a href="/newsletter.html">Newsletter</a> · <a href="/partner.html">Advertise</a><br>
+      <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a><br>
       © 2026 Greene MMA. Picks are for entertainment. Bet with your head, not over it.
   </div>
 </footer>
@@ -176,7 +198,7 @@ const firebaseConfig = {
   appId: "1:525120309709:web:a21f060511e84bb4a91c84"
 };
 
-const esc = s => { const d=document.createElement("div"); d.textContent=s||""; return d.innerHTML; };
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 function timeAgo(d){
   const s=(Date.now()-d.getTime())/1000;
   if(s<90) return "Now";
@@ -212,7 +234,7 @@ try{
     '<header class="hero"><div class="wrap reveal">'+
       '<span class="cat'+live+'">'+esc(s.category)+'</span>'+
       '<h1>'+esc(s.headline)+'</h1>'+
-      '<div class="meta"><span>'+timeAgo(s.publishedAt.toDate())+'</span>'+
+      '<div class="meta"><span>'+(s.publishedAt&&s.publishedAt.toDate?timeAgo(s.publishedAt.toDate()):'')+'</span>'+
         (s.original && s.author ? '<span>by '+esc(s.author)+'</span>' : '<span>via '+esc(s.sourceName)+'</span>')+
       '</div>'+
     '</div></header>'+
@@ -228,7 +250,7 @@ try{
           '<a class="go" href="'+esc(s.sourceUrl)+'" target="_blank" rel="noopener">Read the full story →</a>'+
           '</div>')+
     '</div>'+
-    '<div class="wrap"><div class="adwrap">      <div class="lbl">Advertisement</div>      <!-- <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="0000000000" data-ad-format="auto" data-full-width-responsive="true"></ins>      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script> -->    </div></div>'+
+    '<div class="wrap"><div class="adwrap">      <div class="lbl">Advertisement</div>      <!-- <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="0000000000" data-ad-format="auto" data-full-width-responsive="true"></ins>      <scr'+'ipt>(adsbygoogle = window.adsbygoogle || []).push({});<\/scr'+'ipt> -->    </div></div>'+
     (others.length?
     '<div class="more"><div class="wrap wide">'+
       '<h2>More from the corner</h2>'+
@@ -242,8 +264,6 @@ try{
     '</div></div>':'');
 
 }catch(err){
-  const paras = window.gmFormat ? window.gmFormat(s.body||"") : "";
-
   app.innerHTML='<div class="wrap"><div class="loading">Story not found.<br><br>'+
     '<a class="back" href="/">← Back to the news</a></div></div>';
   console.warn(err);
@@ -266,7 +286,7 @@ window.gmFormat=function(src){
   const esc=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const inline=t=>{
     t=t.replace(/\[([^\]]{1,120})\]\((https?:\/\/[^\s)]{1,300})\)/g,
-      (m,txt,url)=>'<a href="'+url+'" target="_blank" rel="noopener">'+txt+'</a>');
+      (m,txt,url)=>'<a href="'+url.replace(/"/g,'%22')+'" target="_blank" rel="noopener">'+txt.replace(/"/g,'&quot;')+'</a>');
     t=t.replace(/\*\*([^*]{1,300})\*\*/g,'<strong>$1</strong>');
     t=t.replace(/__([^_]{1,300})__/g,'<u>$1</u>');
     t=t.replace(/(^|[^*])\*([^*\n]{1,300})\*/g,'$1<em>$2</em>');
@@ -301,6 +321,22 @@ window.gmFormat=function(src){
   return out.join('\n');
 };
 
+</script>
+<script>
+/* Reading progress */
+(function(){
+  var bar=document.getElementById('progress');
+  if(!bar) return;
+  var ticking=false;
+  function update(){
+    var h=document.documentElement;
+    var max=h.scrollHeight-h.clientHeight;
+    bar.style.width=(max>0?(h.scrollTop/max*100):0)+'%';
+    ticking=false;
+  }
+  addEventListener('scroll',function(){ if(!ticking){ ticking=true; requestAnimationFrame(update); } },{passive:true});
+  update();
+})();
 </script>
 </body>
 </html>

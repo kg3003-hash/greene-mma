@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Greene MMA — Hype Card Generator</title>
+<meta name="robots" content="noindex,nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -203,7 +204,7 @@
 
 <div class="panel">
       <h2>Manage stories</h2>
-      <p class="hint" style="margin-top:0">Delete stray items — old wrestling posts, bad rewrites.</p>
+      <p class="hint" style="margin-top:0">Pin any story — yours or from the wire — to the homepage. <b>TOP</b> leads the global news column (your first pin becomes the lead story); <b>UTAH</b> leads the local rail. Newest pin goes first, tap again to unpin. DEL removes stray items.</p>
       <button class="btn ghost" id="s_load">Load recent stories</button>
       <div id="s_list" style="margin-top:12px;"></div>
     </div>
@@ -255,7 +256,7 @@
 
 <div class="panel">
       <h2>Utah rankings</h2>
-      <p class="hint" style="margin-top:0">Your list. Type a fighter's name exactly as it appears on the roster and it links up automatically.</p>
+      <p class="hint" style="margin-top:0">Your list. Start typing and pick the fighter from the list — spelling, spacing and accents are forgiven when matching to the roster.</p>
       <label>Division</label>
       <select id="rk_div"></select>
       <div class="arow" style="margin-top:10px;">
@@ -266,7 +267,7 @@
       <input type="text" id="rk_note">
       <div class="alist" id="rk_list" style="margin-top:10px;"></div>
       <div class="arow" style="margin-top:10px;">
-        <input type="text" id="rk_name" placeholder="Fighter name">
+        <input type="text" id="rk_name" placeholder="Fighter name" list="rk_roster"><datalist id="rk_roster"></datalist>
         <button class="btn ghost" id="rk_add" style="margin:0;width:auto;padding:10px 14px;">Add</button>
       </div>
       <button class="btn ghost" id="rk_deldiv">Delete this division</button>
@@ -433,6 +434,10 @@
 /* ================= ARTICLES / EVENTS / STORIES ================= */
 (function(){
   const $=id=>document.getElementById(id);
+  /* Escape anything injected into value="..." attributes or element text.
+     Without this, a quote in any field (nicknames especially) breaks the
+     editor markup and can corrupt the data when it's read back and saved. */
+  const attr=v=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const KEY=()=>sessionStorage.getItem('gmma_key')||'';
   async function api(payload){
     const r=await fetch('/.netlify/functions/site',{method:'POST',
@@ -583,7 +588,7 @@
     ['home.utah.body','Homepage Utah block paragraph'],
     ['utah.heading','Utah page heading'],
     ['utah.intro','Utah page intro'],
-    ['fighters.intro','Fighters page intro'],
+    ['fighters.heading','Fighters page heading'],
     ['picks.heading','Picks page heading'],
     ['picks.intro','Picks page intro'],
     ['fightweek.intro','Fight Week intro'],
@@ -725,7 +730,7 @@
   });
   $('rk_add').addEventListener('click',()=>{
     const n=$('rk_name').value.trim(); if(!n||!DIVS[curDiv]) return;
-    DIVS[curDiv].fighters.push(n); $('rk_name').value=''; drawDivs();
+    DIVS[curDiv].fighters.push(n.trim()); $('rk_name').value=''; drawDivs();
   });
   $('rk_name').addEventListener('keydown',e=>{ if(e.key==='Enter') $('rk_add').click(); });
   $('rk_deldiv').addEventListener('click',()=>{
@@ -836,36 +841,36 @@
       const head='<div class="ftline" data-i="'+i+'" style="display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid var(--hair);cursor:pointer;">'+
         '<div style="flex:1;min-width:0;">'+
           '<div style="font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+
-            ((f.first||'')+' '+(f.last||'')).trim().replace(/</g,'&lt;')+'</div>'+
+            attr(((f.first||'')+' '+(f.last||'')).trim())+'</div>'+
           '<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;letter-spacing:.08em;color:var(--steel);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+
-            [f.record,f.weight,f.gym].filter(Boolean).join(' \u00b7 ').replace(/</g,'&lt;')+'</div>'+
+            attr([f.record,f.weight,f.gym].filter(Boolean).join(' \u00b7 '))+'</div>'+
         '</div>'+
         '<span style="font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--volt);">'+(openIdx===i?'CLOSE':'EDIT')+'</span>'+
         '<button class="ftdel" data-i="'+i+'" style="background:none;border:1px solid var(--hair);color:#FF4B3E;padding:5px 8px;cursor:pointer;font-size:10px;font-family:\'JetBrains Mono\',monospace;">DEL</button>'+
       '</div>';
       if(openIdx!==i) return head;
       return head+'<div style="padding:14px 12px;border-bottom:1px solid var(--hair);background:var(--black);">'+
-        '<div class="row2"><div><label>First</label><input class="e_first" type="text" value="'+(f.first||'')+'"></div>'+
-        '<div><label>Last</label><input class="e_last" type="text" value="'+(f.last||'')+'"></div></div>'+
-        '<label>Nickname</label><input class="e_nick" type="text" value="'+(f.nickname||'')+'">'+
-        '<div class="row2"><div><label>Record</label><input class="e_rec" type="text" value="'+(f.record||'')+'"></div>'+
-        '<div><label>Weight class</label><input class="e_wt" type="text" value="'+(f.weight||'')+'"></div></div>'+
-        '<div class="row2"><div><label>Gym</label><input class="e_gym" type="text" value="'+(f.gym||'')+'"></div>'+
-        '<div><label>City</label><input class="e_city" type="text" value="'+(f.city||'')+'"></div></div>'+
-        '<label>Next fight</label><input class="e_next" type="text" value="'+(f.next||'')+'">'+
-        '<label>Note</label><input class="e_note" type="text" value="'+(f.note||'')+'">'+
-        '<div class="row2"><div><label>Height</label><input class="e_ht" type="text" value="'+(f.height||'')+'"></div>'+
-        '<div><label>Reach</label><input class="e_reach" type="text" value="'+(f.reach||'')+'"></div></div>'+
-        '<div class="row2"><div><label>Age</label><input class="e_age" type="text" value="'+(f.age||'')+'"></div>'+
-        '<div><label>Stance</label><input class="e_stance" type="text" value="'+(f.stance||'')+'"></div></div>'+
-        '<div class="row2"><div><label>Str. landed/min</label><input class="e_slpm" type="text" value="'+(f.slpm||'')+'"></div>'+
-        '<div><label>Str. accuracy</label><input class="e_stracc" type="text" value="'+(f.strAcc||'')+'"></div></div>'+
-        '<div class="row2"><div><label>Str. absorbed/min</label><input class="e_sapm" type="text" value="'+(f.sapm||'')+'"></div>'+
-        '<div><label>Str. defence</label><input class="e_strdef" type="text" value="'+(f.strDef||'')+'"></div></div>'+
-        '<div class="row2"><div><label>Takedowns/15min</label><input class="e_tdavg" type="text" value="'+(f.tdAvg||'')+'"></div>'+
-        '<div><label>TD accuracy</label><input class="e_tdacc" type="text" value="'+(f.tdAcc||'')+'"></div></div>'+
-        '<div class="row2"><div><label>TD defence</label><input class="e_tddef" type="text" value="'+(f.tdDef||'')+'"></div>'+
-        '<div><label>Subs/15min</label><input class="e_subavg" type="text" value="'+(f.subAvg||'')+'"></div></div>'+
+        '<div class="row2"><div><label>First</label><input class="e_first" type="text" value="'+attr(f.first)+'"></div>'+
+        '<div><label>Last</label><input class="e_last" type="text" value="'+attr(f.last)+'"></div></div>'+
+        '<label>Nickname</label><input class="e_nick" type="text" value="'+attr(f.nickname)+'">'+
+        '<div class="row2"><div><label>Record</label><input class="e_rec" type="text" value="'+attr(f.record)+'"></div>'+
+        '<div><label>Weight class</label><input class="e_wt" type="text" value="'+attr(f.weight)+'"></div></div>'+
+        '<div class="row2"><div><label>Gym</label><input class="e_gym" type="text" value="'+attr(f.gym)+'"></div>'+
+        '<div><label>City</label><input class="e_city" type="text" value="'+attr(f.city)+'"></div></div>'+
+        '<label>Next fight</label><input class="e_next" type="text" value="'+attr(f.next)+'">'+
+        '<label>Note</label><input class="e_note" type="text" value="'+attr(f.note)+'">'+
+        '<div class="row2"><div><label>Height</label><input class="e_ht" type="text" value="'+attr(f.height)+'"></div>'+
+        '<div><label>Reach</label><input class="e_reach" type="text" value="'+attr(f.reach)+'"></div></div>'+
+        '<div class="row2"><div><label>Age</label><input class="e_age" type="text" value="'+attr(f.age)+'"></div>'+
+        '<div><label>Stance</label><input class="e_stance" type="text" value="'+attr(f.stance)+'"></div></div>'+
+        '<div class="row2"><div><label>Str. landed/min</label><input class="e_slpm" type="text" value="'+attr(f.slpm)+'"></div>'+
+        '<div><label>Str. accuracy</label><input class="e_stracc" type="text" value="'+attr(f.strAcc)+'"></div></div>'+
+        '<div class="row2"><div><label>Str. absorbed/min</label><input class="e_sapm" type="text" value="'+attr(f.sapm)+'"></div>'+
+        '<div><label>Str. defence</label><input class="e_strdef" type="text" value="'+attr(f.strDef)+'"></div></div>'+
+        '<div class="row2"><div><label>Takedowns/15min</label><input class="e_tdavg" type="text" value="'+attr(f.tdAvg)+'"></div>'+
+        '<div><label>TD accuracy</label><input class="e_tdacc" type="text" value="'+attr(f.tdAcc)+'"></div></div>'+
+        '<div class="row2"><div><label>TD defence</label><input class="e_tddef" type="text" value="'+attr(f.tdDef)+'"></div>'+
+        '<div><label>Subs/15min</label><input class="e_subavg" type="text" value="'+attr(f.subAvg)+'"></div></div>'+
         '<div class="row2"><div><label>Status</label><select class="e_stat">'+
           ['Active','Injured','Booked','Debut','On a streak'].map(x=>'<option'+(f.status===x?' selected':'')+'>'+x+'</option>').join('')+
         '</select></div><div><label>Level</label><select class="e_pro">'+
@@ -947,6 +952,9 @@
       ROSTER=(out.ok&&out.fighters)?out.fighters:[];
     }catch(e){ ROSTER=[]; }
     renderRoster();
+    // feed the rankings autocomplete so ranked names always match the roster
+    const dl=$('rk_roster');
+    if(dl) dl.innerHTML=ROSTER.map(f=>'<option value="'+attr(((f.first||'')+' '+(f.last||'')).trim())+'">').join('');
   }
   window.__reloadRoster=loadRoster;
   loadRoster();
@@ -978,8 +986,8 @@
         if(open!==i) return head;
         return head+'<div class="aedit">'+cfg.fields.map(f=>{
           if(f.type==='check') return '<label class="check" style="margin-top:10px"><input class="'+f.cls+'" type="checkbox" '+(d[f.key]?'checked':'')+'><span>'+f.label+'</span></label>';
-          if(f.type==='area') return '<label>'+f.label+'</label><textarea class="'+f.cls+'">'+(d[f.key]||'')+'</textarea>';
-          return '<label>'+f.label+'</label><input class="'+f.cls+'" type="text" value="'+String(d[f.key]||'').replace(/"/g,'&quot;')+'">';
+          if(f.type==='area') return '<label>'+f.label+'</label><textarea class="'+f.cls+'">'+attr(d[f.key])+'</textarea>';
+          return '<label>'+f.label+'</label><input class="'+f.cls+'" type="text" value="'+attr(d[f.key])+'">';
         }).join('')+'</div>';
       }).join('');
       box.querySelectorAll('.aline').forEach(el=>el.addEventListener('click',e=>{
@@ -1074,28 +1082,53 @@
   });
 
   /* ---- manage stories ---- */
+  let PINS={global:[],utah:[]};
+  const pinBtnCss='background:none;border:1px solid var(--hair);color:var(--steel);padding:6px 9px;cursor:pointer;font-size:10px;font-family:\'JetBrains Mono\',monospace;letter-spacing:.06em;';
+  const pinBtnOn='background:var(--volt);border:1px solid var(--volt);color:#0C0E0A;padding:6px 9px;cursor:pointer;font-size:10px;font-family:\'JetBrains Mono\',monospace;letter-spacing:.06em;font-weight:700;';
+  function pinState(id){
+    if(PINS.global.includes(id)) return 'global';
+    if(PINS.utah.includes(id)) return 'utah';
+    return null;
+  }
+  function drawPinBtns(row){
+    const id=row.dataset.id, st=pinState(id), box=row.querySelector('.pinbox');
+    box.innerHTML=
+      '<button class="pg" style="'+(st==='global'?pinBtnOn:pinBtnCss)+'">'+(st==='global'?'\u25C6 TOP':'PIN TOP')+'</button>'+
+      '<button class="pu" style="'+(st==='utah'?pinBtnOn:pinBtnCss)+'">'+(st==='utah'?'\u25C6 UTAH':'PIN UTAH')+'</button>';
+    box.querySelector('.pg').addEventListener('click',()=>togglePin(row,'global'));
+    box.querySelector('.pu').addEventListener('click',()=>togglePin(row,'utah'));
+  }
+  async function togglePin(row,slot){
+    const id=row.dataset.id;
+    const r = pinState(id)===slot ? await api({unpinStory:id}) : await api({pinStory:{id,slot}});
+    if(r.ok&&r.pins){ PINS=r.pins; $('s_list').querySelectorAll('.srow').forEach(drawPinBtns); }
+  }
   $('s_load').addEventListener('click',async()=>{
     const list=$('s_list');
     list.innerHTML='<div style="color:var(--steel);font-size:13px;">Loading...</div>';
     const out=await api({listStories:true});
     if(!out.ok){ list.innerHTML='<div class="bad">'+(out.error||'Failed')+'</div>'; return; }
+    try{ const p=await api({getPins:true}); if(p.ok&&p.pins) PINS=p.pins; }catch(e){}
     list.innerHTML=out.stories.map(st=>
-      '<div class="srow" data-id="'+st.id+'" style="display:flex;gap:10px;align-items:flex-start;border-top:1px solid var(--hair);padding:10px 0;">'+
-        '<div style="flex:1;font-size:14px;line-height:1.4;">'+st.headline+
+      '<div class="srow" data-id="'+attr(st.id)+'" style="display:flex;gap:10px;align-items:flex-start;border-top:1px solid var(--hair);padding:10px 0;flex-wrap:wrap;">'+
+        '<div style="flex:1;min-width:200px;font-size:14px;line-height:1.4;">'+attr(st.headline)+
           '<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);margin-top:4px;">'+
-          (st.original?'YOURS · ':'')+st.category+' · '+st.sourceName+'</div></div>'+
+          (st.original?'YOURS · ':'')+attr(st.category)+' · '+attr(st.sourceName)+'</div></div>'+
+        '<span class="pinbox" style="display:flex;gap:6px;"></span>'+
         '<button class="del" style="background:none;border:1px solid var(--hair);color:#FF4B3E;padding:6px 10px;cursor:pointer;font-size:11px;font-family:\'JetBrains Mono\',monospace;">DEL</button>'+
       '</div>').join('');
+    list.querySelectorAll('.srow').forEach(drawPinBtns);
     list.querySelectorAll('.del').forEach(b=>b.addEventListener('click',async e=>{
       const row=e.target.closest('.srow');
       const r=await api({deleteStory:row.dataset.id});
-      if(r.ok) row.remove();
+      if(r.ok){ PINS.global=PINS.global.filter(x=>x!==row.dataset.id); PINS.utah=PINS.utah.filter(x=>x!==row.dataset.id); row.remove(); }
     }));
   });
 })();
 
 /* ================= PICKS EDITOR ================= */
 (function(){
+  const attr=v=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const rows=document.getElementById('pickrows');
   const st=document.getElementById('pickstatus');
   function addRow(p){
@@ -1105,10 +1138,10 @@
     d.style.cssText='border-top:1px solid var(--hair);padding-top:12px;margin-top:12px;';
     d.innerHTML=
       '<div class="row2">'+
-        '<div><label>Fighter</label><input type="text" class="pf" value="'+(p.fighter||'')+'"></div>'+
-        '<div><label>Odds</label><input type="text" class="po" value="'+(p.odds||'')+'" placeholder="+340"></div>'+
+        '<div><label>Fighter</label><input type="text" class="pf" value="'+attr(p.fighter)+'"></div>'+
+        '<div><label>Odds</label><input type="text" class="po" value="'+attr(p.odds)+'" placeholder="+340"></div>'+
       '</div>'+
-      '<label>Your read</label><textarea class="pn">'+(p.note||'')+'</textarea>'+
+      '<label>Your read</label><textarea class="pn">'+attr(p.note)+'</textarea>'+
       '<label>Confidence</label>'+
       '<select class="pc"><option>Lean</option><option>Live dog</option><option>Strong</option></select>'+
       '<button class="btn ghost rm" style="margin-top:8px;padding:9px;">Remove</button>';

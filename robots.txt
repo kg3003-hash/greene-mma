@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /studio.html
+Disallow: /cards.html
+Disallow: /write.html
+Disallow: /studio
+Disallow: /cards
+Disallow: /write
+
+Sitemap: https://mma.greene.bet/sitemap.xml

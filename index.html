@@ -24,6 +24,7 @@
 <meta name="twitter:image" content="https://mma.greene.bet/assets/share-card.png">
 <!-- AdSense: replace ca-pub-XXXXXXXXXXXXXXXX with your publisher ID, then uncomment -->
 <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -241,6 +242,31 @@
 
   /* ---------- FEED ---------- */
   .feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px;}
+
+  /* ---------- TOP NEWS + UTAH CORNER split ---------- */
+  .newsgrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:40px;align-items:start;}
+  .newsgrid .feed{grid-template-columns:repeat(auto-fill,minmax(270px,1fr));}
+  .colhead{display:flex;align-items:center;gap:13px;padding-bottom:13px;margin-bottom:18px;border-bottom:1px solid var(--hair);}
+  .colhead .cmark{width:21px;height:21px;flex-shrink:0;}
+  .colhead h3{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:23px;letter-spacing:.01em;}
+  .colhead .mono-tag{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--volt);font-weight:700;}
+  .colhead .more{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);white-space:nowrap;}
+  .colhead .more:hover{color:var(--volt);}
+  .rail{border:1px solid var(--hair);background:var(--black-2);}
+  .rail .ritem{display:block;padding:19px 22px;border-bottom:1px solid var(--hair);transition:background .15s;}
+  .rail .ritem:last-child{border-bottom:none;}
+  .rail .ritem:hover{background:rgba(201,247,58,.045);}
+  .rail .ritem .c{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--volt);font-weight:700;}
+  .rail .ritem h4{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:17.5px;line-height:1.25;margin-top:8px;letter-spacing:.01em;}
+  .rail .ritem:hover h4{color:var(--volt);}
+  .rail .ritem p{color:var(--steel);font-size:14.5px;line-height:1.55;margin-top:7px;}
+  .rail .ritem .t{display:block;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);margin-top:10px;}
+  .rail .rgo{display:block;padding:15px 22px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--volt);font-weight:700;background:rgba(201,247,58,.05);}
+  .rail .rgo:hover{background:var(--volt);color:var(--black);}
+  @media(max-width:960px){
+    .newsgrid{grid-template-columns:1fr;gap:46px;}
+    .newsgrid .rail{max-width:520px;}
+  }
   .card{
     border:1px solid var(--hair);padding:26px;display:flex;flex-direction:column;gap:13px;
     transition:border-color .15s,transform .15s;background:var(--black-2);
@@ -425,6 +451,23 @@
     nav .links{gap:12px;font-size:11.5px;letter-spacing:.04em;}
   }
 </style>
+<style>
+/* ---- Mobile nav fix: the six links can't fit under ~560px, so on small
+   screens the row scrolls sideways with an edge fade (same cue as the
+   marquee) instead of clipping or forcing the page to scroll sideways. ---- */
+@media(max-width:700px){
+  nav .wrap{gap:12px;padding:0 16px;}
+  nav .links{
+    flex:1 1 auto;min-width:0;justify-content:flex-start;
+    overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+    gap:24px;font-size:12px;letter-spacing:.08em;padding:6px 0;
+    -webkit-mask-image:linear-gradient(90deg,#000 84%,transparent);
+    mask-image:linear-gradient(90deg,#000 84%,transparent);
+  }
+  nav .links::-webkit-scrollbar{display:none;}
+  nav .links a{flex-shrink:0;white-space:nowrap;}
+}
+</style>
 </head>
 <body>
 
@@ -491,52 +534,80 @@
   </div>
 </div>
 
-<!-- FEED -->
+<!-- FEED · Top News (global) left, Utah Corner right -->
 <section id="feed">
   <div class="wrap">
-    <div class="sechead">
-      <svg class="sicon" viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="14" stroke-linejoin="miter"/></svg>
-      <h2>The Feed</h2>
-      <span class="mono-tag">Newest first</span>
-      <a class="more" href="/news.html">All news →</a>
-    </div>
-    <div class="feed">
-      <article class="card">
-        <span class="cat">Fight booked</span>
-        <h3>Bantamweight sleeper gets his ranked opponent</h3>
-        <p>Eight straight wins on the regional circuit finally buys a number next to someone's name.</p>
-        <span class="time">4h ago</span>
-      </article>
-      <article class="card">
-        <span class="cat live">Live · Weigh-ins</span>
-        <h3>Everyone on the main card makes weight</h3>
-        <p>Clean scale day. One flyweight needed the towel. The towel held.</p>
-        <span class="time">Now</span>
-      </article>
-      <article class="card">
-        <span class="cat">Line movement</span>
-        <h3>Sharp money keeps landing on the underdog</h3>
-        <p>Opened +475. Now +340 and dropping. Somebody knows something, or a lot of somebodies think they do.</p>
-        <span class="time">7h ago</span>
-      </article>
-      <article class="card">
-        <span class="cat">The Corner</span>
-        <h3>The prospect who still opens the gym he cleans</h3>
-        <p>Undefeated at 6-0, teaching the 6AM class, and two wins from a contract. The full story.</p>
-        <span class="time">1d ago</span>
-      </article>
-      <article class="card">
-        <span class="cat">Injury report</span>
-        <h3>Co-main in doubt after camp injury rumors</h3>
-        <p>Nothing official. But three short-notice names are already circling, and we're tracking all of them.</p>
-        <span class="time">1d ago</span>
-      </article>
-      <article class="card">
-        <span class="cat">Results</span>
-        <h3>Saturday's card: every finish, every scorecard</h3>
-        <p>Four finishes, one robbery, and a debut worth remembering. Full results and the numbers behind them.</p>
-        <span class="time">2d ago</span>
-      </article>
+    <div class="newsgrid">
+
+      <div class="newscol">
+        <div class="colhead">
+          <svg class="cmark" viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="14" stroke-linejoin="miter"/></svg>
+          <h3>Top News</h3>
+          <span class="mono-tag">Global</span>
+          <a class="more" href="/news.html">All news &rarr;</a>
+        </div>
+        <div class="feed">
+          <article class="card">
+            <span class="cat">Fight booked</span>
+            <h3>Bantamweight sleeper gets his ranked opponent</h3>
+            <p>Eight straight wins on the regional circuit finally buys a number next to someone's name.</p>
+            <span class="time">4h ago</span>
+          </article>
+          <article class="card">
+            <span class="cat live">Live &middot; Weigh-ins</span>
+            <h3>Everyone on the main card makes weight</h3>
+            <p>Clean scale day. One flyweight needed the towel. The towel held.</p>
+            <span class="time">Now</span>
+          </article>
+          <article class="card">
+            <span class="cat">Line movement</span>
+            <h3>Sharp money keeps landing on the underdog</h3>
+            <p>Opened +475. Now +340 and dropping. Somebody knows something, or a lot of somebodies think they do.</p>
+            <span class="time">7h ago</span>
+          </article>
+          <article class="card">
+            <span class="cat">Injury report</span>
+            <h3>Co-main in doubt after camp injury rumors</h3>
+            <p>Nothing official. But three short-notice names are already circling, and we're tracking all of them.</p>
+            <span class="time">1d ago</span>
+          </article>
+          <article class="card">
+            <span class="cat">Results</span>
+            <h3>Saturday's card: every finish, every scorecard</h3>
+            <p>Four finishes, one robbery, and a debut worth remembering. Full results and the numbers behind them.</p>
+            <span class="time">2d ago</span>
+          </article>
+          <article class="card">
+            <span class="cat">The Corner</span>
+            <h3>The prospect who still opens the gym he cleans</h3>
+            <p>Undefeated at 6-0, teaching the 6AM class, and two wins from a contract. The full story.</p>
+            <span class="time">1d ago</span>
+          </article>
+        </div>
+      </div>
+
+      <div class="newscol">
+        <div class="colhead">
+          <svg class="cmark" viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="14" stroke-linejoin="miter"/></svg>
+          <h3>The Utah Corner</h3>
+          <span class="mono-tag">Local</span>
+        </div>
+        <div class="rail" id="urail">
+          <!-- Evergreen until local stories load — never invented news -->
+          <a class="ritem" href="/utah.html">
+            <span class="c">The scene</span>
+            <h4>Utah MMA, all in one place</h4>
+            <p>Gyms, promotions, the local fight calendar, and every fighter on the Wasatch Front worth watching.</p>
+          </a>
+          <a class="ritem" href="/fighters.html">
+            <span class="c">The roster</span>
+            <h4>Who's next out of Utah</h4>
+            <p>Records, stats, rankings, and who's booked. Updated from the corner.</p>
+          </a>
+          <a class="rgo" href="/utah.html">The full Utah scene &rarr;</a>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
@@ -650,9 +721,8 @@
     </div>
     <div class="fine">
       Fight news from the Greene corner · <a href="https://greene.bet">Part of the greene.bet family</a><br>
-      News · Picks · <a href="/utah.html">Utah</a>
-      <a href="/fighters.html">Fighters</a> · The Greene Corner newsletter<br>
-      <a href="/partner.html">Advertise with us</a><br>
+      <a href="/news.html">News</a> · <a href="/fightweek.html">Fight Week</a> · <a href="/picks.html">Picks</a> · <a href="/utah.html">Utah</a> · <a href="/fighters.html">Fighters</a> · <a href="/newsletter.html">Newsletter</a> · <a href="/partner.html">Advertise</a><br>
+      <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a><br>
       © 2026 Greene MMA. Picks are for entertainment. Bet with your head, not over it.
     </div>
   </div>
@@ -711,7 +781,8 @@ const firebaseConfig = {
   appId: "1:525120309709:web:a21f060511e84bb4a91c84"
 };
 
-const esc = s => { const d=document.createElement("div"); d.textContent=s||""; return d.innerHTML; };
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const when = t => (t && t.toDate) ? timeAgo(t.toDate()) : "";
 function timeAgo(d){
   const s=(Date.now()-d.getTime())/1000;
   if(s<90) return "Now";
@@ -773,38 +844,90 @@ try{
   const app=initializeApp(firebaseConfig);
   const db=getFirestore(app);
 
-  /* ---------- STORIES ---------- */
-  const snap=await getDocs(query(collection(db,"stories"),orderBy("publishedAt","desc"),limit(13)));
-  const stories=clean(snap.docs.map(d=>({id:d.id,...d.data()})));
+  /* ---------- STORIES: pinned lead + Top News + Utah Corner ---------- */
+  /* Each section gets its own try so one bad doc or failed read
+     can't take the others down with it. */
+  try{
+    // Pins saved from the studio: ordered story ids per column.
+    // First global pin becomes the lead story.
+    let pins={global:[],utah:[]};
+    try{
+      const p=(await getDoc(doc(db,"site","pins"))).data();
+      if(p) pins={global:(p.global||[]).slice(0,6),utah:(p.utah||[]).slice(0,6)};
+    }catch(e){ console.warn("pins",e); }
 
-  if(stories.length){
-    const lead=stories[0];
-    const h2=document.querySelector(".lead h2");
-    const dek=document.querySelector(".lead .dek");
-    const meta=document.querySelector(".lead .meta");
-    const btn=document.querySelector(".lead .btnrow .btn.solid");
-    if(h2) h2.textContent=lead.headline;
-    if(dek) dek.textContent=lead.summary;
-    if(meta) meta.innerHTML="<span><b>"+esc(lead.category)+"</b></span><span>"+timeAgo(lead.publishedAt.toDate())+"</span><span>via "+esc(lead.sourceName)+"</span>";
-    if(btn){ btn.textContent="Read the story"; btn.href="/story.html?id="+encodeURIComponent(lead.id); }
+    const snap=await getDocs(query(collection(db,"stories"),orderBy("publishedAt","desc"),limit(30)));
+    const byId=new Map();
+    clean(snap.docs.map(d=>({id:d.id,...d.data()}))).forEach(s=>byId.set(s.id,s));
 
+    // Pinned stories older than the newest batch get fetched directly
+    for(const id of [...pins.global,...pins.utah]){
+      if(byId.has(id)) continue;
+      try{
+        const ds=await getDoc(doc(db,"stories",id));
+        if(ds.exists()){ const s={id:ds.id,...ds.data()}; if(clean([s]).length) byId.set(id,s); }
+      }catch(e){}
+    }
+
+    const pinnedG=pins.global.map(id=>byId.get(id)).filter(Boolean);
+    const pinnedU=pins.utah.map(id=>byId.get(id)).filter(Boolean);
+    const allPinned=new Set([...pins.global,...pins.utah]);
+    const rest=[...byId.values()].filter(s=>!allPinned.has(s.id));
+    const isUtahStory=s=>s.utah===true||(s.tags||[]).includes("Utah");
+    const used=new Set();
+
+    /* Lead: first global pin wins, otherwise the newest story */
+    const lead=pinnedG[0]||rest[0];
+    if(lead){
+      used.add(lead.id);
+      const h2=document.querySelector(".lead h2");
+      const dek=document.querySelector(".lead .dek");
+      const meta=document.querySelector(".lead .meta");
+      const btn=document.querySelector(".lead .btnrow .btn.solid");
+      if(h2) h2.textContent=lead.headline;
+      if(dek) dek.textContent=lead.summary;
+      if(meta) meta.innerHTML="<span><b>"+esc(lead.category)+"</b></span><span>"+when(lead.publishedAt)+"</span><span>via "+esc(lead.sourceName)+"</span>";
+      if(btn){ btn.textContent="Read the story"; btn.href="/story.html?id="+encodeURIComponent(lead.id); }
+    }
+
+    /* Utah Corner rail: pinned local stories first, newest local fill */
+    const utahList=[...pinnedU,...rest.filter(isUtahStory)]
+      .filter(s=>!used.has(s.id)).slice(0,5);
+    utahList.forEach(s=>used.add(s.id));
+    const rail=document.getElementById("urail");
+    if(rail && utahList.length){
+      rail.innerHTML=utahList.map(s=>
+        '<a class="ritem" href="/story.html?id='+encodeURIComponent(s.id)+'">'+
+          '<span class="c">'+esc(s.category)+'</span>'+
+          '<h4>'+esc(s.headline)+'</h4>'+
+          (s.summary?'<p>'+esc(s.summary)+'</p>':'')+
+          '<span class="t">'+when(s.publishedAt)+(s.original?' · Greene MMA':' · via '+esc(s.sourceName))+'</span>'+
+        '</a>').join("")+
+        '<a class="rgo" href="/utah.html">The full Utah scene &rarr;</a>';
+    }
+
+    /* Top News column: remaining global pins first, newest non-local fill */
+    const globalList=[...pinnedG,...rest.filter(s=>!isUtahStory(s))]
+      .filter(s=>!used.has(s.id)).slice(0,8);
     const grid=document.querySelector(".feed");
-    if(grid && stories.length>1){
-      grid.innerHTML=stories.slice(1).map(st=>{
+    if(grid && globalList.length){
+      grid.innerHTML=globalList.map(st=>{
         const live=/live/i.test(st.category)?" live":"";
         return '<a class="card" href="/story.html?id='+encodeURIComponent(st.id)+'">'+
           art(st.category)+
           '<span class="cat'+live+'">'+esc(st.category)+'</span>'+
           '<h3>'+esc(st.headline)+'</h3>'+
           '<p>'+esc(st.summary)+'</p>'+
-          '<span class="time">'+timeAgo(st.publishedAt.toDate())+' · via '+esc(st.sourceName)+'</span>'+
+          '<span class="time">'+when(st.publishedAt)+' · via '+esc(st.sourceName)+'</span>'+
         '</a>';
       }).join("");
     }
-  }
+  }catch(e){ console.warn("Stories unavailable — placeholders stay.",e); }
 
   /* ---------- FIGHT WEEK (real odds) ---------- */
-  const fw=(await getDoc(doc(db,"site","fightweek"))).data();
+  let fw=null;
+  try{ fw=(await getDoc(doc(db,"site","fightweek"))).data(); }
+  catch(e){ console.warn("Odds unavailable.",e); }
   buildMarquee(fw);
   if(fw && fw.headline){
     const h=fw.headline;
@@ -821,7 +944,9 @@ try{
   } else { hide("fightweek"); }
 
   /* ---------- LIVE DOGS ---------- */
-  const written=(await getDoc(doc(db,"site","picks"))).data();
+  let written=null;
+  try{ written=(await getDoc(doc(db,"site","picks"))).data(); }
+  catch(e){ console.warn("Picks unavailable.",e); }
   const grid=document.querySelector(".picks");
   if(written && written.picks && written.picks.length && grid){
     grid.innerHTML=written.picks.map(p=>

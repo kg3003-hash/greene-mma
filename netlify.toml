@@ -10,3 +10,73 @@
 
 [functions]
   node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/news"
+  to = "/news.html"
+  status = 200
+
+[[redirects]]
+  from = "/fightweek"
+  to = "/fightweek.html"
+  status = 200
+
+[[redirects]]
+  from = "/picks"
+  to = "/picks.html"
+  status = 200
+
+[[redirects]]
+  from = "/utah"
+  to = "/utah.html"
+  status = 200
+
+[[redirects]]
+  from = "/fighters"
+  to = "/fighters.html"
+  status = 200
+
+[[redirects]]
+  from = "/fighter"
+  to = "/fighter.html"
+  status = 200
+
+[[redirects]]
+  from = "/story"
+  to = "/story.html"
+  status = 200
+
+[[redirects]]
+  from = "/newsletter"
+  to = "/newsletter.html"
+  status = 200
+
+[[redirects]]
+  from = "/partner"
+  to = "/partner.html"
+  status = 200
+
+[[redirects]]
+  from = "/studio"
+  to = "/studio.html"
+  status = 200
+
+[[redirects]]
+  from = "/cards"
+  to = "/cards.html"
+  status = 200
+
+[[redirects]]
+  from = "/write"
+  to = "/write.html"
+  status = 200
+
+[[redirects]]
+  from = "/privacy"
+  to = "/privacy.html"
+  status = 200
+
+[[redirects]]
+  from = "/terms"
+  to = "/terms.html"
+  status = 200
