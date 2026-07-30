@@ -198,9 +198,45 @@ export default async function handler(req) {
     return new Response(JSON.stringify({ ok: true, saved: body.picks.length }), { status: 200 });
   }
 
+  // ================= HOMEPAGE PINS =================
+  // Two ordered lists of story ids: "global" leads the Top News column
+  // (first pin is the lead story), "utah" leads the Utah Corner rail.
+  const readPins = async () => {
+    const snap = await db.collection("site").doc("pins").get();
+    const d = snap.data() || {};
+    return { global: d.global || [], utah: d.utah || [] };
+  };
+  if (body.pinStory) {
+    const id = String(body.pinStory.id || "");
+    const slot = body.pinStory.slot === "utah" ? "utah" : "global";
+    if (!id) return new Response(JSON.stringify({ error: "No story id." }), { status: 400 });
+    const pins = await readPins();
+    const other = slot === "utah" ? "global" : "utah";
+    pins[other] = pins[other].filter((x) => x !== id);
+    pins[slot] = [id, ...pins[slot].filter((x) => x !== id)].slice(0, 6);
+    await db.collection("site").doc("pins").set({
+      ...pins,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    return new Response(JSON.stringify({ ok: true, pins }), { status: 200 });
+  }
+  if (body.unpinStory) {
+    const id = String(body.unpinStory);
+    const pins = await readPins();
+    pins.global = pins.global.filter((x) => x !== id);
+    pins.utah = pins.utah.filter((x) => x !== id);
+    await db.collection("site").doc("pins").set({
+      ...pins,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    return new Response(JSON.stringify({ ok: true, pins }), { status: 200 });
+  }
+  if (body.getPins) {
+    return new Response(JSON.stringify({ ok: true, pins: await readPins() }), { status: 200 });
+  }
+
   // Load one story for editing
-  if (body.getStory) {
-    const snap = await db.collection("stories").doc(String(body.getStory)).get();
+  if (body.getStory) {    const snap = await db.collection("stories").doc(String(body.getStory)).get();
     if (!snap.exists) return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
     return new Response(JSON.stringify({ ok: true, story: { id: snap.id, ...snap.data() } }), { status: 200 });
   }
@@ -216,6 +252,14 @@ export default async function handler(req) {
       || "story-" + Date.now();
     // Keep the original id when editing so the URL never changes
     const id = a.id || `gm-${slug}`;
+    // keepDate only makes sense when the story already has a date. A story
+    // written without publishedAt vanishes from every orderBy feed and
+    // crashes the story page, so never allow that state to exist.
+    let keepDate = false;
+    if (a.keepDate) {
+      const prev = await db.collection("stories").doc(id).get();
+      keepDate = prev.exists && !!prev.data().publishedAt;
+    }
     await db.collection("stories").doc(id).set({
       headline: String(a.headline).slice(0, 160),
       summary: String(a.summary || "").slice(0, 400),
@@ -227,7 +271,7 @@ export default async function handler(req) {
       original: true,
       author: String(a.author || "Greene MMA").slice(0, 60),
       utah: a.utah === true,
-      ...(a.keepDate ? {} : { publishedAt: admin.firestore.Timestamp.now() }),
+      ...(keepDate ? {} : { publishedAt: admin.firestore.Timestamp.now() }),
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
     return new Response(JSON.stringify({ ok: true, id }), { status: 200 });
@@ -235,7 +279,19 @@ export default async function handler(req) {
 
   // Delete a story (cleaning up stray wrestling items, bad rewrites, etc.)
   if (body.deleteStory) {
-    await db.collection("stories").doc(String(body.deleteStory)).delete();
+    const id = String(body.deleteStory);
+    await db.collection("stories").doc(id).delete();
+    // keep the pin lists clean — a deleted story can't stay pinned
+    try {
+      const pins = await readPins();
+      if (pins.global.includes(id) || pins.utah.includes(id)) {
+        await db.collection("site").doc("pins").set({
+          global: pins.global.filter((x) => x !== id),
+          utah: pins.utah.filter((x) => x !== id),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) { /* pins doc may not exist yet */ }
     return new Response(JSON.stringify({ ok: true }), { status: 200 });
   }
 
@@ -335,6 +391,7 @@ Rules:
       event: String(body.card.event || "").slice(0, 120),
       date: String(body.card.date || "").slice(0, 60),
       venue: String(body.card.venue || "").slice(0, 120),
+      sortDate: String(body.card.sortDate || "").slice(0, 20),
       bouts: (body.card.bouts || []).slice(0, 20),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
@@ -383,7 +440,7 @@ Rules:
       divisions: (body.rankings || []).slice(0, 15).map((d) => ({
         name: String(d.name || "").slice(0, 60),
         note: String(d.note || "").slice(0, 200),
-        fighters: (d.fighters || []).slice(0, 15).map((f) => String(f).slice(0, 80)),
+        fighters: (d.fighters || []).slice(0, 15).map((f) => String(f).trim().slice(0, 80)),
       })),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
@@ -453,9 +510,9 @@ Rules:
     await db.collection("site").doc("fighters").set({
       fighters: merged.slice(0, 300).map((f) => ({
         slug: slug(f),
-        first: String(f.first || "").slice(0, 40),
-        last: String(f.last || "").slice(0, 40),
-        nickname: String(f.nickname || "").slice(0, 60),
+        first: String(f.first || "").trim().slice(0, 40),
+        last: String(f.last || "").trim().slice(0, 40),
+        nickname: String(f.nickname || "").trim().slice(0, 60),
         record: String(f.record || "").slice(0, 20),
         weight: String(f.weight || "").slice(0, 40),
         gym: String(f.gym || "").slice(0, 80),
