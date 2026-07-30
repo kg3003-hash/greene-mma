@@ -13,6 +13,18 @@ const FEEDS = [
   { name: "Sherdog", url: "https://www.sherdog.com/rss/news.xml" },
   { name: "Fightful", url: "https://www.fightful.com/rss.xml" },
   { name: "Yahoo MMA", url: "https://sports.yahoo.com/mma/rss/" },
+  // Google News search feed: catches Utah + regional MMA coverage from any outlet.
+  // gnews feeds get the publisher pulled from the title and a longer age window,
+  // since regional news is sparse.
+  {
+    name: "Utah wire",
+    gnews: true,
+    utah: true,
+    maxAgeHours: 96,
+    url: "https://news.google.com/rss/search?q=" + encodeURIComponent(
+      '"Utah MMA" OR "Fierce Fighting Championship" OR "SteelFist" OR (MMA "Salt Lake City") OR (MMA Provo) OR (MMA Ogden)'
+    ) + "&hl=en-US&gl=US&ceid=US:en",
+  },
 ];
 
 // Some feeds (Fightful especially) mix pro wrestling in with MMA. Anything
@@ -22,7 +34,8 @@ const BLOCKLIST = [
   "wwe","aew","tna","njpw","smackdown","raw ","summerslam","wrestlemania",
   "royal rumble","survivor series","backlash","payback","nxt","impact wrestling",
   "roman reigns","seth rollins","cody rhodes","danhausen","pro wrestling",
-  "wrestler","wrestling ring","title belt on raw"
+  "wrestler","wrestling ring","title belt on raw",
+  "high school","prep sports","ncaa wrestling"
 ];
 
 // Regional tagging — anything matching gets flagged for the Utah page.
@@ -142,16 +155,24 @@ export default async function handler() {
       for (const item of parsed.items || []) {
         if (!item.link || !item.title) continue;
         const pub = item.isoDate ? new Date(item.isoDate) : new Date();
-        if (hoursAgo(pub) > MAX_AGE_HOURS) continue;
+        if (hoursAgo(pub) > (feed.maxAgeHours || MAX_AGE_HOURS)) continue;
         if (isBlocked(item)) continue;
+        // Google News titles end with " - Publisher" — pull it out and credit
+        // the actual outlet instead of the feed
+        let title = item.title;
+        let sourceName = feed.name;
+        if (feed.gnews) {
+          const m = title.match(/^(.*)\s+-\s+([^-]{2,60})$/);
+          if (m) { title = m[1].trim(); sourceName = m[2].trim(); }
+        }
         candidates.push({
           id: idFor(item.link),
-          title: item.title,
+          title,
           contentSnippet: item.contentSnippet || item.content || "",
           link: item.link,
-          sourceName: feed.name,
+          sourceName,
           publishedAt: pub,
-          utah: isUtah(item),
+          utah: feed.utah === true || isUtah(item),
           ufc: isUFC(item),
         });
       }
@@ -201,4 +222,3 @@ export default async function handler() {
 
 // Every 2 hours. Netlify reads this cron config automatically.
 export const config = { schedule: "0 */2 * * *" };
-
