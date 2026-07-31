@@ -22,7 +22,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  :root{--black:#0C0E0A;--black-2:#13160F;--volt:#C9F73A;--bone:#F2F0E9;--steel:#9AA194;--red:#FF4B3E;--hair:rgba(242,240,233,.14);}
   *{margin:0;padding:0;box-sizing:border-box;}
   body{background:var(--black);color:var(--bone);font-family:'Barlow',sans-serif;font-size:17.5px;line-height:1.65;-webkit-font-smoothing:antialiased;}
   a{color:inherit;text-decoration:none;}
@@ -31,14 +30,11 @@
 
   /* reading progress — thin volt line under the nav */
   .progress{position:fixed;top:0;left:0;height:3px;width:0;background:var(--volt);z-index:60;transition:width .08s linear;box-shadow:0 0 12px rgba(201,247,58,.5);}
-  nav{position:sticky;top:0;z-index:50;background:rgba(12,14,10,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--hair);}
-  nav .wrap{display:flex;align-items:center;gap:14px;height:66px;}
+  /* nav: shared shell in /assets/site.css; the story variant (taller bar,
+     mark+wordmark lockup) lives here + the override block after that link */
   nav .mark{width:34px;height:34px;}
   nav .name{font-family:'Anton',sans-serif;font-size:21px;text-transform:uppercase;}
   nav .name span{color:var(--volt);}
-  nav .links{display:flex;flex:1;justify-content:center;gap:clamp(14px,2.4vw,34px);font-weight:600;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);}
-  nav .links a:hover{color:var(--volt);}
-  @media(max-width:760px){nav .links{display:none;}}
 
   .hero{padding:56px 0 40px;position:relative;overflow:hidden;
         background:radial-gradient(ellipse 70% 60% at 25% 0%, rgba(201,247,58,.07), transparent 62%);}
@@ -78,8 +74,7 @@
   .back{display:inline-block;margin-top:34px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--steel);}
   .back:hover{color:var(--volt);}
   .loading{padding:80px 0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--steel);}
-  footer{border-top:1px solid var(--hair);padding:44px 0 64px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--steel);line-height:2.1;}
-  footer a{color:var(--bone);} footer a:hover{color:var(--volt);}
+  /* footer: shared in /assets/site.css; border/padding override after it */
   .reveal{opacity:0;transform:translateY(14px);animation:rise .5s ease forwards;}
   @keyframes rise{to{opacity:1;transform:none;}}
   /* ad slots — reserved space so nothing jumps when they load */
@@ -87,39 +82,22 @@
   .adwrap .lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel);opacity:.55;margin-bottom:8px;}
   .adwrap ins{display:block;min-height:100px;}
   .adwrap:empty{display:none;}
-  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}.reveal{opacity:1;transform:none;}}
-
-  nav .wrap{position:relative;display:flex;align-items:center;gap:18px;}
-  nav .home{display:flex;align-items:center;gap:10px;flex-shrink:0;}
-  nav .home svg{width:28px;height:28px;flex-shrink:0;transition:transform .2s;}
-  nav .home:hover svg{transform:rotate(-22.5deg);}
-  nav .home .wm{font-family:'Anton',sans-serif;font-size:17px;letter-spacing:.02em;text-transform:uppercase;color:var(--bone);white-space:nowrap;}
-  nav .home .wm b{color:var(--volt);font-weight:400;}
-  nav .home:hover .wm{color:var(--volt);}
-  @media(max-width:1140px){nav .home .wm{display:none;}}
-  @media(max-width:700px){
-    nav .links{gap:12px;font-size:11.5px;letter-spacing:.04em;}
-  }
-</style>
-<style>
-/* ---- Mobile nav fix: the six links can't fit under ~560px, so on small
-   screens the row scrolls sideways with an edge fade (same cue as the
-   marquee) instead of clipping or forcing the page to scroll sideways. ---- */
-@media(max-width:700px){
-  nav .wrap{gap:12px;padding:0 16px;}
-  nav .links{
-    flex:1 1 auto;min-width:0;justify-content:flex-start;
-    overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
-    gap:24px;font-size:12px;letter-spacing:.08em;padding:6px 0;
-    -webkit-mask-image:linear-gradient(90deg,#000 84%,transparent);
-    mask-image:linear-gradient(90deg,#000 84%,transparent);
-  }
-  nav .links::-webkit-scrollbar{display:none;}
-  nav .links a{flex-shrink:0;white-space:nowrap;}
-}
+  /* reduced-motion rules are shared in /assets/site.css */
 </style>
 <link rel="alternate" type="application/rss+xml" title="Greene MMA — Original stories" href="/feed.xml">
 <link rel="stylesheet" href="/assets/site.css">
+<style>
+/* ---- Page overrides — after site.css so equal-specificity rules win. ---- */
+/* Story nav: taller bar with the mark+wordmark lockup, quieter links,
+   no underline sweep; links hide under 760px to keep the headline clear. */
+nav .wrap{height:66px;justify-content:normal;}
+nav .links{letter-spacing:.08em;}
+nav .links a{position:static;padding:0;}
+nav .links a::after{content:none;}
+@media(max-width:760px){nav .links{display:none;}}
+/* Story footer: hairline top border, slightly roomier. */
+footer{border-top:1px solid var(--hair);padding:44px 0 64px;}
+</style>
 </head>
 <body>
 <div class="progress" id="progress" aria-hidden="true"></div>

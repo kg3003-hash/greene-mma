@@ -30,15 +30,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="alternate" type="application/rss+xml" title="Greene MMA — Original stories" href="/feed.xml">
 <style>
-  :root{
-    --black:#0C0E0A;
-    --black-2:#13160F;
-    --volt:#C9F73A;
-    --bone:#F2F0E9;
-    --steel:#9AA194;          /* lightened for readability */
-    --red:#FF4B3E;
-    --hair:rgba(242,240,233,.14);
-  }
   *{margin:0;padding:0;box-sizing:border-box;}
   html{scroll-behavior:smooth;}
   body{
@@ -81,25 +72,9 @@
   .marquee .edge.l{left:0;background:linear-gradient(90deg,var(--black),transparent);}
   .marquee .edge.r{right:0;background:linear-gradient(270deg,var(--black),transparent);}
 
-  /* ---------- NAV ---------- */
-  nav{
-    position:sticky;top:0;z-index:50;
-    background:rgba(12,14,10,.94);backdrop-filter:blur(12px);
-    border-bottom:1px solid var(--hair);
-  }
-  nav .wrap{display:flex;align-items:center;justify-content:center;height:58px;}
-  nav .links{
-    display:flex;gap:38px;
-    font-family:'Barlow',sans-serif;font-weight:600;font-size:14px;
-    letter-spacing:.14em;text-transform:uppercase;color:var(--steel);
-  }
-  nav .links a{position:relative;padding:4px 0;}
-  nav .links a::after{
-    content:'';position:absolute;left:50%;right:50%;bottom:-2px;height:2px;
-    background:var(--volt);transition:left .2s ease,right .2s ease;
-  }
-  nav .links a:hover{color:var(--volt);}
-  nav .links a:hover::after{left:0;right:0;}
+  /* ---------- NAV ----------
+     shared shell nav lives in /assets/site.css; homepage-only bits here,
+     layout tweaks in the override block after the site.css link */
   nav .links a:focus-visible{outline:2px solid var(--volt);outline-offset:4px;}
   nav .gbl{
     display:flex;align-items:center;gap:8px;flex-shrink:0;
@@ -111,11 +86,7 @@
   nav .gbl svg{width:13px;height:13px;flex-shrink:0;}
   nav .gbl:hover{background:var(--volt);color:var(--black);border-color:var(--volt);}
   nav .gbl:hover svg path{stroke:var(--black);}
-  nav .wrap{position:relative;}
   @media(max-width:1240px){nav .gbl{display:none;}}
-  @media(max-width:700px){
-    nav .links{gap:20px;font-size:12px;letter-spacing:.08em;}
-  }
 
   /* Utah spotlight */
   .utahblock{border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);
@@ -392,15 +363,9 @@
   .corner button:hover{background:transparent;color:var(--black);}
   .corner .fine{margin-top:16px;font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:rgba(12,14,10,.62);}
 
-  /* ---------- FOOTER ---------- */
-  footer{padding:56px 0 72px;}
-  footer .top{display:flex;align-items:center;gap:14px;margin-bottom:22px;}
-  footer .top svg{width:30px;height:30px;}
-  footer .top .name{font-family:'Anton',sans-serif;font-size:19px;text-transform:uppercase;}
-  footer .top .name span{color:var(--volt);}
-  footer .fine{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--steel);line-height:2.1;}
-  footer .fine a{color:var(--bone);}
-  footer .fine a:hover{color:var(--volt);}
+  /* ---------- FOOTER ----------
+     lockup + fine print styles are shared in /assets/site.css;
+     homepage padding/typography override sits after the site.css link */
 
   /* ---------- ENTRANCE SEQUENCE ---------- */
   .masthead .mark path{
@@ -433,44 +398,26 @@
   .adwrap .lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel);opacity:.55;margin-bottom:8px;}
   .adwrap ins{display:block;min-height:100px;}
   .adwrap:empty{display:none;}
+  /* base reduced-motion rules are shared in /assets/site.css; the masthead
+     rules stay here because .masthead h1/.tag out-specify the shared reset */
   @media(prefers-reduced-motion:reduce){
-    *{animation:none !important;transition:none !important;}
-    .marquee .track{animation:none !important;}
     .masthead .mark path{stroke-dashoffset:0;}
     .masthead h1,.masthead .tag{opacity:1;transform:none;}
-    .reveal{opacity:1;transform:none;}
   }
 
-  nav .wrap{position:relative;display:flex;align-items:center;gap:18px;}
-  nav .home{display:flex;align-items:center;gap:10px;flex-shrink:0;}
-  nav .home svg{width:28px;height:28px;flex-shrink:0;transition:transform .2s;}
-  nav .home:hover svg{transform:rotate(-22.5deg);}
-  nav .home .wm{font-family:'Anton',sans-serif;font-size:17px;letter-spacing:.02em;text-transform:uppercase;color:var(--bone);white-space:nowrap;}
-  nav .home .wm b{color:var(--volt);font-weight:400;}
-  nav .home:hover .wm{color:var(--volt);}
-  @media(max-width:1140px){nav .home .wm{display:none;}}
-  @media(max-width:700px){
-    nav .links{gap:12px;font-size:11.5px;letter-spacing:.04em;}
-  }
-</style>
-<style>
-/* ---- Mobile nav fix: the six links can't fit under ~560px, so on small
-   screens the row scrolls sideways with an edge fade (same cue as the
-   marquee) instead of clipping or forcing the page to scroll sideways. ---- */
-@media(max-width:700px){
-  nav .wrap{gap:12px;padding:0 16px;}
-  nav .links{
-    flex:1 1 auto;min-width:0;justify-content:flex-start;
-    overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
-    gap:24px;font-size:12px;letter-spacing:.08em;padding:6px 0;
-    -webkit-mask-image:linear-gradient(90deg,#000 84%,transparent);
-    mask-image:linear-gradient(90deg,#000 84%,transparent);
-  }
-  nav .links::-webkit-scrollbar{display:none;}
-  nav .links a{flex-shrink:0;white-space:nowrap;}
-}
 </style>
 <link rel="stylesheet" href="/assets/site.css">
+<style>
+/* ---- Page overrides — after site.css so equal-specificity rules win. ---- */
+/* Homepage nav: links sit at a fixed gap between the home lockup and the
+   play-the-league button instead of stretching to fill; under 700px the
+   shared scrolling-row behavior takes over unchanged. */
+@media not all and (max-width:700px){
+  nav .links{flex:0 1 auto;justify-content:normal;gap:38px;}
+}
+/* Homepage footer: bone-on-black and roomier; type is set by .top/.fine. */
+footer{padding:56px 0 72px;font-family:'Barlow',sans-serif;font-size:17.5px;letter-spacing:normal;text-transform:none;color:var(--bone);line-height:1.65;}
+</style>
 </head>
 <body>
 

@@ -26,24 +26,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --black:#0C0E0A; --black-2:#13160F; --volt:#C9F73A; --bone:#F2F0E9;
-    --steel:#9AA194; --red:#FF4B3E; --hair:rgba(242,240,233,.14);
-  }
   *{margin:0;padding:0;box-sizing:border-box;}
   html{scroll-behavior:smooth;}
   body{background:var(--black);color:var(--bone);font-family:'Barlow',sans-serif;font-size:17.5px;line-height:1.65;-webkit-font-smoothing:antialiased;}
   a{color:inherit;text-decoration:none;}
   .wrap{max-width:1060px;margin:0 auto;padding:0 22px;}
 
-  nav{position:sticky;top:0;z-index:50;background:rgba(12,14,10,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--hair);}
-  nav .wrap{display:flex;align-items:center;gap:14px;height:66px;}
-  nav .mark{width:34px;height:34px;flex-shrink:0;}
-  nav .name{font-family:'Anton',sans-serif;font-size:21px;letter-spacing:.02em;text-transform:uppercase;}
-  nav .name span{color:var(--volt);}
-  nav .links{display:flex;flex:1;justify-content:center;gap:clamp(14px,2.4vw,34px);font-weight:600;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);}
-  nav .links a:hover,nav .links a.on{color:var(--volt);}
-  @media(max-width:800px){nav .links{display:none;}}
+  /* nav: shared shell in /assets/site.css; the Utah variant (taller bar,
+     quieter links) lives in the override block after the site.css link */
 
   /* hero */
   .hero{padding:80px 0 64px;border-bottom:1px solid var(--hair);position:relative;overflow:hidden;min-height:470px;
@@ -222,14 +212,8 @@
   .corner .cta{margin-top:28px;display:inline-block;padding:16px 32px;background:var(--black);color:var(--volt);font-weight:700;font-size:14px;letter-spacing:.1em;text-transform:uppercase;}
   .corner .cta:hover{background:transparent;color:var(--black);box-shadow:inset 0 0 0 2px var(--black);}
 
-  footer{padding:52px 0 70px;}
-  footer .top{display:flex;align-items:center;gap:14px;margin-bottom:20px;}
-  footer .top svg{width:30px;height:30px;}
-  footer .top .name{font-family:'Anton',sans-serif;font-size:19px;text-transform:uppercase;}
-  footer .top .name span{color:var(--volt);}
-  footer .fine{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--steel);line-height:2.1;}
-  footer .fine a{color:var(--bone);}
-  footer .fine a:hover{color:var(--volt);}
+  /* footer: lockup + fine print shared in /assets/site.css; Utah padding
+     override sits after the site.css link */
   /* entrance + scroll reveals */
   .hero .bigmark{position:absolute;right:-90px;top:50%;transform:translateY(-50%);width:min(460px,52vw);opacity:.06;pointer-events:none;}
   .hero .bigmark path{stroke-dasharray:320;stroke-dashoffset:320;animation:draw 1.8s cubic-bezier(.65,0,.35,1) .2s forwards;}
@@ -250,12 +234,8 @@
   .adwrap .lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel);opacity:.55;margin-bottom:8px;}
   .adwrap ins{display:block;min-height:100px;}
   .adwrap:empty{display:none;}
-  @media(prefers-reduced-motion:reduce){
-    *{animation:none !important;transition:none !important;}
-    .hero h1,.hero .dek,.hero .eyebrow{opacity:1;transform:none;}
-    .hero .bigmark path{stroke-dashoffset:0;}
-    .reveal{opacity:1;transform:none;}
-  }
+  /* reduced-motion rules are shared in /assets/site.css
+     (the utahmap block above stays: it's map-specific) */
   /* fighter modal */
   .fmodal{position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(6,7,5,.86);backdrop-filter:blur(4px);}
   .fmodal.on{display:flex;}
@@ -278,37 +258,22 @@
   .fmodal .go:hover{background:var(--volt);color:var(--black);}
   .fmodal .empty-stats{padding:24px 26px;color:var(--steel);font-size:15px;}
 
-  nav .wrap{position:relative;display:flex;align-items:center;gap:18px;}
-  nav .home{display:flex;align-items:center;gap:10px;flex-shrink:0;}
-  nav .home svg{width:28px;height:28px;flex-shrink:0;transition:transform .2s;}
-  nav .home:hover svg{transform:rotate(-22.5deg);}
-  nav .home .wm{font-family:'Anton',sans-serif;font-size:17px;letter-spacing:.02em;text-transform:uppercase;color:var(--bone);white-space:nowrap;}
-  nav .home .wm b{color:var(--volt);font-weight:400;}
-  nav .home:hover .wm{color:var(--volt);}
-  @media(max-width:1140px){nav .home .wm{display:none;}}
-  @media(max-width:700px){
-    nav .links{gap:12px;font-size:11.5px;letter-spacing:.04em;}
-  }
-</style>
-<style>
-/* ---- Mobile nav fix: the six links can't fit under ~560px, so on small
-   screens the row scrolls sideways with an edge fade (same cue as the
-   marquee) instead of clipping or forcing the page to scroll sideways. ---- */
-@media(max-width:700px){
-  nav .wrap{gap:12px;padding:0 16px;}
-  nav .links{
-    flex:1 1 auto;min-width:0;justify-content:flex-start;
-    overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
-    gap:24px;font-size:12px;letter-spacing:.08em;padding:6px 0;
-    -webkit-mask-image:linear-gradient(90deg,#000 84%,transparent);
-    mask-image:linear-gradient(90deg,#000 84%,transparent);
-  }
-  nav .links::-webkit-scrollbar{display:none;}
-  nav .links a{flex-shrink:0;white-space:nowrap;}
-}
 </style>
 <link rel="alternate" type="application/rss+xml" title="Greene MMA — Original stories" href="/feed.xml">
 <link rel="stylesheet" href="/assets/site.css">
+<style>
+/* ---- Page overrides — after site.css so equal-specificity rules win. ---- */
+/* Utah nav: taller bar, quieter links, no underline sweep; links hide
+   under 800px (the hero map needs the room). */
+nav .wrap{height:66px;justify-content:normal;}
+nav .links{letter-spacing:.08em;}
+nav .links a{position:static;padding:0;}
+nav .links a::after{content:none;}
+@media(max-width:800px){nav .links{display:none;}}
+/* Utah footer: bone-on-black like the homepage, slightly tighter. */
+footer{padding:52px 0 70px;font-family:'Barlow',sans-serif;font-size:17.5px;letter-spacing:normal;text-transform:none;color:var(--bone);line-height:1.65;}
+footer .top{margin-bottom:20px;}
+</style>
 </head>
 <body>
 
