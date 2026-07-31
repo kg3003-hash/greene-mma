@@ -8,3 +8,4 @@ Disallow: /cards
 Disallow: /write
 
 Sitemap: https://mma.greene.bet/sitemap.xml
+Sitemap: https://mma.greene.bet/sitemap-stories.xml

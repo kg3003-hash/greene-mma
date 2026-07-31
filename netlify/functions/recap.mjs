@@ -7,6 +7,7 @@
 
 import Parser from "rss-parser";
 import admin from "firebase-admin";
+import { rebuildStoryIndexes } from "./lib/story-indexes.mjs";
 
 const FEEDS = [
   { name: "ESPN MMA", url: "https://www.espn.com/espn/rss/mma/news" },
@@ -156,6 +157,10 @@ export default async function handler() {
     publishedAt: admin.firestore.Timestamp.now(),
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
   });
+
+  // Recaps are originals — keep the index doc current so they stay visible.
+  try { await rebuildStoryIndexes(db); }
+  catch (err) { console.error("Index rebuild failed:", err.message); }
 
   console.log(`Recap published from ${items.length} items: ${recap.headline}`);
   return new Response(JSON.stringify({ ok: true, headline: recap.headline, items: items.length }), { status: 200 });

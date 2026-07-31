@@ -307,6 +307,8 @@
   nav .links a{flex-shrink:0;white-space:nowrap;}
 }
 </style>
+<link rel="alternate" type="application/rss+xml" title="Greene MMA — Original stories" href="/feed.xml">
+<link rel="stylesheet" href="/assets/site.css">
 </head>
 <body>
 
@@ -807,22 +809,32 @@ try{
       }
     }catch(e){ console.warn("events",e); }
 
-    // Pull recent stories and filter client-side — avoids needing a composite index.
-    // Guarded on its own: if this read fails, the gym directory, events and
+    // Our writing + the local wire come from two small index docs that the
+    // functions maintain on every publish and bot run — so original articles
+    // can never be buried out of a recency window by wire volume.
+    // Guarded on its own: if these reads fail, the gym directory, events and
     // sponsor slots above have already rendered.
-    let allStories=[];
-    try{
-      const snap=await getDocs(query(collection(db,"stories"),orderBy("publishedAt","desc"),limit(60)));
-      allStories=snap.docs.map(d=>({id:d.id,...d.data()}));
-    }catch(e){ console.warn("stories",e); }
-    const isUtah=x=>x.utah===true||(x.tags||[]).includes("Utah");
+    let originals=[], utahwire=[];
+    try{ originals=(((await getDoc(doc(db,"site","originals"))).data()||{}).stories||[]); }catch(e){ console.warn("originals",e); }
+    try{ utahwire=(((await getDoc(doc(db,"site","utahwire"))).data()||{}).stories||[]); }catch(e){ console.warn("utahwire",e); }
+
+    // Fallback for the window before the first index rebuild has run.
+    if(!originals.length || !utahwire.length){
+      try{
+        const snap=await getDocs(query(collection(db,"stories"),orderBy("publishedAt","desc"),limit(60)));
+        const allStories=snap.docs.map(d=>({id:d.id,...d.data()}));
+        const isU=x=>x.utah===true||x.category==="Utah"||(x.tags||[]).includes("Utah");
+        if(!originals.length) originals=allStories.filter(x=>x.original===true);
+        if(!utahwire.length) utahwire=allStories.filter(isU);
+      }catch(e){ console.warn("stories",e); }
+    }
 
     // our own writing — everything published from the Studio or Writers' Room
-    const mine=allStories.filter(x=>x.original===true).slice(0,6);
+    const mine=originals.slice(0,6);
     const mineBox=document.getElementById("ourfeed");
     if(mine.length){
       mineBox.innerHTML='<div class="mine">'+mine.map(x=>
-        '<a class="mine-card reveal" href="/story.html?id='+encodeURIComponent(x.id)+'">'+
+        '<a class="mine-card reveal" href="/s/'+encodeURIComponent(x.id)+'">'+
           '<span class="c">'+esc(x.category||'The Corner')+'</span>'+
           '<h3>'+esc(x.headline)+'</h3>'+
           (x.summary?'<p>'+esc(x.summary)+'</p>':'')+
@@ -834,7 +846,7 @@ try{
 
     // aggregated wire, minus anything we wrote ourselves.
     // Nothing local on the wire -> the whole section and its hero link hide.
-    const local=allStories.filter(x=>isUtah(x) && x.original!==true).slice(0,12);
+    const local=utahwire.filter(x=>x.original!==true).slice(0,12);
     const wireSec=document.getElementById("localfeed");
     const wireBtn=document.querySelector('.fbtn[href="#localfeed"]');
     if(!local.length){

@@ -1,0 +1,31 @@
+/* GREENE MMA — shared shell components.
+   Loaded on every public page AFTER the page's inline styles, so rules here
+   are site-wide truth. Brand-wide components live here; page-specific styling
+   stays in the page. Tokens (--volt etc.) come from each page's :root. */
+
+/* ---------- Original-article treatment ----------
+   Our own writing gets a volt edge and a badge so it never reads like
+   another wire rewrite. Cards opt in with .orig; the badge works inline
+   next to any category label. */
+.card.orig{border-color:rgba(201,247,58,.5);}
+.card.orig:hover{border-color:var(--volt);}
+.origbadge{
+  display:inline-block;vertical-align:middle;margin-left:8px;padding:2.5px 8px;
+  background:var(--volt);color:var(--black);
+  font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.12em;
+  text-transform:uppercase;font-weight:700;white-space:nowrap;
+}
+.rail .ritem .origbadge{margin-left:6px;}
+
+/* ---------- Marquee pause control ----------
+   Hover already pauses the ticker; this gives touch users (and anyone who
+   just wants it to hold still) an explicit control. */
+.marquee{position:relative;}
+.marquee .pausebtn{
+  position:absolute;right:8px;top:50%;transform:translateY(-50%);z-index:3;
+  width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+  background:rgba(12,14,10,.85);border:1px solid var(--hair);color:var(--steel);
+  cursor:pointer;font-size:10px;line-height:1;padding:0;
+}
+.marquee .pausebtn:hover,.marquee .pausebtn:focus-visible{color:var(--volt);border-color:var(--volt);outline:none;}
+.marquee.paused .track{animation-play-state:paused !important;}

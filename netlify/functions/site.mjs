@@ -6,6 +6,7 @@
 // Env: STUDIO_KEY, FIREBASE_SERVICE_ACCOUNT
 
 import admin from "firebase-admin";
+import { rebuildStoryIndexes } from "./lib/story-indexes.mjs";
 
 if (!admin.apps.length) {
   admin.initializeApp({
@@ -15,6 +16,14 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 
 const isEmail = (s) => typeof s === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s.trim());
+
+// A story is a Utah story if the flag is set, OR the category is Utah, OR it
+// carries the Utah tag. Writers kept picking Category: Utah and leaving the
+// "Utah story?" dropdown on No — all three now mean the same thing.
+const isUtahStory = (d) =>
+  d.utah === true ||
+  String(d.category || "").trim().toLowerCase() === "utah" ||
+  (Array.isArray(d.tags) && d.tags.includes("Utah"));
 
 export default async function handler(req) {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
@@ -80,7 +89,7 @@ export default async function handler(req) {
       body: String(d.body).slice(0, 20000),
       category: String(d.category || "The Corner").slice(0, 40),
       tags: Array.isArray(d.tags) ? d.tags.slice(0, 6).map((t) => String(t).slice(0, 24)) : [],
-      utah: d.utah === true,
+      utah: isUtahStory(d),
       author: String(d.author || (isAdmin ? "Greene MMA" : "Staff writer")).slice(0, 60),
       authorRole: isAdmin ? "admin" : "writer",
       status: d.submit ? "submitted" : "draft",
@@ -131,11 +140,12 @@ export default async function handler(req) {
       category: d.category || "The Corner", tags: d.tags || [],
       sourceName: "Greene MMA", sourceUrl: "", original: true,
       author: d.author || "Greene MMA",
-      utah: d.utah === true,
+      utah: isUtahStory(d),
       publishedAt: admin.firestore.Timestamp.now(),
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
     await ref.delete();
+    try { await rebuildStoryIndexes(db); } catch (e) { console.error("Index rebuild failed:", e.message); }
     return new Response(JSON.stringify({ ok: true, id: "gm-" + slug }), { status: 200 });
   }
 
@@ -270,11 +280,19 @@ export default async function handler(req) {
       sourceUrl: "",
       original: true,
       author: String(a.author || "Greene MMA").slice(0, 60),
-      utah: a.utah === true,
+      utah: isUtahStory(a),
       ...(keepDate ? {} : { publishedAt: admin.firestore.Timestamp.now() }),
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
+    try { await rebuildStoryIndexes(db); } catch (e) { console.error("Index rebuild failed:", e.message); }
     return new Response(JSON.stringify({ ok: true, id }), { status: 200 });
+  }
+
+  // Rebuild the originals/Utah index docs on demand (also runs automatically
+  // after every publish, delete, and bot run — this is the manual override).
+  if (body.rebuildIndexes) {
+    const counts = await rebuildStoryIndexes(db);
+    return new Response(JSON.stringify({ ok: true, ...counts }), { status: 200 });
   }
 
   // Delete a story (cleaning up stray wrestling items, bad rewrites, etc.)
@@ -292,6 +310,7 @@ export default async function handler(req) {
         });
       }
     } catch (e) { /* pins doc may not exist yet */ }
+    try { await rebuildStoryIndexes(db); } catch (e) { console.error("Index rebuild failed:", e.message); }
     return new Response(JSON.stringify({ ok: true }), { status: 200 });
   }
 

@@ -28,6 +28,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="alternate" type="application/rss+xml" title="Greene MMA — Original stories" href="/feed.xml">
 <style>
   :root{
     --black:#0C0E0A;
@@ -469,12 +470,14 @@
   nav .links a{flex-shrink:0;white-space:nowrap;}
 }
 </style>
+<link rel="stylesheet" href="/assets/site.css">
 </head>
 <body>
 
 <!-- MARQUEE · populated from the odds feed -->
 <div class="marquee" id="marquee">
   <div class="edge l"></div><div class="edge r"></div>
+  <button class="pausebtn" id="mpause" aria-label="Pause ticker" aria-pressed="false" title="Pause ticker">&#10074;&#10074;</button>
   <div class="track" id="mtrack">
     <div class="run">
       <span class="item"><span class="lbl">Greene MMA</span> <b>Fight news from the Greene corner</b></span>
@@ -860,6 +863,14 @@ try{
     const byId=new Map();
     clean(snap.docs.map(d=>({id:d.id,...d.data()}))).forEach(s=>byId.set(s.id,s));
 
+    // Index docs — maintained server-side on every publish and bot run, so
+    // our own writing and Utah coverage stay visible no matter how much wire
+    // volume lands on top of them.
+    let originals=[], utahwire=[];
+    try{ originals=clean(((await getDoc(doc(db,"site","originals"))).data()||{}).stories||[]); }catch(e){ console.warn("originals",e); }
+    try{ utahwire=clean(((await getDoc(doc(db,"site","utahwire"))).data()||{}).stories||[]); }catch(e){ console.warn("utahwire",e); }
+    [...originals,...utahwire].forEach(s=>{ if(s.id && !byId.has(s.id)) byId.set(s.id,s); });
+
     // Pinned stories older than the newest batch get fetched directly
     for(const id of [...pins.global,...pins.utah]){
       if(byId.has(id)) continue;
@@ -872,12 +883,15 @@ try{
     const pinnedG=pins.global.map(id=>byId.get(id)).filter(Boolean);
     const pinnedU=pins.utah.map(id=>byId.get(id)).filter(Boolean);
     const allPinned=new Set([...pins.global,...pins.utah]);
-    const rest=[...byId.values()].filter(s=>!allPinned.has(s.id));
-    const isUtahStory=s=>s.utah===true||(s.tags||[]).includes("Utah");
+    const rest=[...byId.values()].filter(s=>!allPinned.has(s.id))
+      .sort((a,b)=>((b.publishedAt&&b.publishedAt.toMillis)?b.publishedAt.toMillis():0)-((a.publishedAt&&a.publishedAt.toMillis)?a.publishedAt.toMillis():0));
+    const isUtahStory=s=>s.utah===true||s.category==="Utah"||(s.tags||[]).includes("Utah");
     const used=new Set();
+    const storyHref=s=>"/s/"+encodeURIComponent(s.id);
 
-    /* Lead: first global pin wins, otherwise the newest story */
-    const lead=pinnedG[0]||rest[0];
+    /* Lead: first global pin wins, then a fresh original, then the newest story */
+    const freshOriginal=originals.find(s=>s.publishedAt&&s.publishedAt.toDate&&(Date.now()-s.publishedAt.toDate().getTime())<7*864e5);
+    const lead=pinnedG[0]||freshOriginal||rest[0];
     if(lead){
       used.add(lead.id);
       const h2=document.querySelector(".lead h2");
@@ -886,19 +900,25 @@ try{
       const btn=document.querySelector(".lead .btnrow .btn.solid");
       if(h2) h2.textContent=lead.headline;
       if(dek) dek.textContent=lead.summary;
-      if(meta) meta.innerHTML="<span><b>"+esc(lead.category)+"</b></span><span>"+when(lead.publishedAt)+"</span><span>via "+esc(lead.sourceName)+"</span>";
-      if(btn){ btn.textContent="Read the story"; btn.href="/story.html?id="+encodeURIComponent(lead.id); }
+      if(meta) meta.innerHTML=lead.original
+        ? "<span><b>Greene MMA Original</b></span><span>"+when(lead.publishedAt)+"</span><span>by "+esc(lead.author||"Greene MMA")+"</span>"
+        : "<span><b>"+esc(lead.category)+"</b></span><span>"+when(lead.publishedAt)+"</span><span>via "+esc(lead.sourceName)+"</span>";
+      if(btn){ btn.textContent="Read the story"; btn.href=storyHref(lead); }
     }
 
-    /* Utah Corner rail: pinned local stories first, newest local fill */
-    const utahList=[...pinnedU,...rest.filter(isUtahStory)]
-      .filter(s=>!used.has(s.id)).slice(0,5);
+    /* Utah Corner rail: pins, then our Utah writing, then the local wire */
+    const utahList=[];
+    for(const s of [...pinnedU,...originals.filter(isUtahStory),...utahwire,...rest.filter(isUtahStory)]){
+      if(used.has(s.id)||utahList.some(x=>x.id===s.id)) continue;
+      utahList.push(s);
+      if(utahList.length>=5) break;
+    }
     utahList.forEach(s=>used.add(s.id));
     const rail=document.getElementById("urail");
     if(rail && utahList.length){
       rail.innerHTML=utahList.map(s=>
-        '<a class="ritem" href="/story.html?id='+encodeURIComponent(s.id)+'">'+
-          '<span class="c">'+esc(s.category)+'</span>'+
+        '<a class="ritem" href="'+storyHref(s)+'">'+
+          '<span class="c">'+esc(s.category)+'</span>'+(s.original?'<span class="origbadge">Original</span>':'')+
           '<h4>'+esc(s.headline)+'</h4>'+
           (s.summary?'<p>'+esc(s.summary)+'</p>':'')+
           '<span class="t">'+when(s.publishedAt)+(s.original?' · Greene MMA':' · via '+esc(s.sourceName))+'</span>'+
@@ -906,19 +926,26 @@ try{
         '<a class="rgo" href="/utah.html">The full Utah scene &rarr;</a>';
     }
 
-    /* Top News column: remaining global pins first, newest non-local fill */
-    const globalList=[...pinnedG,...rest.filter(s=>!isUtahStory(s))]
-      .filter(s=>!used.has(s.id)).slice(0,8);
+    /* Top News column: global pins, fresh non-local originals, newest wire fill.
+       Originals only jump the queue for two weeks — after that they live in
+       the archive like everything else. */
+    const isFresh=s=>s.publishedAt&&s.publishedAt.toDate&&(Date.now()-s.publishedAt.toDate().getTime())<14*864e5;
+    const globalList=[];
+    for(const s of [...pinnedG,...originals.filter(s=>!isUtahStory(s)&&isFresh(s)),...rest.filter(s=>!isUtahStory(s))]){
+      if(used.has(s.id)||globalList.some(x=>x.id===s.id)) continue;
+      globalList.push(s);
+      if(globalList.length>=8) break;
+    }
     const grid=document.querySelector(".feed");
     if(grid && globalList.length){
       grid.innerHTML=globalList.map(st=>{
         const live=/live/i.test(st.category)?" live":"";
-        return '<a class="card" href="/story.html?id='+encodeURIComponent(st.id)+'">'+
+        return '<a class="card'+(st.original?' orig':'')+'" href="'+storyHref(st)+'">'+
           art(st.category)+
-          '<span class="cat'+live+'">'+esc(st.category)+'</span>'+
+          '<span class="cat'+live+'">'+esc(st.category)+(st.original?'<span class="origbadge">Original</span>':'')+'</span>'+
           '<h3>'+esc(st.headline)+'</h3>'+
           '<p>'+esc(st.summary)+'</p>'+
-          '<span class="time">'+when(st.publishedAt)+' · via '+esc(st.sourceName)+'</span>'+
+          '<span class="time">'+when(st.publishedAt)+(st.original?' · by '+esc(st.author||'Greene MMA'):' · via '+esc(st.sourceName))+'</span>'+
         '</a>';
       }).join("");
     }
@@ -1014,6 +1041,20 @@ if(window.__reveal) window.__reveal();
       if(v && String(v).trim()) el.textContent=v;
     });
   }catch(e){ /* fallback text stays */ }
+})();
+</script>
+<script>
+/* Marquee pause toggle — hover pauses on desktop; this is the touch control */
+(function(){
+  var m=document.getElementById('marquee'), b=document.getElementById('mpause');
+  if(!m||!b) return;
+  b.addEventListener('click',function(){
+    var paused=m.classList.toggle('paused');
+    b.setAttribute('aria-pressed',String(paused));
+    b.setAttribute('aria-label',paused?'Resume ticker':'Pause ticker');
+    b.title=paused?'Resume ticker':'Pause ticker';
+    b.innerHTML=paused?'&#9654;':'&#10074;&#10074;';
+  });
 })();
 </script>
 </body>

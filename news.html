@@ -133,6 +133,8 @@
   nav .links a{flex-shrink:0;white-space:nowrap;}
 }
 </style>
+<link rel="alternate" type="application/rss+xml" title="Greene MMA — Original stories" href="/feed.xml">
+<link rel="stylesheet" href="/assets/site.css">
 </head>
 <body>
 <nav><div class="wrap">
@@ -211,7 +213,7 @@
 </html>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, query, orderBy, limit, startAfter, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, doc, getDoc, query, orderBy, limit, startAfter, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const firebaseConfig = {
   apiKey: "AIzaSyCN2eOBaQBiZDOexipJ-KS7pqkOaNJq7gU",
   authDomain: "bragging-rights-public.firebaseapp.com",
@@ -235,22 +237,25 @@ const feed=document.getElementById("feed");
 
 function matches(s){
   if(active==="All") return true;
+  if(active==="Greene Originals") return s.original===true;
   if(active==="UFC") return s.ufc===true || (s.tags||[]).includes("UFC");
-  if(active==="Utah") return s.utah===true || (s.tags||[]).includes("Utah");
+  if(active==="Utah") return s.utah===true || s.category==="Utah" || (s.tags||[]).includes("Utah");
   return s.category===active || (s.tags||[]).includes(active);
 }
+const when=s=>(s.publishedAt&&s.publishedAt.toMillis)?s.publishedAt.toMillis():0;
 function render(){
-  const list = all.filter(matches);
+  const list = all.filter(matches).sort((a,b)=>when(b)-when(a));
   feed.innerHTML = list.length ? list.map(s=>
-    '<a class="card" href="/story.html?id='+encodeURIComponent(s.id)+'">'+
-      '<span class="c">'+esc(s.category)+'</span>'+
+    '<a class="card'+(s.original?' orig':'')+'" href="/s/'+encodeURIComponent(s.id)+'">'+
+      '<span class="c">'+esc(s.category)+(s.original?'<span class="origbadge">Original</span>':'')+'</span>'+
       '<h3>'+esc(s.headline)+'</h3>'+
       '<p>'+esc(s.summary)+'</p>'+
-      '<span class="t">'+(s.publishedAt&&s.publishedAt.toDate?timeAgo(s.publishedAt.toDate()):'')+' · '+esc(s.sourceName)+'</span>'+
+      '<span class="t">'+(s.publishedAt&&s.publishedAt.toDate?timeAgo(s.publishedAt.toDate()):'')+' · '+
+        (s.original?('by '+esc(s.author||'Greene MMA')):esc(s.sourceName))+'</span>'+
     '</a>').join("") : '<div class="empty">Nothing in this category yet.</div>';
 }
 function buildFilters(){
-  const cats=["All","UFC","Utah",...new Set(all.map(s=>s.category).filter(Boolean))];
+  const cats=["All","Greene Originals","UFC","Utah",...new Set(all.map(s=>s.category).filter(Boolean))];
   document.getElementById("filters").innerHTML=cats.map(c=>
     '<button class="fbtn'+(c===active?' on':'')+'" data-c="'+esc(c)+'">'+esc(c)+'</button>').join("");
   document.querySelectorAll(".fbtn").forEach(b=>b.addEventListener("click",()=>{
@@ -271,6 +276,15 @@ async function load(){
 try{
   db=getFirestore(initializeApp(firebaseConfig));
   await load();
+  // Merge in the originals index doc so our own articles are always in the
+  // archive (and the Greene Originals filter), even when they're older than
+  // every loaded page of wire stories.
+  try{
+    const idx=(((await getDoc(doc(db,"site","originals"))).data()||{}).stories||[]);
+    const have=new Set(all.map(s=>s.id));
+    all=all.concat(idx.filter(s=>s.id&&!have.has(s.id)));
+    buildFilters(); render();
+  }catch(e){ console.warn("originals",e); }
   document.getElementById("more").addEventListener("click",load);
 }catch(e){
   feed.innerHTML='<div class="empty">Couldn\'t load the archive right now.</div>';

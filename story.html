@@ -118,6 +118,8 @@
   nav .links a{flex-shrink:0;white-space:nowrap;}
 }
 </style>
+<link rel="alternate" type="application/rss+xml" title="Greene MMA — Original stories" href="/feed.xml">
+<link rel="stylesheet" href="/assets/site.css">
 </head>
 <body>
 <div class="progress" id="progress" aria-hidden="true"></div>
@@ -255,7 +257,7 @@ try{
     '<div class="more"><div class="wrap wide">'+
       '<h2>More from the corner</h2>'+
       '<div class="feed">'+others.map(o=>
-        '<a class="card" href="/story.html?id='+encodeURIComponent(o.id)+'">'+
+        '<a class="card" href="/s/'+encodeURIComponent(o.id)+'">'+
           '<span class="c">'+esc(o.category)+'</span>'+
           '<h3>'+esc(o.headline)+'</h3>'+
           '<p>'+esc(o.summary)+'</p>'+

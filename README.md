@@ -8,8 +8,8 @@ Fight news from the Greene corner. Static site + scheduled news bot.
 
 ## How it works
 
-1. `netlify/functions/aggregate.mjs` runs every 2 hours (cron in the file).
-2. It pulls MMA news RSS feeds, skips anything already published, and rewrites up to 8 new stories in the brand voice via the Anthropic API — original wording, always credited and linked to the source.
+1. `netlify/functions/aggregate.mjs` runs every 3 hours (cron in the file).
+2. It pulls MMA news RSS feeds, skips anything already published, and rewrites up to 4 new stories in the brand voice via the Anthropic API — original wording, always credited and linked to the source.
 3. Stories land in the Firestore `stories` collection.
 4. `index.html` reads the newest 13 stories: #1 becomes the lead story, the rest fill The Feed. If Firestore is empty or unreachable, the designed placeholders stay — the page never breaks.
 
@@ -41,7 +41,7 @@ Create the new repo, drop these files in, push.
 
 ## Costs
 - Netlify + Firebase: free tiers cover this easily at launch.
-- Anthropic API: ~8 small rewrites every 2 hours ≈ pennies per day.
+- Anthropic API: ~4 small rewrites every 3 hours ≈ pennies per day.
 
 ## Not built yet (next phases)
 - X/Twitter auto-posting (needs paid X API or a scheduler tool)
@@ -126,6 +126,48 @@ One slot per page, below the fold, with reserved height so nothing jumps.
 
 **`recap.mjs`** — post-fight recap bot. Runs Sundays (13:00 and 23:00 UTC), gathers overnight results coverage, and writes ONE original roundup article published as a full story page. Skips automatically if there wasn't a real card (fewer than 4 results items) and won't publish twice for the same day.
 Trigger it manually any Sunday morning from Netlify → Logs → Functions → recap.
+
+---
+
+## v15 additions — originals never get buried, plus real SEO
+
+**The bug this fixes:** the pages found original + Utah stories by pulling the
+newest 30-60 stories and filtering in the browser. The bot published enough
+volume that your own articles fell out of that window within hours and
+vanished from every feed.
+
+**Index docs.** The functions now maintain two small docs — `site/originals`
+and `site/utahwire` — rebuilt automatically after every publish, delete, and
+bot run (`netlify/functions/lib/story-indexes.mjs`). The homepage, Utah page,
+and news archive read those docs, so your writing stays visible regardless of
+wire volume. First build happens on the next bot run after deploy; you can
+also force it from the studio API with `{rebuildIndexes:true}`.
+
+**Category = Utah now counts.** A story is a Utah story if the Utah flag is
+set, OR the category is Utah, OR it has the Utah tag. Writers no longer have
+to remember the separate dropdown.
+
+**Feed priority.** Homepage lead prefers: pinned story → an original from the
+last 7 days → newest wire story. Originals also jump the Top News queue for
+two weeks and get a volt border + "Original" badge everywhere (styles in
+`assets/site.css`, loaded by every public page).
+
+**Server-rendered story pages.** `/s/<id>` (function `story-page.mjs`) serves
+every story with real per-story OG tags, NewsArticle JSON-LD, and the full
+body in the HTML — links unfurl properly when shared and stories can rank in
+search. All internal links now use `/s/…`; old `/story.html?id=…` links still
+work.
+
+**RSS + sitemap.** `/feed.xml` (function `feed.mjs`) is an RSS feed of the
+original articles only — submit it to local aggregators and Google News.
+`/sitemap-stories.xml` covers originals + Utah stories; both sitemaps are in
+robots.txt.
+
+**Bot throttled.** 4 rewrites every 3 hours (was 8 every 2) — roughly 32/day
+instead of 96. Fewer, better wire items; your originals carry the identity.
+
+**Marquee pause.** The odds ticker has an explicit pause button (hover already
+paused it, but touch screens had no way to stop it).
 
 ---
 

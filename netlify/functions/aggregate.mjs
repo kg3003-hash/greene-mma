@@ -6,6 +6,7 @@
 import Parser from "rss-parser";
 import admin from "firebase-admin";
 import crypto from "node:crypto";
+import { rebuildStoryIndexes } from "./lib/story-indexes.mjs";
 
 // ---------- CONFIG ----------
 const FEEDS = [
@@ -16,13 +17,17 @@ const FEEDS = [
   // Google News search feed: catches Utah + regional MMA coverage from any outlet.
   // gnews feeds get the publisher pulled from the title and a longer age window,
   // since regional news is sparse.
+  // Regional coverage is sparse, so this feed gets a week-long age window —
+  // fight-week coverage of a Saturday card often lands days apart.
+  // City names are quoted with the state ("Ogden, Utah") because bare
+  // (MMA Ogden) matched every story about the UFC fighter Trey Ogden.
   {
     name: "Utah wire",
     gnews: true,
     utah: true,
-    maxAgeHours: 96,
+    maxAgeHours: 168,
     url: "https://news.google.com/rss/search?q=" + encodeURIComponent(
-      '"Utah MMA" OR "Fierce Fighting Championship" OR "SteelFist" OR (MMA "Salt Lake City") OR (MMA Provo) OR (MMA Ogden)'
+      '"Utah MMA" OR "Fierce Fighting Championship" OR "Fierce FC" OR SteelFist OR "Showdown Fights" OR (MMA "Salt Lake City") OR (UFC "Delta Center") OR (MMA "Ogden, Utah") OR (MMA "Provo, Utah") OR ("cage fight" Utah)'
     ) + "&hl=en-US&gl=US&ceid=US:en",
   },
 ];
@@ -39,10 +44,12 @@ const BLOCKLIST = [
 ];
 
 // Regional tagging — anything matching gets flagged for the Utah page.
+// "ogden" must stay qualified — bare "ogden" tags every story about the
+// UFC fighter Trey Ogden as Utah news.
 const UTAH_TERMS = [
-  "utah","salt lake","slc","delta center","union event center","provo","ogden",
+  "utah","salt lake","slc","delta center","union event center","provo","ogden, utah",
   "west jordan","sandy, utah","orem","st. george","logan, utah","park city",
-  "steelfist","steel fist","fierce fighting","showdown fights","mountain america center",
+  "steelfist","steel fist","fierce fighting","fierce fc","showdown fights","mountain america center",
   "idaho falls","boise","wyoming","nevada regional","brigham young"
 ];
 
@@ -62,7 +69,8 @@ function isBlocked(item){
   return BLOCKLIST.some(term => hay.includes(term));
 }
 
-const MAX_NEW_PER_RUN = 8;        // keeps API costs + write volume sane
+const MAX_NEW_PER_RUN = 4;        // keeps API costs + write volume sane, and
+                                  // stops the wire from drowning original work
 const MAX_AGE_HOURS = 36;         // ignore stale items
 const CATEGORIES = [
   "Fight booked",
@@ -214,11 +222,20 @@ export default async function handler() {
     }
   }
 
+  // Keep the originals/Utah index docs current so those stories stay visible
+  // no matter how much wire content lands on top of them.
+  try {
+    const counts = await rebuildStoryIndexes(db);
+    console.log(`Index docs rebuilt: ${counts.originals} originals, ${counts.utah} Utah.`);
+  } catch (err) {
+    console.error("Index rebuild failed:", err.message);
+  }
+
   console.log(
     `Run complete: ${candidates.length} candidates, ${fresh.length} new, ${published} published.`
   );
   return new Response(JSON.stringify({ published }), { status: 200 });
 }
 
-// Every 2 hours. Netlify reads this cron config automatically.
-export const config = { schedule: "0 */2 * * *" };
+// Every 3 hours. Netlify reads this cron config automatically.
+export const config = { schedule: "0 */3 * * *" };
