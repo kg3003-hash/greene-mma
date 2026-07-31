@@ -86,7 +86,28 @@
   .lg .facts div{padding-left:20px;position:relative;color:var(--steel);font-size:15.5px;}
   .lg .facts div::before{content:'';position:absolute;left:0;top:9px;width:8px;height:8px;background:var(--volt);transform:rotate(22.5deg);}
 
-  .roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
+  /* Compact roster rows — dense like the rankings list, searchable, click for the stat modal */
+  .roster{border:1px solid var(--hair);background:var(--black-2);}
+  .fr{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1.6fr) auto;align-items:center;gap:14px;padding:13px 18px;cursor:pointer;transition:background .15s;}
+  .fr+.fr{border-top:1px solid var(--hair);}
+  .fr:hover{background:rgba(201,247,58,.06);}
+  .fr .nm{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:19px;line-height:1.08;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .fr .nm span{color:var(--volt);}
+  .fr .nick{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);}
+  .fr .meta{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--steel);line-height:1.7;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .fr .right{display:flex;align-items:center;gap:12px;justify-content:flex-end;}
+  .fr .rec{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:16px;color:var(--volt);white-space:nowrap;}
+  .fr.amateur .rec{color:var(--steel);}
+  .fr .st{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:3px 8px;background:var(--volt);color:var(--black);font-weight:700;white-space:nowrap;}
+  @media(max-width:680px){
+    .fr{grid-template-columns:minmax(0,1fr) auto;padding:12px 14px;}
+    .fr .meta{grid-column:1 / -1;white-space:normal;}
+  }
+  .searchrow{display:flex;gap:10px;margin-bottom:14px;}
+  #fsearch{flex:1;padding:13px 16px;background:var(--black-2);border:1px solid var(--hair);color:var(--bone);
+    font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.04em;}
+  #fsearch::placeholder{color:var(--steel);text-transform:uppercase;font-size:11px;letter-spacing:.1em;}
+  #fsearch:focus{outline:2px solid var(--volt);outline-offset:1px;border-color:transparent;}
   a.f,.f{display:block;border:1px solid var(--hair);background:var(--black-2);padding:24px;transition:border-color .18s,transform .18s;position:relative;overflow:hidden;}
   .f:hover{border-color:rgba(201,247,58,.5);transform:translateY(-2px);}
   .f .ghost{position:absolute;right:-30px;bottom:-38px;width:130px;opacity:.05;pointer-events:none;}
@@ -236,6 +257,7 @@
       <h2>The Roster</h2>
       <span class="mono-tag" id="count">Loading</span>
     </div>
+    <div class="searchrow"><input id="fsearch" type="search" placeholder="Search name, nickname, gym, or city&hellip;" autocomplete="off"></div>
     <div class="filters" id="filters"></div>
     <div class="roster" id="roster"><div class="empty">Loading the roster...</div></div>
   </div>
@@ -310,40 +332,44 @@ const firebaseConfig = {
 };
 const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const MARK='<svg viewBox="0 0 120 120"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>';
-let all=[], active="All";
+let all=[], active="All", q="";
 
 function render(){
-  const list = active==="All" ? all
+  let list = active==="All" ? all
     : active==="Pro" ? all.filter(f=>f.pro!==false)
     : active==="Amateur" ? all.filter(f=>f.pro===false)
     : all.filter(f=>(f.weight||"")===active||(f.gym||"")===active);
+  if(q){
+    const needle=q.toLowerCase();
+    list=list.filter(f=>[f.first,f.last,f.nickname,f.gym,f.city,f.weight,f.status]
+      .filter(Boolean).join(" ").toLowerCase().includes(needle));
+  }
   const el=document.getElementById("roster");
   document.getElementById("count").textContent=list.length+" fighter"+(list.length===1?"":"s");
   if(!list.length){
-    el.innerHTML='<div class="empty">Nobody on the roster in this filter yet.</div>';
+    el.innerHTML='<div class="empty">'+(q?'No fighter matches that search.':'Nobody on the roster in this filter yet.')+'</div>';
     return;
   }
-  const slugOf=f=>((f.first||'')+'-'+(f.last||'')).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
   el.innerHTML=list.map((f,idx)=>
-    '<div class="f reveal'+(f.pro===false?' amateur':'')+'" data-i="'+idx+'" style="cursor:pointer">'+
-      (f.status&&f.status!=="Active"?'<span class="tag">'+esc(f.status)+'</span>':'')+
-      MARK.replace('<svg','<svg class="ghost"')+
-      '<div class="top"><div>'+
+    '<div class="fr'+(f.pro===false?' amateur':'')+'" data-i="'+idx+'">'+
+      '<div>'+
         (f.nickname?'<div class="nick">"'+esc(f.nickname)+'"</div>':'')+
         '<div class="nm">'+esc(f.first)+' <span>'+esc(f.last)+'</span></div>'+
-      '</div><div class="rec">'+esc(f.record||"-")+'</div></div>'+
+      '</div>'+
       '<div class="meta">'+
         [f.weight,f.gym,f.city,(f.pro===false?"Amateur":"Pro")].filter(Boolean).map(esc).join(" \u00b7 ")+
       '</div>'+
-      (f.next?'<div class="next"><b>Next fight</b>'+esc(f.next)+'</div>':'')+
-      (f.note?'<div class="next"><b>Note</b>'+esc(f.note)+'</div>':'')+
-      '<div style="margin-top:14px;font-family:\'JetBrains Mono\',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--volt);">Tap for stats \u2192</div>'+
+      '<div class="right">'+
+        (f.status&&f.status!=="Active"?'<span class="st">'+esc(f.status)+'</span>':'')+
+        '<span class="rec">'+esc(f.record||"-")+'</span>'+
+      '</div>'+
     '</div>').join("");
-  el.querySelectorAll('.f').forEach(c=>c.addEventListener('click',()=>{
+  el.querySelectorAll('.fr').forEach(c=>c.addEventListener('click',()=>{
     window.__fighterModal.open(list[+c.dataset.i]);
   }));
   if(window.__reveal) window.__reveal();
 }
+document.getElementById("fsearch").addEventListener("input",e=>{ q=e.target.value.trim(); render(); });
 
 function buildFilters(){
   const weights=[...new Set(all.map(f=>f.weight).filter(Boolean))];

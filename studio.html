@@ -252,6 +252,14 @@
       <button class="btn ghost" id="ft_dedupe">Remove duplicates</button>
       <button class="btn" id="ft_save">Save roster</button>
       <div id="ft_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+
+      <label style="margin-top:22px">Import fighters (JSON)</label>
+      <p class="hint" style="margin-top:0">Paste a JSON array of fighters — same fields as the editor
+        (<code>first, last, nickname, record, weight, gym, city, status, note, pro</code>).
+        Imports merge by name: existing fighters keep any field the import leaves blank.</p>
+      <textarea id="ft_json" style="min-height:120px;font-family:'JetBrains Mono',monospace;font-size:12px"
+        placeholder='[{"first":"Court","last":"McGee","record":"22-14","weight":"Welterweight","city":"Ogden","status":"UFC veteran","pro":true}]'></textarea>
+      <button class="btn ghost" id="ft_import">Import into roster</button>
     </div>
 
 <div class="panel">
@@ -946,6 +954,22 @@
       const cur=await api({getFighters:true});
       if(cur.ok) { ROSTER=cur.fighters||[]; openIdx=-1; renderRoster(); }
     } else say(st,'\u2717 '+(out.error||'Failed'),'bad');
+  });
+  $('ft_import').addEventListener('click',async()=>{
+    const st=$('ft_status');
+    let parsed;
+    try{ parsed=JSON.parse($('ft_json').value); }
+    catch(e){ say(st,'✗ That is not valid JSON: '+e.message,'bad'); return; }
+    if(!Array.isArray(parsed)) parsed=[parsed];
+    const fighters=parsed.filter(f=>f && (f.first||f.last));
+    if(!fighters.length){ say(st,'✗ No fighters found in that JSON.','bad'); return; }
+    say(st,'Importing '+fighters.length+' fighter(s)...');
+    const out=await api({addFighters:fighters});
+    if(out.ok){
+      say(st,'✓ Imported. Roster now has '+out.saved+' fighters — live on the site.','ok');
+      $('ft_json').value='';
+      await loadRoster();
+    } else say(st,'✗ '+(out.error||'Import failed'),'bad');
   });
   async function loadRoster(){
     try{ const out=await api({getFighters:true});

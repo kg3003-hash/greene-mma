@@ -263,13 +263,12 @@
 <link rel="stylesheet" href="/assets/site.css">
 <style>
 /* ---- Page overrides — after site.css so equal-specificity rules win. ---- */
-/* Utah nav: taller bar, quieter links, no underline sweep; links hide
-   under 800px (the hero map needs the room). */
+/* Utah nav: taller bar, quieter links, no underline sweep. On small screens
+   the links keep the shared scroll-row behavior from site.css — never hidden. */
 nav .wrap{height:66px;justify-content:normal;}
 nav .links{letter-spacing:.08em;}
 nav .links a{position:static;padding:0;}
 nav .links a::after{content:none;}
-@media(max-width:800px){nav .links{display:none;}}
 /* Utah footer: bone-on-black like the homepage, slightly tighter. */
 footer{padding:52px 0 70px;font-family:'Barlow',sans-serif;font-size:17.5px;letter-spacing:normal;text-transform:none;color:var(--bone);line-height:1.65;}
 footer .top{margin-bottom:20px;}
