@@ -100,6 +100,32 @@ footer .fine a:hover{color:var(--volt);}
 .card:hover .art .m1{opacity:calc(var(--a-m1-op,.5) + .3);transform:translate(-8px,-8px) rotate(calc(var(--a-m1-rot,0deg) - 5deg));}
 .card:hover .art .stripe{transform:skewX(var(--a-skew,-18deg)) translateX(190%);}
 
+/* ---------- Fight-week pulse ----------
+   A live chip in the nav, driven by /assets/fightpulse.js. Quiet when the
+   next card is days out, volt on the day, red and breathing once the first
+   bell goes. Hidden on narrow screens where the nav row is already tight. */
+.fw-chip{
+  display:flex;align-items:center;gap:9px;flex-shrink:0;margin-left:auto;
+  padding:7px 13px;border:1px solid var(--hair);
+  font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--steel);white-space:nowrap;
+  transition:border-color .2s,color .2s,background .2s;
+}
+.fw-chip .bout{color:var(--bone);opacity:.75;}
+/* set by the script when the nav row would otherwise overflow */
+.fw-chip.fw-compact .bout{display:none;}
+.fw-chip:hover{border-color:var(--volt);color:var(--volt);}
+.fw-chip.fw-today{border-color:rgba(201,247,58,.55);color:var(--volt);}
+.fw-chip.fw-today .bout{color:var(--bone);opacity:1;}
+.fw-chip.fw-live{border-color:var(--red);color:var(--red);background:rgba(255,75,62,.09);}
+.fw-chip.fw-live .bout{color:var(--bone);opacity:1;}
+.fw-chip.fw-live .dot{
+  width:7px;height:7px;flex-shrink:0;background:var(--red);
+  transform:rotate(22.5deg);animation:fwPulse 1.5s ease-in-out infinite;
+}
+@keyframes fwPulse{0%,100%{opacity:1;}50%{opacity:.25;}}
+@media(max-width:1100px){.fw-chip{display:none !important;}}
+
 /* ---------- Motion on state change ----------
    Paired with /assets/ui.js. Lists arrive item by item instead of blinking
    into place, and the active-tab fill travels rather than teleporting. */
