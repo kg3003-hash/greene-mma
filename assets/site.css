@@ -212,10 +212,13 @@ body::after{
   transition:left .3s cubic-bezier(.2,.7,.3,1),top .3s cubic-bezier(.2,.7,.3,1),
              width .3s cubic-bezier(.2,.7,.3,1),height .3s cubic-bezier(.2,.7,.3,1),opacity .2s ease;
 }
-/* the tabs sit above the pill; the active one drops its own fill and lets
-   the travelling pill supply it (only once the script has taken over) */
-.gm-tabs > button{position:relative;z-index:1;}
-.gm-hasind > button.on{background:transparent;border-color:var(--volt);}
+/* The tabs sit above the pill; the active one drops its own fill and lets the
+   travelling pill supply it (only once the script has taken over). Descendant
+   selectors, not child: the fighters page groups its filters into rows, and a
+   child combinator silently stopped matching there — leaving both the pill and
+   the button's own fill drawn, one on top of the other. */
+.gm-tabs button{position:relative;z-index:1;}
+.gm-hasind button.on{background:transparent;border-color:var(--volt);}
 
 /* ---------- Modal entrance ----------
    The fighter card used to appear with no transition at all. Keyframes, not

@@ -155,7 +155,27 @@
   a.card h3{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:22px;line-height:1.12;}
   a.card p{font-size:15.5px;color:var(--steel);}
   a.card .t{margin-top:auto;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);opacity:.8;}
-  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:26px;}
+  /* two rows: who they are, then what they weigh */
+  .filters{display:block;margin-bottom:26px;}
+  .frow{display:flex;gap:8px;flex-wrap:wrap;}
+  .frow+.frow{margin-top:8px;padding-top:8px;border-top:1px solid var(--hair);}
+  /* On a phone these wrapped to five lines and ate half the screen before you
+     reached a single fighter. Each row becomes one swipeable line with the
+     same edge fade the nav uses. The travelling pill is measured against the
+     unscrolled container, so it is stood down here and the active button takes
+     its own fill back. */
+  @media(max-width:700px){
+    .frow{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+      padding-bottom:2px;
+      -webkit-mask-image:linear-gradient(90deg,#000 86%,transparent);
+              mask-image:linear-gradient(90deg,#000 86%,transparent);}
+    .frow::-webkit-scrollbar{display:none;}
+    .frow .fbtn{flex-shrink:0;}
+    #filters .gm-ind{display:none;}
+    #filters .fbtn.on{background:var(--volt);border-color:var(--volt);color:var(--black);}
+  }
+  .champ{font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;letter-spacing:.12em;
+    background:var(--volt);color:var(--black);padding:3px 7px;white-space:nowrap;}
   .fbtn{padding:9px 16px;border:1px solid var(--hair);background:var(--black-2);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);}
   .fbtn:hover{border-color:var(--volt);color:var(--volt);}
   .fbtn.on{background:var(--volt);border-color:var(--volt);color:var(--black);font-weight:700;}
@@ -351,11 +371,42 @@ const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').rep
 const MARK='<svg viewBox="0 0 120 120"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>';
 let all=[], active="All", q="";
 
+/* The weight field is free text and it shows: the same division arrives as
+   "Heavyweight", "Heavyweight (Pro, 265 lbs)" and "FFC Light Heavyweight
+   Championship (Amateur,". Filtering on the raw string produced nineteen
+   buttons for nine divisions, several of them long enough to run off a phone
+   screen. Everything is reduced to a canonical division for filtering; the
+   fighter's own wording is kept for their profile. */
+const DIVISIONS=["Strawweight","Flyweight","Bantamweight","Featherweight","Lightweight",
+                 "Welterweight","Middleweight","Light Heavyweight","Heavyweight"];
+function divisionOf(weight){
+  const w=String(weight||"").toLowerCase();
+  if(!w) return "";
+  // longest names first so "light heavyweight" never matches "heavyweight"
+  const order=["light heavyweight","strawweight","flyweight","bantamweight","featherweight",
+               "lightweight","welterweight","middleweight","heavyweight"];
+  for(const d of order){ if(w.includes(d)) return DIVISIONS.find(x=>x.toLowerCase()===d)||""; }
+  return "";
+}
+const isChamp=f=>/championship|champion\b/i.test(String(f.weight||""));
+// "UFC active", "UFC veteran", "PFL active", "Bellator veteran" all live in
+// status. Return the canonical casing — upper-casing the match meant
+// "Bellator veteran" produced "BELLATOR", never equalled the "Bellator"
+// button label, and those fighters lost their filter entirely.
+const PROMOS=["UFC","Bellator","PFL","ONE"];
+const promoOf=f=>{
+  const m=String(f.status||"").match(/^(UFC|Bellator|PFL|ONE)\b/i);
+  return m ? (PROMOS.find(p=>p.toLowerCase()===m[1].toLowerCase())||"") : "";
+};
+
 function render(){
   let list = active==="All" ? all
     : active==="Pro" ? all.filter(f=>f.pro!==false)
     : active==="Amateur" ? all.filter(f=>f.pro===false)
-    : all.filter(f=>(f.weight||"")===active||(f.gym||"")===active);
+    : active==="Booked" ? all.filter(f=>/booked/i.test(f.status||"")||!!f.next)
+    : active==="Champions" ? all.filter(isChamp)
+    : PROMOS.includes(active) ? all.filter(f=>promoOf(f)===active)
+    : all.filter(f=>divisionOf(f.weight)===active);
   if(q){
     const needle=q.toLowerCase();
     list=list.filter(f=>[f.first,f.last,f.nickname,f.gym,f.city,f.weight,f.status]
@@ -374,9 +425,11 @@ function render(){
         '<div class="nm">'+esc(f.first)+' <span>'+esc(f.last)+'</span></div>'+
       '</div>'+
       '<div class="meta">'+
-        [f.weight,f.gym,f.city,(f.pro===false?"Amateur":"Pro")].filter(Boolean).map(esc).join(" \u00b7 ")+
+        [divisionOf(f.weight)||f.weight,f.gym,f.city,(f.pro===false?"Amateur":"Pro")]
+          .filter(Boolean).map(esc).join(" \u00b7 ")+
       '</div>'+
       '<div class="right">'+
+        (isChamp(f)?'<span class="champ" title="'+esc(f.weight||"")+'">CHAMP</span>':'')+
         (f.status&&f.status!=="Active"?'<span class="st">'+esc(f.status)+'</span>':'')+
         '<span class="rec">'+esc(f.record||"-")+'</span>'+
       '</div>'+
@@ -392,10 +445,20 @@ function render(){
 document.getElementById("fsearch").addEventListener("input",e=>{ q=e.target.value.trim(); render(); });
 
 function buildFilters(){
-  const weights=[...new Set(all.map(f=>f.weight).filter(Boolean))];
-  const cats=["All","Pro","Amateur",...weights];
-  document.getElementById("filters").innerHTML=cats.map(c=>
-    '<button class="fbtn'+(c===active?' on':'')+'" data-c="'+esc(c)+'">'+esc(c)+'</button>').join("");
+  /* Two rows with different jobs: who they are, then what they weigh.
+     Divisions come from the canonical list in weight order — not from a Set
+     over the raw text, which produced duplicates in arbitrary order — and
+     only the ones somebody actually fights at are shown. */
+  const present=DIVISIONS.filter(d=>all.some(f=>divisionOf(f.weight)===d));
+  const promos=PROMOS.filter(p=>all.some(f=>promoOf(f)===p));
+  const scope=["All","Pro","Amateur"]
+    .concat(all.some(f=>/booked/i.test(f.status||"")||f.next)?["Booked"]:[])
+    .concat(all.some(isChamp)?["Champions"]:[])
+    .concat(promos);
+  const btn=c=>'<button class="fbtn'+(c===active?' on':'')+'" data-c="'+esc(c)+'">'+esc(c)+'</button>';
+  document.getElementById("filters").innerHTML=
+    '<div class="frow" id="frow-scope">'+scope.map(btn).join("")+'</div>'+
+    '<div class="frow" id="frow-div">'+present.map(btn).join("")+'</div>';
   document.querySelectorAll(".fbtn").forEach(b=>b.addEventListener("click",()=>{
     active=b.dataset.c; buildFilters(); render();
   }));
