@@ -52,6 +52,14 @@ footer .fine{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacin
 footer .fine a{color:var(--bone);}
 footer .fine a:hover{color:var(--volt);}
 
+/* ---------- Keyboard focus ----------
+   Site-wide so every page shows where the keyboard is, not just the
+   homepage. Mouse users never see it (:focus-visible, not :focus). */
+a:focus-visible,button:focus-visible,input:focus-visible,
+select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{
+  outline:2px solid var(--volt);outline-offset:3px;
+}
+
 /* ---------- Reduced motion ---------- */
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}.eyebrow,h1,.dek{opacity:1;transform:none;}.hero .bigmark path{stroke-dashoffset:0;}.reveal{opacity:1;transform:none;}}
 

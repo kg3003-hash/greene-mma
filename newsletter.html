@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Greene Corner — Newsletter</title>
+<link rel="canonical" href="https://mma.greene.bet/newsletter.html">
+<meta property="og:url" content="https://mma.greene.bet/newsletter.html">
 <meta name="description" content="One email a week from the Greene corner. Read the archive or sign up.">
 <link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
@@ -142,11 +144,11 @@
   <div class="wrap in">
     <h2>Get in the corner</h2>
     <p>Free forever. No spam, no selling your address, unsubscribe whenever.</p>
-    <form onsubmit="return false;">
-      <input type="email" id="em" placeholder="your@email.com" aria-label="Email address">
+    <form id="subform" onsubmit="return false;">
+      <input type="email" id="em" placeholder="your@email.com" aria-label="Email address" autocomplete="email" required>
       <button type="submit" id="go">Sign me up</button>
     </form>
-    <div class="fine" id="fine">Free forever · No spam · Unsubscribe anytime</div>
+    <div class="fine" id="fine" role="status">Free forever · No spam · Unsubscribe anytime</div>
   </div>
 </section>
 
@@ -217,8 +219,12 @@ const firebaseConfig = {
 };
 const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-document.getElementById("go").addEventListener("click",async()=>{
+/* Listen on the FORM, not the button, so pressing Enter in the email field
+   signs you up too — hitting Enter used to do nothing at all. */
+document.getElementById("subform").addEventListener("submit",async e=>{
+  e.preventDefault();
   const input=document.getElementById("em"),btn=document.getElementById("go"),fine=document.getElementById("fine");
+  if(!input.value.trim()){ fine.textContent="Enter your email to join."; input.focus(); return; }
   btn.disabled=true;btn.textContent="Sending...";
   try{
     const r=await fetch("/.netlify/functions/site",{method:"POST",

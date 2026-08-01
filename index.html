@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Greene MMA — Fight news from the Greene corner</title>
+<link rel="canonical" href="https://mma.greene.bet/">
 <meta name="description" content="MMA news, live underdogs, and the stories the cameras skip. From the Greene corner.">
 <link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
@@ -215,6 +216,10 @@
 
   /* ---------- FEED ---------- */
   .feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px;}
+  /* loading / empty state for the story feed — spans the whole grid */
+  .feedstate{grid-column:1/-1;border:1px dashed var(--hair);padding:44px 26px;text-align:center;
+    color:var(--steel);font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:.08em;
+    text-transform:uppercase;line-height:2;}
 
   /* ---------- TOP NEWS + UTAH CORNER split ---------- */
   .newsgrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:40px;align-items:start;}
@@ -466,16 +471,17 @@ footer{padding:56px 0 72px;font-family:'Barlow',sans-serif;font-size:17.5px;lett
   </div>
 </header>
 
-<!-- LEAD STORY · bot injects here -->
+<!-- LEAD STORY · the bot replaces this headline/dek/meta with the real lead.
+     What sits here must stay TRUE if the newsroom never loads — evergreen
+     positioning, never an invented story with a fake timestamp. -->
 <div class="lead">
   <div class="wrap">
     <div class="eyebrow">Lead story</div>
-    <h2>Main event falls apart. The replacement said <em>yes on the first ring.</em></h2>
-    <p class="dek">A 12-2 regional champ gets the call he's been asking about for two years — on six days' notice, against a top-five name. Here's why the line doesn't tell the whole story.</p>
+    <h2>Fight news from the <em>Greene corner.</em></h2>
+    <p class="dek">Live underdogs, the cards that matter, and the stories the cameras skip — with Utah's own scene covered like it counts.</p>
     <div class="meta">
-      <span><b>+340</b> live dog</span>
-      <span>Posted 2h ago</span>
-      <span>3 min read</span>
+      <span><b>Updating</b> all week</span>
+      <span>Utah &middot; UFC &middot; Regional</span>
     </div>
     <div class="btnrow">
       <a class="btn solid" href="#feed">Read the story</a>
@@ -496,43 +502,10 @@ footer{padding:56px 0 72px;font-family:'Barlow',sans-serif;font-size:17.5px;lett
           <span class="mono-tag">Global</span>
           <a class="more" href="/news.html">All news &rarr;</a>
         </div>
+        <!-- Real stories load here. Never ship invented headlines as a
+             fallback — an outage must read as empty, not as fake news. -->
         <div class="feed">
-          <article class="card">
-            <span class="cat">Fight booked</span>
-            <h3>Bantamweight sleeper gets his ranked opponent</h3>
-            <p>Eight straight wins on the regional circuit finally buys a number next to someone's name.</p>
-            <span class="time">4h ago</span>
-          </article>
-          <article class="card">
-            <span class="cat live">Live &middot; Weigh-ins</span>
-            <h3>Everyone on the main card makes weight</h3>
-            <p>Clean scale day. One flyweight needed the towel. The towel held.</p>
-            <span class="time">Now</span>
-          </article>
-          <article class="card">
-            <span class="cat">Line movement</span>
-            <h3>Sharp money keeps landing on the underdog</h3>
-            <p>Opened +475. Now +340 and dropping. Somebody knows something, or a lot of somebodies think they do.</p>
-            <span class="time">7h ago</span>
-          </article>
-          <article class="card">
-            <span class="cat">Injury report</span>
-            <h3>Co-main in doubt after camp injury rumors</h3>
-            <p>Nothing official. But three short-notice names are already circling, and we're tracking all of them.</p>
-            <span class="time">1d ago</span>
-          </article>
-          <article class="card">
-            <span class="cat">Results</span>
-            <h3>Saturday's card: every finish, every scorecard</h3>
-            <p>Four finishes, one robbery, and a debut worth remembering. Full results and the numbers behind them.</p>
-            <span class="time">2d ago</span>
-          </article>
-          <article class="card">
-            <span class="cat">The Corner</span>
-            <h3>The prospect who still opens the gym he cleans</h3>
-            <p>Undefeated at 6-0, teaching the 6AM class, and two wins from a contract. The full story.</p>
-            <span class="time">1d ago</span>
-          </article>
+          <div class="feedstate">Loading the latest from the corner&hellip;</div>
         </div>
       </div>
 
@@ -884,6 +857,9 @@ try{
       if(globalList.length>=8) break;
     }
     const grid=document.querySelector(".feed");
+    if(grid && !globalList.length){
+      grid.innerHTML='<div class="feedstate">No stories published yet.<br>Fresh from the corner as soon as they land.</div>';
+    }
     if(grid && globalList.length){
       grid.innerHTML=globalList.map(st=>{
         const live=/live/i.test(st.category)?" live":"";
@@ -896,7 +872,13 @@ try{
         '</a>';
       }).join("");
     }
-  }catch(e){ console.warn("Stories unavailable — placeholders stay.",e); }
+  }catch(e){
+    console.warn("Stories unavailable.",e);
+    const grid=document.querySelector(".feed");
+    if(grid && !grid.querySelector(".card")){
+      grid.innerHTML='<div class="feedstate">Couldn’t load the newsroom just now.<br><a href="/news.html" style="color:var(--volt)">Try the full archive →</a></div>';
+    }
+  }
 
   /* ---------- FIGHT WEEK (real odds) ---------- */
   let fw=null;

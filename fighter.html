@@ -189,7 +189,21 @@ try{
   const f=all.find(x=>(x.slug||slugOf(x))===want);
   if(!f) throw new Error("not found");
 
-  document.title=((f.first||'')+' '+(f.last||'')).trim()+" — Greene MMA";
+  /* Per-fighter title, canonical and share tags. Without these every fighter
+     URL claimed the same generic title and previewed identically when shared,
+     and search engines saw one page instead of a roster. */
+  const fullName=((f.first||'')+' '+(f.last||'')).trim();
+  const fSlug=f.slug||slugOf(f);
+  const fDesc=[fullName,f.record?f.record:null,f.weight,f.gym,f.city]
+    .filter(Boolean).join(' · ')+' — Utah MMA on Greene MMA.';
+  document.title=fullName+" — Greene MMA";
+  const setMeta=(sel,val)=>{ const m=document.querySelector(sel); if(m) m.setAttribute("content",val); };
+  setMeta('meta[property="og:title"]',fullName+" — Greene MMA");
+  setMeta('meta[property="og:description"]',fDesc);
+  setMeta('meta[name="description"]',fDesc);
+  let can=document.querySelector('link[rel="canonical"]');
+  if(!can){ can=document.createElement("link"); can.rel="canonical"; document.head.appendChild(can); }
+  can.href="https://mma.greene.bet/fighter.html?f="+encodeURIComponent(fSlug);
 
   const rows=[["Record",f.record],["Weight class",f.weight],["Gym",f.gym],
               ["City",f.city],["Level",f.pro===false?"Amateur":"Pro"],["Status",f.status]]

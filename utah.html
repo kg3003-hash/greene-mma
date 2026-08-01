@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Utah MMA — Greene MMA</title>
+<link rel="canonical" href="https://mma.greene.bet/utah.html">
 <meta name="description" content="Utah and mountain-west MMA: SteelFist, Fierce Fighting Championship, Delta Center cards, and the local fighters nobody else is covering.">
 <link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
@@ -628,10 +629,10 @@ try{
           '<div style="padding:12px 20px;border-bottom:1px solid var(--hair);font-family:\'JetBrains Mono\',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--volt);font-weight:700;">'+
             esc(d.name)+'</div>'+
           d.fighters.slice(0,5).map((n,i)=>
-            '<div class="rkrow" data-n="'+esc(n)+'" style="display:flex;gap:16px;align-items:center;padding:11px 20px;cursor:pointer;'+(i?'border-top:1px solid var(--hair);':'')+'">'+
+            '<button type="button" class="rkrow" data-n="'+esc(n)+'" style="display:flex;gap:16px;align-items:center;padding:11px 20px;cursor:pointer;width:100%;background:none;border:0;color:inherit;text-align:left;'+(i?'border-top:1px solid var(--hair);':'')+'">'+
               '<span style="font-family:\'Anton\',sans-serif;font-size:20px;color:'+(i===0?'var(--volt)':'var(--steel)')+';width:26px;">'+(i+1)+'</span>'+
               '<span style="font-family:\'Anton\',sans-serif;text-transform:uppercase;font-size:17px;">'+esc(n)+'</span>'+
-            '</div>').join('')+
+            '</button>').join('')+
           '</div>';
         // clicking a ranked name opens the profile — resolved against the roster
         // at click time, since the roster loads just after this section
@@ -845,20 +846,35 @@ if(window.__reveal) window.__reveal();
 /* ---- shared fighter modal ---- */
 window.__fighterModal=(function(){
   const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  let el=null;
+  let el=null,lastFocus=null;
   function ensure(){
     if(el) return el;
     el=document.createElement('div');
     el.className='fmodal';
-    el.innerHTML='<div class="box"><button class="x">X</button><div class="inner"></div></div>';
+    el.innerHTML='<div class="box" role="dialog" aria-modal="true" aria-label="Fighter profile"><button class="x" aria-label="Close">X</button><div class="inner"></div></div>';
     document.body.appendChild(el);
     el.addEventListener('click',e=>{ if(e.target===el||e.target.classList.contains('x')) close(); });
     document.addEventListener('keydown',e=>{ if(e.key==='Escape') close(); });
     return el;
   }
-  function close(){ if(el) el.classList.remove('on'); }
+  /* Opening locks page scroll and moves focus into the dialog; close ALWAYS
+     releases the lock and hands focus back to whatever opened it. Without the
+     release the page stays frozen after the modal is dismissed. */
+  function show(){
+    el.classList.add('on');
+    document.body.style.overflow='hidden';
+    const x=el.querySelector('.x'); if(x) x.focus();
+  }
+  function close(){
+    if(!el) return;
+    el.classList.remove('on');
+    document.body.style.overflow='';
+    if(lastFocus&&lastFocus.focus){ try{ lastFocus.focus(); }catch(e){} }
+    lastFocus=null;
+  }
   function open(f){
     if(!f) return;
+    lastFocus=document.activeElement;
     ensure();
     if(f._stub){
       el.querySelector('.inner').innerHTML=
@@ -867,8 +883,7 @@ window.__fighterModal=(function(){
           (f._div?'<div class="sub">'+esc(f._div)+'</div>':'')+
         '</div>'+
         '<div class="empty-stats">Ranked, but no profile on the roster yet.<br>Record and fight stats land as soon as they\u2019re added.</div>';
-      el.classList.add('on');
-      document.body.style.overflow='hidden';
+      show();
       return;
     }
     const slug=f.slug||((f.first||'')+'-'+(f.last||'')).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
@@ -893,7 +908,7 @@ window.__fighterModal=(function(){
         : '<div class="empty-stats">No fight stats recorded for this fighter yet.</div>')+
       (f.note?'<div class="note">'+esc(f.note)+'</div>':'')+
       '<a class="go" href="/fighter.html?f='+encodeURIComponent(slug)+'">Full profile \u2192</a>';
-    el.classList.add('on');
+    show();
   }
   return {open,close};
 })();
