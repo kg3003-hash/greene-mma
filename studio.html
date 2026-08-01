@@ -1348,69 +1348,141 @@ gmToolbar("a_body","a_bar");gmToolbar("n_body","n_bar");
    the same house image every time. Nothing to install; it's just canvas.
    ===================================================================== */
 window.GMCard = (function(){
+  /* Fight-poster share card. Volt spine carrying the category, oversized
+     octagons bleeding off the right, the site's 45-degree cage, grain and a
+     vignette for depth, crop marks, and a volt footer bar. The headline is
+     fitted to both the column width AND the vertical band, then centred, so a
+     one-liner fills the card and a long one never reaches the footer. */
   const VOLT='#C9F73A', INK='#0C0E0A', BONE='#F2F0E9', STEEL='#9AA194', RED='#FF4B3E';
   const G=[[104.35,41.63],[78.37,15.65],[41.63,15.65],[15.65,41.63],[15.65,78.37],[41.63,104.35],[78.37,104.35],[104.35,78.37],[104.35,64],[71,64]];
   const OCT=[[78.37,15.65],[41.63,15.65],[15.65,41.63],[15.65,78.37],[41.63,104.35],[78.37,104.35],[104.35,78.37],[104.35,41.63]];
-  function poly(ctx,pts,close){ ctx.beginPath(); pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); if(close) ctx.closePath(); }
-  function mark(ctx,x,y,size){ const s=size/120; ctx.save(); ctx.translate(x,y); ctx.scale(s,s);
-    ctx.strokeStyle=VOLT; ctx.lineWidth=11; ctx.lineJoin='miter'; ctx.miterLimit=10; poly(ctx,G); ctx.stroke(); ctx.restore(); }
-  function ghost(ctx,x,y,size,a){ const s=size/120; ctx.save(); ctx.globalAlpha=a; ctx.translate(x,y); ctx.scale(s,s);
-    ctx.strokeStyle=VOLT; ctx.lineWidth=2; ctx.lineJoin='miter'; poly(ctx,OCT,true); ctx.stroke(); ctx.restore(); }
-  /* shrink the headline until it fits three lines, then ellipsise */
-  function layout(ctx,text,maxW,maxLines,start){
-    let size=start, lines=[];
-    for(;size>=52;size-=4){
-      ctx.font=size+'px Anton'; lines=[]; let line='';
+  function path(ctx,pts,close){ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));if(close)ctx.closePath();}
+  function mark(ctx,x,y,size,color,lw){const s=size/120;ctx.save();ctx.translate(x,y);ctx.scale(s,s);
+    ctx.strokeStyle=color;ctx.lineWidth=lw||11;ctx.lineJoin='miter';ctx.miterLimit=10;path(ctx,G);ctx.stroke();ctx.restore();}
+  function octa(ctx,cx,cy,size,color,lw,alpha){const s=size/120;ctx.save();ctx.globalAlpha=alpha;
+    ctx.translate(cx-size/2,cy-size/2);ctx.scale(s,s);ctx.strokeStyle=color;ctx.lineWidth=(lw||2)*(120/size);
+    ctx.lineJoin='miter';path(ctx,OCT,true);ctx.stroke();ctx.restore();}
+
+  /* 45-degree cage, same motif as the site */
+  function cage(ctx,W,H,alpha){
+    ctx.save();ctx.globalAlpha=alpha;ctx.strokeStyle=VOLT;ctx.lineWidth=1;
+    for(let i=-H;i<W+H;i+=17){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i+H,H);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(i,H);ctx.lineTo(i+H,0);ctx.stroke();}
+    ctx.restore();
+  }
+  function grain(ctx,W,H,amount){
+    ctx.save();
+    for(let i=0;i<amount;i++){
+      const x=Math.random()*W,y=Math.random()*H;
+      ctx.fillStyle='rgba(255,255,255,'+(Math.random()*0.05)+')';
+      ctx.fillRect(x,y,1.4,1.4);
+    }
+    ctx.restore();
+  }
+  function cropMarks(ctx,W,H,pad,len){
+    ctx.save();ctx.strokeStyle=VOLT;ctx.lineWidth=3;ctx.globalAlpha=.85;
+    const c=[[pad,pad,1,1],[W-pad,pad,-1,1],[pad,H-pad,1,-1],[W-pad,H-pad,-1,-1]];
+    c.forEach(([x,y,dx,dy])=>{ctx.beginPath();ctx.moveTo(x,y+dy*len);ctx.lineTo(x,y);ctx.lineTo(x+dx*len,y);ctx.stroke();});
+    ctx.restore();
+  }
+  /* Fit the headline to BOTH the column width and the vertical band, so a long
+     one can never grow down into the footer bar. */
+  function layout(ctx,text,maxW,maxLines,start,min,bandH){
+    let size=start,lines=[];
+    for(;size>=min;size-=3){
+      ctx.font=size+'px Anton';lines=[];let line='';
       for(const w of String(text||'').split(/\s+/)){
         const t=line?line+' '+w:w;
-        if(ctx.measureText(t).width>maxW && line){ lines.push(line); line=w; } else line=t;
+        if(ctx.measureText(t).width>maxW&&line){lines.push(line);line=w;}else line=t;
       }
-      if(line) lines.push(line);
-      if(lines.length<=maxLines) break;
+      if(line)lines.push(line);
+      if(lines.length<=maxLines && lines.length*(size*1.02)<=bandH) break;
     }
-    if(lines.length>maxLines){ lines=lines.slice(0,maxLines); lines[maxLines-1]=lines[maxLines-1].replace(/\s+\S*$/,'')+'…'; }
-    return {lines,size};
+    if(lines.length>maxLines){lines=lines.slice(0,maxLines);lines[maxLines-1]=lines[maxLines-1].replace(/\s+\S*$/,'')+'…';}
+    return{lines,size};
   }
-  async function render(story){
-    // Anton/JetBrains must be loaded or canvas silently falls back to serif
-    try{ await Promise.all([document.fonts.load('88px Anton'),document.fonts.load('700 26px "JetBrains Mono"'),document.fonts.load('400 22px "JetBrains Mono"')]); }catch(e){}
-    const W=1200,H=630;
-    const c=document.createElement('canvas'); c.width=W; c.height=H;
-    const ctx=c.getContext('2d');
-    ctx.fillStyle=INK; ctx.fillRect(0,0,W,H);
-    const g=ctx.createRadialGradient(210,-60,40,210,-60,780);
-    g.addColorStop(0,'rgba(201,247,58,.16)'); g.addColorStop(1,'rgba(201,247,58,0)');
-    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-    ghost(ctx,860,300,420,.07); ghost(ctx,1030,90,240,.05);
-    ctx.fillStyle=VOLT; ctx.fillRect(0,0,10,H);
-    const L=78, R=W-70;
-    mark(ctx,L,52,64);
-    ctx.textBaseline='alphabetic';
-    ctx.font='700 26px "JetBrains Mono"'; ctx.fillStyle=BONE; ctx.fillText('GREENE',L+84,88);
-    ctx.fillStyle=VOLT; ctx.fillText('MMA',L+84+ctx.measureText('GREENE ').width,88);
-    const cat=String(story.category||'Fight news').toUpperCase();
-    const isLive=/live/i.test(cat);
-    ctx.font='700 22px "JetBrains Mono"';
-    const cw=ctx.measureText(cat).width+34;
-    ctx.fillStyle=story.original?VOLT:(isLive?RED:'rgba(201,247,58,.14)');
-    ctx.fillRect(L,182,cw,44);
-    if(!story.original&&!isLive){ ctx.strokeStyle='rgba(201,247,58,.5)'; ctx.lineWidth=1.5; ctx.strokeRect(L,182,cw,44); }
-    ctx.fillStyle=(story.original||isLive)?INK:VOLT; ctx.fillText(cat,L+17,212);
-    if(story.original){ ctx.font='700 20px "JetBrains Mono"'; ctx.fillStyle=STEEL; ctx.fillText('GREENE ORIGINAL',L+cw+18,211); }
-    const {lines,size}=layout(ctx,story.headline,R-L,3,88);
-    ctx.font=size+'px Anton'; ctx.fillStyle=BONE;
-    let y=316; const lh=size*1.06;
-    lines.forEach(ln=>{ ctx.fillText(ln.toUpperCase(),L,y); y+=lh; });
-    ctx.strokeStyle='rgba(242,240,233,.16)'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(L,H-92); ctx.lineTo(R,H-92); ctx.stroke();
-    ctx.font='700 24px "JetBrains Mono"'; ctx.fillStyle=VOLT; ctx.fillText('MMA.GREENE.BET',L,H-46);
+
+  function draw(story){
+    const c=document.createElement('canvas');c.width=1200;c.height=630;
+    const ctx=c.getContext('2d'),W=1200,H=630;
+    const accent = /live|weigh/i.test(story.category||'') ? RED : VOLT;
+
+    // ---- ground
+    ctx.fillStyle=INK;ctx.fillRect(0,0,W,H);
+    let g=ctx.createRadialGradient(300,-120,60,300,-120,900);
+    g.addColorStop(0,'rgba(201,247,58,.20)');g.addColorStop(1,'rgba(201,247,58,0)');
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    cage(ctx,W,H,.055);
+
+    // ---- the cage bleeding off the right edge
+    octa(ctx,1075,300,620,accent,2.5,.16);
+    octa(ctx,1075,300,430,accent,2,.10);
+    octa(ctx,980,545,180,accent,2,.10);
+
+    // ---- vignette for punch
+    const v=ctx.createRadialGradient(W/2,H/2,H*0.35,W/2,H/2,H*1.05);
+    v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.55)');
+    ctx.fillStyle=v;ctx.fillRect(0,0,W,H);
+
+    // ---- volt spine with the category running up it
+    const SP=58;
+    ctx.fillStyle=accent;ctx.fillRect(0,0,SP,H);
+    ctx.save();ctx.translate(SP/2,H/2);ctx.rotate(-Math.PI/2);
+    ctx.font='700 26px "JetBrains Mono"';ctx.fillStyle=INK;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(String(story.category||'Fight news').toUpperCase().slice(0,28),0,1);
+    ctx.restore();
+    ctx.textAlign='left';ctx.textBaseline='alphabetic';
+
+    const L=112,R=W-84;
+
+    // ---- brand lockup
+    mark(ctx,L,46,58,accent,11);
+    ctx.font='700 25px "JetBrains Mono"';ctx.fillStyle=BONE;ctx.fillText('GREENE',L+78,84);
+    ctx.fillStyle=accent;ctx.fillText('MMA',L+78+ctx.measureText('GREENE ').width,84);
+
+    // ---- original stamp / source
+    if(story.original){
+      ctx.font='700 19px "JetBrains Mono"';
+      const t='GREENE MMA ORIGINAL',tw=ctx.measureText(t).width;
+      ctx.fillStyle=accent;ctx.fillRect(L,150,tw+30,38);
+      ctx.fillStyle=INK;ctx.fillText(t,L+15,176);
+    } else if(story.sourceName){
+      ctx.font='400 19px "JetBrains Mono"';ctx.fillStyle=STEEL;
+      ctx.fillText('VIA '+String(story.sourceName).toUpperCase(),L,176);
+    }
+
+    // ---- headline. The volt rule sits ABOVE the block: under a three-line
+    // headline it collided with the last line and read as a strikethrough.
+    const FOOT=62, TOP=232, BAND=(H-FOOT)-24-TOP;
+    // A short headline gets to be huge; the band and column widths pull it back
+    // as it gets longer. The block is centred in the band so a one-liner does
+    // not leave the bottom half of the card empty.
+    const {lines,size}=layout(ctx,story.headline,R-L,3,124,52,BAND);
+    const lh=size*1.02, blockH=lines.length*lh;
+    const y0=TOP+Math.max(0,(BAND-blockH)/2);
+    ctx.fillStyle=accent;ctx.fillRect(L,y0-30,132,6);
+    ctx.font=size+'px Anton';
+    let y=y0+size*0.80;
+    lines.forEach(ln=>{ ctx.fillStyle=BONE; ctx.fillText(ln.toUpperCase(),L,y); y+=lh; });
+
+    // ---- footer bar
+    ctx.fillStyle=accent;ctx.fillRect(0,H-62,W,62);
+    ctx.font='700 24px "JetBrains Mono"';ctx.fillStyle=INK;
+    ctx.fillText('MMA.GREENE.BET',L,H-22);
     const by=story.original?('BY '+String(story.author||'Greene MMA').toUpperCase())
-                           :('VIA '+String(story.sourceName||'the wire').toUpperCase());
-    ctx.font='400 22px "JetBrains Mono"'; ctx.fillStyle=STEEL;
-    ctx.textAlign='right'; ctx.fillText(by,R,H-46); ctx.textAlign='left';
-    // JPEG, not PNG: the volt spotlight is a gradient, which PNG cannot pack
-    // (570KB vs 98KB). These live inside the story document, so weight matters.
-    return c.toDataURL('image/jpeg', 0.9);
+                           :('MMA NEWS FROM THE GREENE CORNER');
+    ctx.font='400 21px "JetBrains Mono"';
+    ctx.textAlign='right';ctx.fillText(by,R,H-22);ctx.textAlign='left';
+
+    cropMarks(ctx,W,H-62,26,20);
+    grain(ctx,W,H,5200);
+    return c.toDataURL('image/jpeg',.9);
+  }
+
+  async function render(story){
+    try{ await Promise.all([document.fonts.load('124px Anton'),document.fonts.load('700 26px "JetBrains Mono"'),document.fonts.load('400 21px "JetBrains Mono"')]); }catch(e){}
+    return draw(story);
   }
   return { render };
 })();
