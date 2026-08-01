@@ -136,6 +136,18 @@ h1{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-
 .body li{margin-bottom:9px;}
 .body blockquote{border-left:3px solid var(--volt);padding:6px 0 6px 20px;margin:26px 0;color:var(--bone);font-size:22px;line-height:1.5;}
 .body hr{border:none;border-top:1px solid var(--hair);margin:34px 0;}
+.share{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:20px 0 26px;margin-bottom:24px;border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);}
+.share .lbl{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel);}
+.share .btns{display:flex;gap:9px;flex-wrap:wrap;}
+.share .sbtn{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:11px 20px;
+  border:1px solid var(--hair);background:transparent;color:var(--steel);cursor:pointer;
+  font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;transition:border-color .15s,color .15s,background .15s;}
+.share .sbtn:hover{border-color:var(--volt);color:var(--volt);}
+.share .sbtn.primary{border-color:var(--volt);color:var(--volt);}
+.share .sbtn.primary:hover{background:var(--volt);color:var(--black);}
+.share .sbtn.done{background:var(--volt);color:var(--black);border-color:var(--volt);}
+@media(max-width:520px){.share .sbtn{flex:1 1 auto;}}
 .src{border:1px solid var(--hair);border-left:3px solid var(--volt);background:var(--black-2);padding:24px;margin-bottom:44px;}
 .src .lbl{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel);}
 .src .name{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:22px;margin-top:8px;}
@@ -259,6 +271,23 @@ ${jsonld}`;
        <p>Our take is above. The full reporting lives with the people who did it — go read it there.</p>
        ${s.sourceUrl ? `<a class="go" href="${esc(s.sourceUrl)}" target="_blank" rel="noopener">Read the full story →</a>` : ""}</div>`;
 
+  // Share row. On phones the first button opens the native share sheet (the
+  // way people actually text a link); everywhere else it copies. X, Facebook
+  // and email are explicit so nobody has to hunt for them.
+  const shareText = encodeURIComponent(s.headline || "Greene MMA");
+  const shareUrlEnc = encodeURIComponent(url);
+  const shareRow = `
+<div class="share">
+  <span class="lbl">Share this</span>
+  <div class="btns">
+    <button type="button" class="sbtn primary" id="shareGo" data-url="${esc(url)}" data-title="${esc(s.headline || "")}">
+      <span id="shareGoTxt">Share</span></button>
+    <a class="sbtn" href="https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrlEnc}" target="_blank" rel="noopener">X</a>
+    <a class="sbtn" href="https://www.facebook.com/sharer/sharer.php?u=${shareUrlEnc}" target="_blank" rel="noopener">Facebook</a>
+    <a class="sbtn" href="mailto:?subject=${shareText}&body=${shareUrlEnc}">Email</a>
+  </div>
+</div>`;
+
   const html = head(`${esc(s.headline)} — Greene MMA`, metaExtra) + NAV + `
 <header class="hero"><div class="wrap">
   <span class="cat">${esc(s.category || "News")}</span>${original ? '<span class="origbadge">Greene MMA Original</span>' : ""}
@@ -270,8 +299,34 @@ ${jsonld}`;
 </div></header>
 <div class="wrap"><div class="rule"></div>
   <div class="body">${bodyHtml}</div>
+  ${shareRow}
   ${credit}
 </div>
+<script>
+(function(){
+  var b=document.getElementById('shareGo'); if(!b) return;
+  var t=document.getElementById('shareGoTxt');
+  var url=b.dataset.url, title=b.dataset.title;
+  if(navigator.share) t.textContent='Share';
+  else t.textContent='Copy link';
+  b.addEventListener('click',async function(){
+    if(navigator.share){
+      try{ await navigator.share({title:title,text:title,url:url}); return; }
+      catch(e){ if(e && e.name==='AbortError') return; }
+    }
+    try{ await navigator.clipboard.writeText(url); }
+    catch(e){
+      var ta=document.createElement('textarea'); ta.value=url; ta.setAttribute('readonly','');
+      ta.style.position='absolute'; ta.style.left='-9999px';
+      document.body.appendChild(ta); ta.select();
+      try{ document.execCommand('copy'); }catch(_){}
+      document.body.removeChild(ta);
+    }
+    t.textContent='Link copied'; b.classList.add('done');
+    setTimeout(function(){ t.textContent=navigator.share?'Share':'Copy link'; b.classList.remove('done'); },2200);
+  });
+})();
+</script>
 ${others.length ? `<div class="more"><div class="wrap wide">
   <h2>More from the corner</h2>
   <div class="feed">${others.map((o) => `

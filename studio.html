@@ -462,6 +462,26 @@
   }
   const say=(el,msg,cls)=>{el.textContent=msg;el.className=cls||'';};
 
+  /* After publishing: the live link, openable and copyable in one tap, so
+     sharing your own story doesn't mean retyping a URL from a status line. */
+  function showPublished(el,id,carded){
+    const url='https://mma.greene.bet/s/'+id;
+    el.className='ok';
+    el.innerHTML='✓ Published '+(carded?'· share card ready ':'')+
+      '<a href="'+url+'" target="_blank" rel="noopener" style="color:var(--volt);text-decoration:underline;">'+url+'</a> '+
+      '<button type="button" class="btn ghost pubcopy" style="margin-left:8px;padding:6px 12px;font-size:11px;">Copy link</button>';
+    const b=el.querySelector('.pubcopy');
+    b.addEventListener('click',async()=>{
+      try{ await navigator.clipboard.writeText(url); }
+      catch(e){
+        const ta=document.createElement('textarea'); ta.value=url; ta.style.position='absolute'; ta.style.left='-9999px';
+        document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); }catch(_){}
+        document.body.removeChild(ta);
+      }
+      b.textContent='Copied'; setTimeout(()=>{ b.textContent='Copy link'; },2000);
+    });
+  }
+
   /* ---- article ---- */
   let editingId=null;
   window.loadStoryIntoEditor=function(st){
@@ -513,7 +533,7 @@
         headline:article.headline, category:article.category,
         original:true, author:article.author,
       }) : false;
-      say(st,'✓ Published — live at /s/'+out.id+(carded?' · share card ready':' · using the house share image'),'ok');
+      showPublished(st, out.id, carded);
       $('a_head').value='';$('a_sum').value='';$('a_body').value='';
     } else say(st,'✗ '+(out.error||'Failed'),'bad');
   });
@@ -596,7 +616,7 @@
         const carded = window.makeShareCard ? await window.makeShareCard(out.id,{
           headline:d.headline, category:d.category, original:true, author:d.author,
         }) : false;
-        say(st,'\u2713 Live at /s/'+out.id+(carded?' \u00b7 share card ready':''),'ok');
+        showPublished(st, out.id, carded);
         $('dr_preview').innerHTML=''; loadDrafts();
       }
       else say(st,'\u2717 '+(out.error||'Failed'),'bad');
