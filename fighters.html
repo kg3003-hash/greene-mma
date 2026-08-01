@@ -333,6 +333,9 @@
 </script>
 
 </html>
+<!-- shared state-change motion (staggered lists, travelling tab pill) -->
+<script src="/assets/ui.js?v=2"></script>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -381,6 +384,9 @@ function render(){
   el.querySelectorAll('.fr').forEach(c=>c.addEventListener('click',()=>{
     window.__fighterModal.open(list[+c.dataset.i]);
   }));
+  // searching and filtering re-render the whole list; bring it in row by row
+  // so it reads as a response rather than a page redraw
+  if(window.GMUi) GMUi.stagger(el.querySelectorAll('.fr'), 18, 320);
   if(window.__reveal) window.__reveal();
 }
 document.getElementById("fsearch").addEventListener("input",e=>{ q=e.target.value.trim(); render(); });
@@ -393,6 +399,7 @@ function buildFilters(){
   document.querySelectorAll(".fbtn").forEach(b=>b.addEventListener("click",()=>{
     active=b.dataset.c; buildFilters(); render();
   }));
+  if(window.GMUi) GMUi.tabs('#filters', '.fbtn.on');
 }
 
 try{
@@ -480,6 +487,12 @@ try{
       const f=findFighter(el.dataset.n);
       window.__fighterModal.open(f||{_stub:el.dataset.n,_div:d.name});
     }));
+    // a new division is a different set of fighters, so the rows arrive in
+    // sequence; the volt pill slides across to the tab you picked
+    if(window.GMUi){
+      GMUi.stagger(document.querySelectorAll('#rankbox .rk'), 30, 400);
+      GMUi.tabs('#divtabs', '.divtab.on');
+    }
     document.querySelectorAll('.divtab').forEach(b=>b.addEventListener('click',()=>{
       activeDiv=+b.dataset.i; renderRank();
     }));

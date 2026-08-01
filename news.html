@@ -186,6 +186,7 @@
 
 <!-- generated per-story card art, shared with the homepage feed -->
 <script src="/assets/cardart.js?v=2"></script>
+<script src="/assets/ui.js?v=2"></script>
 
 </html>
 <script type="module">
@@ -246,6 +247,8 @@ function render(){
     '</a>').join("") : '<div class="empty">'+(term
       ? 'Nothing matches “'+esc(term)+'”.<br>Try a fighter or event name — or load more of the archive.'
       : 'Nothing in this category yet.')+'</div>';
+  // filtering and searching rebuild the grid — let the results arrive
+  if(window.GMUi) GMUi.stagger(feed.querySelectorAll('.card'), 22, 360);
 }
 function buildFilters(){
   const cats=["All","Greene Originals","UFC","Utah",...new Set(all.map(s=>s.category).filter(Boolean))];
@@ -254,6 +257,7 @@ function buildFilters(){
   document.querySelectorAll(".fbtn").forEach(b=>b.addEventListener("click",()=>{
     active=b.dataset.c; buildFilters(); render();
   }));
+  if(window.GMUi) GMUi.tabs('#filters', '.fbtn.on');
 }
 async function load(){
   let q=query(collection(db,"stories"),orderBy("publishedAt","desc"),limit(24));

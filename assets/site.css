@@ -100,6 +100,40 @@ footer .fine a:hover{color:var(--volt);}
 .card:hover .art .m1{opacity:calc(var(--a-m1-op,.5) + .3);transform:translate(-8px,-8px) rotate(calc(var(--a-m1-rot,0deg) - 5deg));}
 .card:hover .art .stripe{transform:skewX(var(--a-skew,-18deg)) translateX(190%);}
 
+/* ---------- Motion on state change ----------
+   Paired with /assets/ui.js. Lists arrive item by item instead of blinking
+   into place, and the active-tab fill travels rather than teleporting. */
+.gm-stagger{opacity:0;transform:translateY(9px);animation:gmStagger .36s cubic-bezier(.2,.7,.3,1) forwards;animation-delay:var(--i,0ms);}
+@keyframes gmStagger{to{opacity:1;transform:none;}}
+
+.gm-tabs{position:relative;}
+.gm-tabs .gm-ind{
+  position:absolute;left:0;top:0;width:0;height:0;z-index:0;opacity:0;
+  background:var(--volt);pointer-events:none;
+  transition:left .3s cubic-bezier(.2,.7,.3,1),top .3s cubic-bezier(.2,.7,.3,1),
+             width .3s cubic-bezier(.2,.7,.3,1),height .3s cubic-bezier(.2,.7,.3,1),opacity .2s ease;
+}
+/* the tabs sit above the pill; the active one drops its own fill and lets
+   the travelling pill supply it (only once the script has taken over) */
+.gm-tabs > button{position:relative;z-index:1;}
+.gm-hasind > button.on{background:transparent;border-color:var(--volt);}
+
+/* ---------- Modal entrance ----------
+   The fighter card used to appear with no transition at all. Keyframes, not
+   a transition: the modal goes display:none -> flex, and a transition will
+   not run off that change. Each animation ends at the element's natural
+   state, so reduced motion (which kills animation outright) still shows a
+   correctly positioned, fully opaque dialog. */
+.fmodal.on{animation:gmModalIn .2s ease;}
+@keyframes gmModalIn{from{opacity:0;}}
+.fmodal.on .box{animation:gmBoxIn .28s cubic-bezier(.2,.7,.3,1);}
+@keyframes gmBoxIn{from{transform:translateY(14px) scale(.985);}}
+
+@media(prefers-reduced-motion:reduce){
+  /* never let a disabled animation strand content mid-entrance */
+  .gm-stagger{opacity:1;transform:none;animation:none;}
+}
+
 /* ---------- Keyboard focus ----------
    Site-wide so every page shows where the keyboard is, not just the
    homepage. Mouse users never see it (:focus-visible, not :focus). */
