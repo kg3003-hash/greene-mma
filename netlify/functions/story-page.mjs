@@ -136,6 +136,9 @@ h1{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-
 .body li{margin-bottom:9px;}
 .body blockquote{border-left:3px solid var(--volt);padding:6px 0 6px 20px;margin:26px 0;color:var(--bone);font-size:22px;line-height:1.5;}
 .body hr{border:none;border-top:1px solid var(--hair);margin:34px 0;}
+/* reading progress — a thin volt line that fills as the article scrolls,
+   matching the client-side viewer in story.html */
+.progress{position:fixed;top:0;left:0;height:3px;width:0;background:var(--volt);z-index:60;transition:width .08s linear;box-shadow:0 0 12px rgba(201,247,58,.5);}
 .share{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:20px 0 26px;margin-bottom:24px;border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);}
 .share .lbl{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel);}
 .share .btns{display:flex;gap:9px;flex-wrap:wrap;}
@@ -288,7 +291,8 @@ ${jsonld}`;
   </div>
 </div>`;
 
-  const html = head(`${esc(s.headline)} — Greene MMA`, metaExtra) + NAV + `
+  const html = head(`${esc(s.headline)} — Greene MMA`, metaExtra) + `
+<div class="progress" id="progress" aria-hidden="true"></div>` + NAV + `
 <header class="hero"><div class="wrap">
   <span class="cat">${esc(s.category || "News")}</span>${original ? '<span class="origbadge">Greene MMA Original</span>' : ""}
   <h1>${esc(s.headline)}</h1>
@@ -303,6 +307,19 @@ ${jsonld}`;
   ${credit}
 </div>
 <script>
+(function(){
+  var bar=document.getElementById('progress');
+  if(!bar) return;
+  var ticking=false;
+  function update(){
+    var h=document.documentElement;
+    var max=h.scrollHeight-h.clientHeight;
+    bar.style.width=(max>0?(h.scrollTop/max*100):0)+'%';
+    ticking=false;
+  }
+  addEventListener('scroll',function(){ if(!ticking){ ticking=true; requestAnimationFrame(update); } },{passive:true});
+  update();
+})();
 (function(){
   var b=document.getElementById('shareGo'); if(!b) return;
   var t=document.getElementById('shareGoTxt');

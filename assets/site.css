@@ -100,6 +100,34 @@ footer .fine a:hover{color:var(--volt);}
 .card:hover .art .m1{opacity:calc(var(--a-m1-op,.5) + .3);transform:translate(-8px,-8px) rotate(calc(var(--a-m1-rot,0deg) - 5deg));}
 .card:hover .art .stripe{transform:skewX(var(--a-skew,-18deg)) translateX(190%);}
 
+/* ---------- Depth ----------
+   The page was flat near-black with two big radial gradients, which band
+   visibly on cheaper panels. A fixed grain layer breaks the banding up and
+   gives the black some tooth. It sits above the content but under the nav
+   and any dialog, and never takes a pointer event. The noise is generated
+   by an inline SVG filter — no image request. */
+body::after{
+  content:'';position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.038;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:160px 160px;
+}
+
+/* The cage: two 45-degree hairline grids behind the page headers, faded out
+   downward so they read as texture rather than as a pattern. Same motif the
+   betting league uses, so the two sites feel related. ::after is unused on
+   these elements site-wide, so nothing gets clobbered. */
+.hero,.masthead{position:relative;}
+.hero::after,.masthead::after{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(201,247,58,.05) 0 1px, transparent 1px 17px),
+    repeating-linear-gradient(-45deg, rgba(201,247,58,.05) 0 1px, transparent 1px 17px);
+  -webkit-mask-image:radial-gradient(ellipse 90% 78% at 50% 0%, #000 22%, transparent 76%);
+          mask-image:radial-gradient(ellipse 90% 78% at 50% 0%, #000 22%, transparent 76%);
+}
+/* the header's own content must stay above the cage */
+.hero > *,.masthead > *{position:relative;z-index:1;}
+
 /* ---------- Fight-week pulse ----------
    A live chip in the nav, driven by /assets/fightpulse.js. Quiet when the
    next card is days out, volt on the day, red and breathing once the first
