@@ -605,9 +605,12 @@ try{
           ev.preventDefault();
           const f=window.__cardFighters[+a.dataset.fi];
           const keyOf=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
-          const k=keyOf((f.first||'')+' '+(f.last||''));
+          const bareOf=s=>keyOf(String(s||'').replace(/["\u201c\u201d'\u2018\u2019][^"\u201c\u201d'\u2018\u2019]*["\u201c\u201d'\u2018\u2019]/g,' '));
+          const k=keyOf((f.first||'')+' '+(f.last||'')), kb=bareOf((f.first||'')+' '+(f.last||''));
           const match=(window.__roster||[]).find(r=>keyOf((r.first||'')+' '+(r.last||''))===k)
-            || (window.__roster||[]).find(r=>keyOf(r.slug)===k);
+            || (window.__roster||[]).find(r=>keyOf(r.slug)===k)
+            || (window.__roster||[]).find(r=>keyOf((r.first||'')+' '+(r.nickname||'')+' '+(r.last||''))===k)
+            || (window.__roster||[]).find(r=>keyOf((r.first||'')+' '+(r.last||''))===kb);
           window.__fighterModal.open(match||f);
         }));
         if(window.__reveal) window.__reveal();
@@ -632,13 +635,19 @@ try{
           '</div>';
         // clicking a ranked name opens the profile — resolved against the roster
         // at click time, since the roster loads just after this section
+        // Ranked names often carry the nickname inline (Court "The Crusher"
+        // McGee) \u2014 try the quoted chunk stripped and the roster's own
+        // first+nickname+last too; either direction landing = same fighter.
         const rkKey=v=>String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+        const rkBare=v=>rkKey(String(v||'').replace(/["\u201c\u201d'\u2018\u2019][^"\u201c\u201d'\u2018\u2019]*["\u201c\u201d'\u2018\u2019]/g,' '));
         document.querySelectorAll('#rankpreview .rkrow').forEach(row=>row.addEventListener('click',()=>{
-          const k=rkKey(row.dataset.n);
+          const k=rkKey(row.dataset.n), kb=rkBare(row.dataset.n);
           const roster=window.__roster||[];
           const f=roster.find(r=>rkKey((r.first||'')+' '+(r.last||''))===k)
               || roster.find(r=>rkKey(r.slug)===k)
-              || roster.find(r=>rkKey(r.nickname)===k);
+              || roster.find(r=>rkKey(r.nickname)===k)
+              || roster.find(r=>rkKey((r.first||'')+' '+(r.nickname||'')+' '+(r.last||''))===k)
+              || roster.find(r=>rkKey((r.first||'')+' '+(r.last||''))===kb);
           window.__fighterModal.open(f||{_stub:row.dataset.n,_div:d.name});
         }));
       }
