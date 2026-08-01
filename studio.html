@@ -202,6 +202,13 @@
       <div id="dr_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
     </div>
 
+<div class="panel" id="cardbackfill">
+      <h2>Share cards</h2>
+      <p class="hint" style="margin-top:0">Every story you publish from now on gets its own share image automatically — headline, category and byline, in the site's colours — so a link you text or post shows the story instead of the same house picture. This button makes cards for stories you published <b>before</b> that existed. Safe to run more than once; it skips anything that already has one.</p>
+      <button class="btn ghost" style="margin-top:0">Make cards for older stories</button>
+      <div class="st" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+    </div>
+
 <div class="panel">
       <h2>Manage stories</h2>
       <p class="hint" style="margin-top:0">Pin any story — yours or from the wire — to the homepage. <b>TOP</b> leads the global news column (your first pin becomes the lead story); <b>UTAH</b> leads the local rail. Newest pin goes first, tap again to unpin. DEL removes stray items.</p>
@@ -500,7 +507,13 @@
     say(st,'Publishing...');
     const out=await api({article});
     if(out.ok){
-      say(st,'✓ Published — live at /story.html?id='+out.id,'ok');
+      // render the share card before clearing the form (it needs the headline)
+      say(st,'✓ Published — making the share card…','ok');
+      const carded = window.makeShareCard ? await window.makeShareCard(out.id,{
+        headline:article.headline, category:article.category,
+        original:true, author:article.author,
+      }) : false;
+      say(st,'✓ Published — live at /s/'+out.id+(carded?' · share card ready':' · using the house share image'),'ok');
       $('a_head').value='';$('a_sum').value='';$('a_body').value='';
     } else say(st,'✗ '+(out.error||'Failed'),'bad');
   });
@@ -578,7 +591,14 @@
     $('dr_pub').addEventListener('click',async()=>{
       const st=$('dr_status'); say(st,'Publishing...');
       const out=await api({publishDraft:d.id});
-      if(out.ok){ say(st,'\u2713 Live at /story.html?id='+out.id,'ok'); $('dr_preview').innerHTML=''; loadDrafts(); }
+      if(out.ok){
+        say(st,'\u2713 Published \u2014 making the share card\u2026','ok');
+        const carded = window.makeShareCard ? await window.makeShareCard(out.id,{
+          headline:d.headline, category:d.category, original:true, author:d.author,
+        }) : false;
+        say(st,'\u2713 Live at /s/'+out.id+(carded?' \u00b7 share card ready':''),'ok');
+        $('dr_preview').innerHTML=''; loadDrafts();
+      }
       else say(st,'\u2717 '+(out.error||'Failed'),'bad');
     });
     $('dr_rej').addEventListener('click',async()=>{
@@ -1300,6 +1320,123 @@ window.gmToolbar=function(taId, hostId){
 };
 
 gmToolbar("a_body","a_bar");gmToolbar("n_body","n_bar");
+
+/* =====================================================================
+   SHARE CARDS — a 1200x630 PNG per story, in the site's own design
+   language, rendered right here on publish and stored on the story.
+   /og/:id.png serves it, so a shared link shows the headline instead of
+   the same house image every time. Nothing to install; it's just canvas.
+   ===================================================================== */
+window.GMCard = (function(){
+  const VOLT='#C9F73A', INK='#0C0E0A', BONE='#F2F0E9', STEEL='#9AA194', RED='#FF4B3E';
+  const G=[[104.35,41.63],[78.37,15.65],[41.63,15.65],[15.65,41.63],[15.65,78.37],[41.63,104.35],[78.37,104.35],[104.35,78.37],[104.35,64],[71,64]];
+  const OCT=[[78.37,15.65],[41.63,15.65],[15.65,41.63],[15.65,78.37],[41.63,104.35],[78.37,104.35],[104.35,78.37],[104.35,41.63]];
+  function poly(ctx,pts,close){ ctx.beginPath(); pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); if(close) ctx.closePath(); }
+  function mark(ctx,x,y,size){ const s=size/120; ctx.save(); ctx.translate(x,y); ctx.scale(s,s);
+    ctx.strokeStyle=VOLT; ctx.lineWidth=11; ctx.lineJoin='miter'; ctx.miterLimit=10; poly(ctx,G); ctx.stroke(); ctx.restore(); }
+  function ghost(ctx,x,y,size,a){ const s=size/120; ctx.save(); ctx.globalAlpha=a; ctx.translate(x,y); ctx.scale(s,s);
+    ctx.strokeStyle=VOLT; ctx.lineWidth=2; ctx.lineJoin='miter'; poly(ctx,OCT,true); ctx.stroke(); ctx.restore(); }
+  /* shrink the headline until it fits three lines, then ellipsise */
+  function layout(ctx,text,maxW,maxLines,start){
+    let size=start, lines=[];
+    for(;size>=52;size-=4){
+      ctx.font=size+'px Anton'; lines=[]; let line='';
+      for(const w of String(text||'').split(/\s+/)){
+        const t=line?line+' '+w:w;
+        if(ctx.measureText(t).width>maxW && line){ lines.push(line); line=w; } else line=t;
+      }
+      if(line) lines.push(line);
+      if(lines.length<=maxLines) break;
+    }
+    if(lines.length>maxLines){ lines=lines.slice(0,maxLines); lines[maxLines-1]=lines[maxLines-1].replace(/\s+\S*$/,'')+'…'; }
+    return {lines,size};
+  }
+  async function render(story){
+    // Anton/JetBrains must be loaded or canvas silently falls back to serif
+    try{ await Promise.all([document.fonts.load('88px Anton'),document.fonts.load('700 26px "JetBrains Mono"'),document.fonts.load('400 22px "JetBrains Mono"')]); }catch(e){}
+    const W=1200,H=630;
+    const c=document.createElement('canvas'); c.width=W; c.height=H;
+    const ctx=c.getContext('2d');
+    ctx.fillStyle=INK; ctx.fillRect(0,0,W,H);
+    const g=ctx.createRadialGradient(210,-60,40,210,-60,780);
+    g.addColorStop(0,'rgba(201,247,58,.16)'); g.addColorStop(1,'rgba(201,247,58,0)');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    ghost(ctx,860,300,420,.07); ghost(ctx,1030,90,240,.05);
+    ctx.fillStyle=VOLT; ctx.fillRect(0,0,10,H);
+    const L=78, R=W-70;
+    mark(ctx,L,52,64);
+    ctx.textBaseline='alphabetic';
+    ctx.font='700 26px "JetBrains Mono"'; ctx.fillStyle=BONE; ctx.fillText('GREENE',L+84,88);
+    ctx.fillStyle=VOLT; ctx.fillText('MMA',L+84+ctx.measureText('GREENE ').width,88);
+    const cat=String(story.category||'Fight news').toUpperCase();
+    const isLive=/live/i.test(cat);
+    ctx.font='700 22px "JetBrains Mono"';
+    const cw=ctx.measureText(cat).width+34;
+    ctx.fillStyle=story.original?VOLT:(isLive?RED:'rgba(201,247,58,.14)');
+    ctx.fillRect(L,182,cw,44);
+    if(!story.original&&!isLive){ ctx.strokeStyle='rgba(201,247,58,.5)'; ctx.lineWidth=1.5; ctx.strokeRect(L,182,cw,44); }
+    ctx.fillStyle=(story.original||isLive)?INK:VOLT; ctx.fillText(cat,L+17,212);
+    if(story.original){ ctx.font='700 20px "JetBrains Mono"'; ctx.fillStyle=STEEL; ctx.fillText('GREENE ORIGINAL',L+cw+18,211); }
+    const {lines,size}=layout(ctx,story.headline,R-L,3,88);
+    ctx.font=size+'px Anton'; ctx.fillStyle=BONE;
+    let y=316; const lh=size*1.06;
+    lines.forEach(ln=>{ ctx.fillText(ln.toUpperCase(),L,y); y+=lh; });
+    ctx.strokeStyle='rgba(242,240,233,.16)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(L,H-92); ctx.lineTo(R,H-92); ctx.stroke();
+    ctx.font='700 24px "JetBrains Mono"'; ctx.fillStyle=VOLT; ctx.fillText('MMA.GREENE.BET',L,H-46);
+    const by=story.original?('BY '+String(story.author||'Greene MMA').toUpperCase())
+                           :('VIA '+String(story.sourceName||'the wire').toUpperCase());
+    ctx.font='400 22px "JetBrains Mono"'; ctx.fillStyle=STEEL;
+    ctx.textAlign='right'; ctx.fillText(by,R,H-46); ctx.textAlign='left';
+    // JPEG, not PNG: the volt spotlight is a gradient, which PNG cannot pack
+    // (570KB vs 98KB). These live inside the story document, so weight matters.
+    return c.toDataURL('image/jpeg', 0.9);
+  }
+  return { render };
+})();
+
+/* This script block is outside the main Studio IIFE, so it talks to the
+   function directly instead of borrowing that scope's api(). */
+window.__cardApi = async function(payload){
+  const r = await fetch('/.netlify/functions/site',{ method:'POST',
+    headers:{'content-type':'application/json','x-studio-key':sessionStorage.getItem('gmma_key')||''},
+    body: JSON.stringify(payload) });
+  return r.json();
+};
+
+/* Generate + attach a card. Never blocks publishing: if this fails the story
+   is already live, it just keeps the house share image. */
+window.makeShareCard = async function(id, story){
+  try{
+    const png = await window.GMCard.render(story);
+    const out = await window.__cardApi({ setOgCard: { id, png } });
+    return !!(out && out.ok);
+  }catch(e){ console.warn('share card', e); return false; }
+};
+
+/* Backfill: give every already-published story a card, in one click. */
+(function(){
+  const host=document.getElementById('cardbackfill');
+  if(!host) return;
+  const btn=host.querySelector('button'), st=host.querySelector('.st');
+  const tell=(m,c)=>{ st.textContent=m; st.className='st '+(c||''); };
+  btn.addEventListener('click', async ()=>{
+    btn.disabled=true; tell('Looking for stories without a card…');
+    try{
+      const out=await window.__cardApi({ storiesWithoutCard:true });
+      if(!out.ok){ tell('✗ '+(out.error||'Failed'),'bad'); btn.disabled=false; return; }
+      const list=out.stories||[];
+      if(!list.length){ tell('✓ Every recent story already has a card.','ok'); btn.disabled=false; return; }
+      let done=0;
+      for(let i=0;i<list.length;i++){
+        tell('Rendering '+(i+1)+' of '+list.length+'…');
+        if(await window.makeShareCard(list[i].id,list[i])) done++;
+      }
+      tell('✓ Made '+done+' share card'+(done===1?'':'s')+'. Shared links show the headline now.','ok');
+    }catch(e){ tell('✗ '+e.message,'bad'); }
+    btn.disabled=false;
+  });
+})();
 </script>
 </body>
 </html>

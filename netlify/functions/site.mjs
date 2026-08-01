@@ -246,6 +246,50 @@ export default async function handler(req) {
   }
 
   // Load one story for editing
+  // Per-story share card. The Studio renders a 1200x630 PNG at publish time
+  // and posts it here; /og/:id.png hands it back. Without this every shared
+  // link previewed with the same generic house image.
+  if (body.setOgCard) {
+    if (!isAdmin) return deny();
+    const { id, png } = body.setOgCard || {};
+    if (!id || !png) {
+      return new Response(JSON.stringify({ error: "id and png are required" }), { status: 400 });
+    }
+    const b64 = String(png).replace(/^data:image\/(jpeg|png);base64,/, "");
+    // Firestore caps a document at 1MB and the article body shares the doc,
+    // so keep the card well clear of it (a 1200x630 JPEG lands near 100KB).
+    if (b64.length > 400000) {
+      return new Response(JSON.stringify({ error: "Card image too large" }), { status: 413 });
+    }
+    if (!/^[A-Za-z0-9+/]+={0,2}$/.test(b64)) {
+      return new Response(JSON.stringify({ error: "Card must be a base64 PNG" }), { status: 400 });
+    }
+    const ref = db.collection("stories").doc(String(id));
+    if (!(await ref.get()).exists) {
+      return new Response(JSON.stringify({ error: "Story not found" }), { status: 404 });
+    }
+    await ref.set({
+      ogCard: b64,
+      ogCardAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    return new Response(JSON.stringify({ ok: true, id, bytes: b64.length }), { status: 200 });
+  }
+
+  // Stories missing a share card — powers the Studio's backfill button.
+  if (body.storiesWithoutCard) {
+    if (!isAdmin) return deny();
+    const snap = await db.collection("stories")
+      .orderBy("publishedAt", "desc").limit(60).get();
+    const list = snap.docs
+      .map((d) => ({ id: d.id, ...d.data() }))
+      .filter((s) => !s.ogCard)
+      .map((s) => ({
+        id: s.id, headline: s.headline || "", category: s.category || "",
+        original: !!s.original, author: s.author || "", sourceName: s.sourceName || "",
+      }));
+    return new Response(JSON.stringify({ ok: true, stories: list }), { status: 200 });
+  }
+
   if (body.getStory) {    const snap = await db.collection("stories").doc(String(body.getStory)).get();
     if (!snap.exists) return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
     return new Response(JSON.stringify({ ok: true, story: { id: snap.id, ...snap.data() } }), { status: 200 });

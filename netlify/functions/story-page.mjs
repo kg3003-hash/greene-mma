@@ -214,6 +214,10 @@ export default async function handler(req, context) {
     others = ((idxSnap.data() || {}).stories || []).filter((o) => o.id !== id).slice(0, 3);
   } catch (e) { /* section just stays empty */ }
 
+  // Per-story share card when the Studio generated one (/og/:id.jpg),
+  // otherwise the house card so a link never unfurls broken.
+  const shareImg = s.ogCard ? `${SITE}/og/${encodeURIComponent(id)}.jpg` : `${SITE}/assets/share-card.png`;
+
   const jsonld = original ? `<script type="application/ld+json">${JSON.stringify({
     "@context": "https://schema.org",
     "@type": "NewsArticle",
@@ -226,7 +230,7 @@ export default async function handler(req, context) {
       name: "Greene MMA",
       logo: { "@type": "ImageObject", url: `${SITE}/assets/icon-512.png` },
     },
-    image: [`${SITE}/assets/share-card.png`],
+    image: [shareImg],
     mainEntityOfPage: url,
   })}</script>` : "";
 
@@ -238,12 +242,12 @@ export default async function handler(req, context) {
 <meta property="og:title" content="${esc(s.headline)}">
 <meta property="og:description" content="${esc(desc)}">
 <meta property="og:url" content="${esc(url)}">
-<meta property="og:image" content="${SITE}/assets/share-card.png">
+<meta property="og:image" content="${shareImg}">
 ${published ? `<meta property="article:published_time" content="${published.toISOString()}">` : ""}
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${esc(s.headline)}">
 <meta name="twitter:description" content="${esc(desc)}">
-<meta name="twitter:image" content="${SITE}/assets/share-card.png">
+<meta name="twitter:image" content="${shareImg}">
 ${jsonld}`;
 
   const bodyHtml = original && s.body ? gmFormat(s.body) : "<p>" + esc(s.summary || "") + "</p>";
