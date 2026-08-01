@@ -455,12 +455,28 @@ Rules:
 
   // Rankings — your own Utah top-tens
   if (body.rankings) {
+    // Keep the last published order per division so the public pages can show
+    // movement (▲▼ / NEW). The baseline only advances when the order actually
+    // changes — editing a note must not silently wipe the arrows.
+    const prevSnap = await db.collection("site").doc("rankings").get();
+    const prevByName = new Map(
+      ((prevSnap.data() || {}).divisions || []).map((d) => [d.name, d]),
+    );
     await db.collection("site").doc("rankings").set({
-      divisions: (body.rankings || []).slice(0, 15).map((d) => ({
-        name: String(d.name || "").slice(0, 60),
-        note: String(d.note || "").slice(0, 200),
-        fighters: (d.fighters || []).slice(0, 15).map((f) => String(f).trim().slice(0, 80)),
-      })),
+      divisions: (body.rankings || []).slice(0, 15).map((d) => {
+        const name = String(d.name || "").slice(0, 60);
+        const fighters = (d.fighters || []).slice(0, 15).map((f) => String(f).trim().slice(0, 80));
+        const old = prevByName.get(name) || {};
+        const oldFighters = old.fighters || [];
+        const moved = oldFighters.length !== fighters.length
+          || oldFighters.some((n, i) => n !== fighters[i]);
+        return {
+          name,
+          note: String(d.note || "").slice(0, 200),
+          fighters,
+          prev: moved ? oldFighters : (old.prev || oldFighters),
+        };
+      }),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
     return new Response(JSON.stringify({ ok: true, saved: body.rankings.length }), { status: 200 });

@@ -72,6 +72,17 @@
   .rk .meta{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);margin-top:4px;}
   .rk .rec{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:17px;color:var(--volt);white-space:nowrap;}
   .divnote{color:var(--steel);font-size:15.5px;margin-bottom:16px;max-width:640px;}
+  /* freshness stamp + movement chips — the two things that make a rankings
+     page worth coming back to */
+  .rkstamp{display:block;margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:10.5px;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--volt);opacity:.85;}
+  .mv{display:block;margin-top:3px;font-family:'JetBrains Mono',monospace;font-size:10px;
+    font-weight:700;letter-spacing:.04em;line-height:1;}
+  .mv.up{color:var(--volt);}
+  .mv.down{color:#FF4B3E;}
+  .mv.same{color:var(--steel);opacity:.5;}
+  .mv.new{color:var(--black);background:var(--volt);padding:2px 4px;display:inline-block;
+    font-size:8.5px;letter-spacing:.08em;}
 
   /* legends */
   .legends{display:grid;gap:16px;}
@@ -392,8 +403,33 @@ try{
 
   /* ---------- RANKINGS ---------- */
   const rkSnap=await getDoc(doc(db,"site","rankings"));
-  let divisions=((rkSnap.data()||{}).divisions)||[];
+  const rkData=rkSnap.data()||{};
+  let divisions=rkData.divisions||[];
   let activeDiv=0;
+  /* Freshness + movement. `prev` is the last published order for the division
+     (written by the save handler), so we can show who climbed, who slid and
+     who is new since the previous update. */
+  const rkUpdated=(()=>{
+    const t=rkData.updatedAt;
+    const d=t&&t.toDate?t.toDate():(t?new Date(t):null);
+    if(!d||isNaN(d)) return '';
+    const mins=Math.floor((Date.now()-d.getTime())/60000);
+    if(mins<60) return 'Updated '+(mins<1?'just now':mins+'m ago');
+    const hrs=Math.floor(mins/60); if(hrs<24) return 'Updated '+hrs+'h ago';
+    const days=Math.floor(hrs/24);
+    return 'Updated '+(days===1?'yesterday':days<30?days+' days ago':d.toLocaleDateString());
+  })();
+  function movement(d,name,i){
+    const prev=d.prev||[];
+    if(!prev.length) return '';
+    const was=prev.indexOf(name);
+    if(was<0) return '<span class="mv new">NEW</span>';
+    const delta=was-i;
+    if(!delta) return '<span class="mv same" title="No change">–</span>';
+    return delta>0
+      ? '<span class="mv up" title="Up '+delta+' since the last update">▲'+delta+'</span>'
+      : '<span class="mv down" title="Down '+(-delta)+' since the last update">▼'+(-delta)+'</span>';
+  }
   /* Normalize both sides before comparing: lowercase, fold accents,
      collapse punctuation and extra spaces. "José  Pérez Jr." matches
      "jose perez jr" — a stray space or period in the rankings can no
@@ -424,13 +460,15 @@ try{
     document.getElementById("divtabs").innerHTML=divisions.map((d,i)=>
       '<button class="divtab'+(i===activeDiv?' on':'')+'" data-i="'+i+'">'+esc(d.name)+'</button>').join('');
     const d=divisions[activeDiv];
-    document.getElementById("divnote").textContent=d.note||'';
+    const noteEl=document.getElementById("divnote");
+    noteEl.innerHTML=(d.note?esc(d.note):'')+
+      (rkUpdated?'<span class="rkstamp">'+esc(rkUpdated)+'</span>':'');
     document.getElementById("rankbox").innerHTML='<div class="rank">'+
       (d.fighters||[]).map((n,i)=>{
         const f=findFighter(n);
         // a real <button> so the profile opens by keyboard, not just by mouse
         return '<button type="button" class="rk'+(i===0?' top':'')+'" data-n="'+esc(n)+'">'+
-          '<div class="num">'+(i+1)+'</div>'+
+          '<div class="num">'+(i+1)+movement(d,n,i)+'</div>'+
           '<div><div class="nm">'+esc(f?((f.first||'')+' '+(f.last||'')).trim():n)+'</div>'+
             (f?'<div class="meta">'+[f.weight,f.gym,f.city].filter(Boolean).map(esc).join(' \u00b7 ')+'</div>':
                 '<div class="meta">Not on the roster yet</div>')+

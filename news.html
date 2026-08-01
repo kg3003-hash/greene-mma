@@ -62,6 +62,13 @@
   a.card h3{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:22px;line-height:1.12;}
   a.card p{font-size:15.5px;color:var(--steel);}
   a.card .t{margin-top:auto;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);opacity:.8;}
+  .searchrow{display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap;}
+  .searchrow input{flex:1;min-width:240px;padding:13px 16px;background:var(--black-2);
+    border:1px solid var(--hair);color:var(--bone);font-family:'Barlow',sans-serif;font-size:15.5px;}
+  .searchrow input::placeholder{color:var(--steel);}
+  .searchrow input:focus{outline:none;border-color:var(--volt);}
+  .searchrow .scount{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--steel);white-space:nowrap;}
   .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:26px;}
   .fbtn{padding:9px 16px;border:1px solid var(--hair);background:var(--black-2);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);}
   .fbtn:hover{border-color:var(--volt);color:var(--volt);}
@@ -120,6 +127,11 @@
 
 <section>
   <div class="wrap">
+    <div class="searchrow">
+      <input type="search" id="nsearch" placeholder="Search the archive — fighter, event, anything"
+             aria-label="Search stories" autocomplete="off">
+      <span class="scount" id="scount"></span>
+    </div>
     <div class="filters" id="filters"></div>
     <div class="feed" id="feed"><div class="empty">Loading the archive...</div></div>
     <div class="adwrap">
@@ -205,8 +217,21 @@ function matches(s){
   return s.category===active || (s.tags||[]).includes(active);
 }
 const when=s=>(s.publishedAt&&s.publishedAt.toMillis)?s.publishedAt.toMillis():0;
+/* Free-text search across headline, summary, category, author and source —
+   every term has to hit somewhere, so "utah ko" narrows instead of widening.
+   Runs over whatever is already loaded; Load more feeds it more to search. */
+let term="";
+const hay=s=>[s.headline,s.summary,s.category,s.author,s.sourceName,(s.tags||[]).join(" ")]
+  .filter(Boolean).join(" ").toLowerCase();
+function searchMatches(s){
+  if(!term) return true;
+  const h=hay(s);
+  return term.split(/\s+/).filter(Boolean).every(t=>h.includes(t));
+}
 function render(){
-  const list = all.filter(matches).sort((a,b)=>when(b)-when(a));
+  const list = all.filter(s=>matches(s)&&searchMatches(s)).sort((a,b)=>when(b)-when(a));
+  const sc=document.getElementById("scount");
+  if(sc) sc.textContent = term ? (list.length+" result"+(list.length===1?"":"s")) : "";
   feed.innerHTML = list.length ? list.map(s=>
     '<a class="card'+(s.original?' orig':'')+'" href="/s/'+encodeURIComponent(s.id)+'">'+
       '<span class="c">'+esc(s.category)+(s.original?'<span class="origbadge">Original</span>':'')+'</span>'+
@@ -214,7 +239,9 @@ function render(){
       '<p>'+esc(s.summary)+'</p>'+
       '<span class="t">'+(s.publishedAt&&s.publishedAt.toDate?timeAgo(s.publishedAt.toDate()):'')+' · '+
         (s.original?('by '+esc(s.author||'Greene MMA')):esc(s.sourceName))+'</span>'+
-    '</a>').join("") : '<div class="empty">Nothing in this category yet.</div>';
+    '</a>').join("") : '<div class="empty">'+(term
+      ? 'Nothing matches “'+esc(term)+'”.<br>Try a fighter or event name — or load more of the archive.'
+      : 'Nothing in this category yet.')+'</div>';
 }
 function buildFilters(){
   const cats=["All","Greene Originals","UFC","Utah",...new Set(all.map(s=>s.category).filter(Boolean))];
@@ -248,6 +275,8 @@ try{
     buildFilters(); render();
   }catch(e){ console.warn("originals",e); }
   document.getElementById("more").addEventListener("click",load);
+  const ns=document.getElementById("nsearch");
+  if(ns) ns.addEventListener("input",()=>{ term=ns.value.trim().toLowerCase(); render(); });
 }catch(e){
   feed.innerHTML='<div class="empty">Couldn\'t load the archive right now.</div>';
   console.warn(e);
