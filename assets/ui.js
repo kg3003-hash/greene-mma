@@ -60,5 +60,65 @@ window.GMUi = (function () {
     return move;
   }
 
-  return { stagger: stagger, tabs: tabs };
+  /* Back to top. The homepage runs about eleven screens on a phone and there
+     was no way back up. Only mounts where the page is actually long enough to
+     need it, and the control is the mark itself. */
+  function backToTop(minPages) {
+    if (document.querySelector('.gm-top')) return;
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'gm-top';
+    b.setAttribute('aria-label', 'Back to top');
+    b.innerHTML = '<svg viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>';
+    b.addEventListener('click', function () {
+      var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+    });
+    document.body.appendChild(b);
+    /* The page height is measured once here and again on resize, never on
+       scroll: reading scrollHeight forces layout, and doing that on every
+       scroll event is the expensive way to build this. The scroll path then
+       only reads scrollY and toggles a class, which is cheap enough to run
+       directly — no requestAnimationFrame gate, so the control still behaves
+       when rAF is throttled. */
+    var threshold = 0, longEnough = false;
+    function measure() {
+      var vh = window.innerHeight || 800;
+      threshold = vh * 1.4;
+      longEnough = document.documentElement.scrollHeight > (minPages || 3) * vh;
+      if (!longEnough) b.classList.remove('on');
+    }
+    function onScroll() {
+      if (!longEnough) return;
+      b.classList.toggle('on', window.scrollY > threshold);
+    }
+    measure(); onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    var t;
+    window.addEventListener('resize', function () {
+      clearTimeout(t); t = setTimeout(function () { measure(); onScroll(); }, 150);
+    });
+    /* These pages are short at DOMContentLoaded and only get long once the
+       feed, roster or rankings arrive — measuring once at mount would mean
+       the control never appears on exactly the pages that need it. Re-measure
+       whenever the document actually changes height. */
+    if (window.ResizeObserver) {
+      var ro = new ResizeObserver(function () { measure(); onScroll(); });
+      ro.observe(document.body);
+    } else {
+      var seen = document.documentElement.scrollHeight;
+      setInterval(function () {
+        var h = document.documentElement.scrollHeight;
+        if (h !== seen) { seen = h; measure(); onScroll(); }
+      }, 1000);
+    }
+    return b;
+  }
+
+  // long pages get the control automatically
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { backToTop(); });
+  } else { backToTop(); }
+
+  return { stagger: stagger, tabs: tabs, backToTop: backToTop };
 })();
