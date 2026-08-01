@@ -257,37 +257,8 @@
   .card .time{margin-top:auto;font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);opacity:.8;}
 
   /* generated card art — layered, no photo rights needed */
-  .card .art{
-    position:relative;height:96px;margin:-26px -26px 4px;overflow:hidden;
-    background:linear-gradient(135deg,#161A10 0%,#0D1009 55%,#12160E 100%);
-    border-bottom:1px solid var(--hair);
-  }
-  .card .art .glow{position:absolute;inset:0;background:radial-gradient(ellipse 80% 120% at 10% 110%, rgba(201,247,58,.22), transparent 62%);}
-  .card .art .stripe{
-    position:absolute;top:-40%;left:-10%;width:52%;height:190%;
-    background:linear-gradient(90deg,transparent,rgba(201,247,58,.09),transparent);
-    transform:skewX(-18deg);transition:transform .5s ease;
-  }
-  .card .art svg{
-    position:absolute;right:-22px;bottom:-30px;width:120px;opacity:.5;
-    transition:opacity .3s ease,transform .5s ease;
-  }
-  .card .art .tagbig{
-    position:absolute;left:20px;bottom:11px;
-    font-family:'Anton',sans-serif;text-transform:uppercase;
-    font-size:22px;line-height:.9;letter-spacing:.02em;
-    color:transparent;-webkit-text-stroke:1.1px rgba(242,240,233,.24);
-    max-width:64%;
-  }
-  .card .art .dots{
-    position:absolute;inset:0;opacity:.5;
-    background-image:radial-gradient(rgba(242,240,233,.09) 1px, transparent 1px);
-    background-size:11px 11px;
-    -webkit-mask-image:linear-gradient(200deg,#000,transparent 62%);
-            mask-image:linear-gradient(200deg,#000,transparent 62%);
-  }
-  .card:hover .art svg{opacity:.85;transform:translate(-8px,-8px) rotate(-5deg);}
-  .card:hover .art .stripe{transform:skewX(-18deg) translateX(190%);}
+  /* card art now lives in /assets/site.css and is generated per story by
+     /assets/cardart.js — one implementation shared with the archive */
   section.hidden{display:none;}
 
   /* ---------- FIGHT WEEK / TAPE ---------- */
@@ -411,7 +382,7 @@
   }
 
 </style>
-<link rel="stylesheet" href="/assets/site.css">
+<link rel="stylesheet" href="/assets/site.css?v=2">
 <style>
 /* ---- Page overrides — after site.css so equal-specificity rules win. ---- */
 /* Homepage nav: links sit at a fixed gap between the home lockup and the
@@ -685,6 +656,8 @@ footer{padding:56px 0 72px;font-family:'Barlow',sans-serif;font-size:17.5px;lett
 })();
 </script>
 
+<!-- generated per-story card art, shared with the archive -->
+<script src="/assets/cardart.js?v=2"></script>
 
 <script type="module">
 // ---- LIVE DATA ----
@@ -714,8 +687,11 @@ function timeAgo(d){
   return Math.floor(h/24)+"d ago";
 }
 const MARK='<svg viewBox="0 0 120 120"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>';
-const art = cat => '<div class="art"><div class="glow"></div><div class="dots"></div><div class="stripe"></div>'+
-  '<div class="tagbig">'+esc(cat||"News")+'</div>'+MARK+'</div>';
+/* Per-story generated art — the composition is seeded from the story id, so
+   each story looks like itself here and in the archive. Falls back to a
+   plain card if the shared script somehow didn't load. */
+const art = (cat, seed, original) =>
+  window.GMArt ? window.GMArt.art(cat, seed, original) : '';
 const hide = id => { const el=document.getElementById(id); if(el) el.classList.add("hidden"); };
 
 function fmtOdds(n){ return (n>0?"+":"")+n; }
@@ -864,7 +840,7 @@ try{
       grid.innerHTML=globalList.map(st=>{
         const live=/live/i.test(st.category)?" live":"";
         return '<a class="card'+(st.original?' orig':'')+'" href="'+storyHref(st)+'">'+
-          art(st.category)+
+          art(st.category, st.id, st.original)+
           '<span class="cat'+live+'">'+esc(st.category)+(st.original?'<span class="origbadge">Original</span>':'')+'</span>'+
           '<h3>'+esc(st.headline)+'</h3>'+
           '<p>'+esc(st.summary)+'</p>'+

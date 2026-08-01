@@ -103,7 +103,7 @@
 
 </style>
 <link rel="alternate" type="application/rss+xml" title="Greene MMA — Original stories" href="/feed.xml">
-<link rel="stylesheet" href="/assets/site.css">
+<link rel="stylesheet" href="/assets/site.css?v=2">
 </head>
 <body>
 <nav><div class="wrap">
@@ -184,6 +184,9 @@
 })();
 </script>
 
+<!-- generated per-story card art, shared with the homepage feed -->
+<script src="/assets/cardart.js?v=2"></script>
+
 </html>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -234,6 +237,7 @@ function render(){
   if(sc) sc.textContent = term ? (list.length+" result"+(list.length===1?"":"s")) : "";
   feed.innerHTML = list.length ? list.map(s=>
     '<a class="card'+(s.original?' orig':'')+'" href="/s/'+encodeURIComponent(s.id)+'">'+
+      (window.GMArt ? window.GMArt.art(s.category, s.id, s.original) : '')+
       '<span class="c">'+esc(s.category)+(s.original?'<span class="origbadge">Original</span>':'')+'</span>'+
       '<h3>'+esc(s.headline)+'</h3>'+
       '<p>'+esc(s.summary)+'</p>'+

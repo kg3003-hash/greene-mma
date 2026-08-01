@@ -52,6 +52,54 @@ footer .fine{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacin
 footer .fine a{color:var(--bone);}
 footer .fine a:hover{color:var(--volt);}
 
+/* ---------- Generated card art ----------
+   Shared by the homepage feed and the archive. Every value has a fallback so
+   a card still looks right if the art script never runs; the per-story
+   variables come from /assets/cardart.js. Lives in the shared sheet so the
+   two feeds cannot drift apart. */
+.card .art{
+  position:relative;height:96px;margin:-26px -26px 4px;overflow:hidden;
+  background:linear-gradient(var(--a-bg-angle,135deg),#161A10 0%,#0D1009 55%,#12160E 100%);
+  border-bottom:1px solid var(--hair);
+}
+.card .art .glow{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse var(--a-glow-size,80%) 120% at var(--a-glow-x,10%) var(--a-glow-y,110%),
+    rgba(var(--a-tint,201,247,58),.22), transparent 62%);
+}
+.card .art .stripe{
+  position:absolute;top:-40%;left:var(--a-stripe-x,-10%);width:52%;height:190%;
+  background:linear-gradient(90deg,transparent,rgba(var(--a-tint,201,247,58),.09),transparent);
+  transform:skewX(var(--a-skew,-18deg));transition:transform .5s ease;
+}
+.card .art .dots{
+  position:absolute;inset:0;opacity:.5;
+  background-image:radial-gradient(rgba(242,240,233,.09) 1px, transparent 1px);
+  background-size:11px 11px;
+  -webkit-mask-image:linear-gradient(var(--a-dot-angle,200deg),#000,transparent 62%);
+          mask-image:linear-gradient(var(--a-dot-angle,200deg),#000,transparent 62%);
+}
+.card .art .tagbig{
+  position:absolute;left:20px;bottom:11px;
+  font-family:'Anton',sans-serif;text-transform:uppercase;
+  font-size:22px;line-height:.9;letter-spacing:.02em;
+  color:transparent;-webkit-text-stroke:1.1px rgba(242,240,233,.24);
+  max-width:64%;
+}
+.card .art svg{position:absolute;color:rgb(var(--a-tint,201,247,58));transition:opacity .3s ease,transform .5s ease;}
+.card .art .m1{
+  right:var(--a-m1-x,-22px);bottom:var(--a-m1-y,-30px);
+  width:var(--a-m1-size,120px);opacity:var(--a-m1-op,.5);
+  transform:rotate(var(--a-m1-rot,0deg));
+}
+.card .art .m2{
+  left:var(--a-m2-x,20px);top:var(--a-m2-y,-14px);
+  width:var(--a-m2-size,64px);opacity:var(--a-m2-op,0);
+  transform:rotate(var(--a-m2-rot,0deg));
+}
+.card:hover .art .m1{opacity:calc(var(--a-m1-op,.5) + .3);transform:translate(-8px,-8px) rotate(calc(var(--a-m1-rot,0deg) - 5deg));}
+.card:hover .art .stripe{transform:skewX(var(--a-skew,-18deg)) translateX(190%);}
+
 /* ---------- Keyboard focus ----------
    Site-wide so every page shows where the keyboard is, not just the
    homepage. Mouse users never see it (:focus-visible, not :focus). */
