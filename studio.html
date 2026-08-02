@@ -352,7 +352,23 @@
       <textarea id="n_body" style="min-height:400px" placeholder="Blank line between paragraphs."></textarea>
       <button class="btn" id="n_save">Save to archive</button>
       <div id="n_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
-      <p class="hint">Saves the issue to the public archive at /newsletter.html. To actually email it, export your list below and paste it into your sending provider.</p>
+      <p class="hint">Saves the issue to the public archive at /newsletter.html. Once it's saved you can email it below.</p>
+
+      <div id="n_sendbox" style="display:none;margin-top:22px;padding-top:18px;border-top:1px solid var(--hair);">
+        <h3 style="font-family:'Anton',sans-serif;text-transform:uppercase;font-size:19px;margin:0 0 4px;">Email this issue</h3>
+        <p class="hint" style="margin-top:0">Always send yourself a test first — it goes through the exact same path as the real send, so what lands in your inbox is what everyone gets.</p>
+        <label>Send a test to</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <input type="email" id="n_testto" placeholder="you@example.com" style="flex:1;min-width:220px;">
+          <button class="btn ghost" id="n_test" style="white-space:nowrap;">Send test</button>
+        </div>
+        <div style="margin-top:16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <button class="btn" id="n_send">Send to all subscribers</button>
+          <span id="n_sendcount" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--steel);"></span>
+        </div>
+        <div id="n_sendstatus" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+        <p class="hint">Every email carries an unsubscribe link, and the one-click unsubscribe button Gmail and Apple Mail put at the top. That's required by law and it's also what keeps a new sending domain out of spam folders.</p>
+      </div>
     </div>
 
 <div class="panel">
@@ -558,15 +574,79 @@
   });
 
   /* ---- newsletter ---- */
+  /* The issue currently in the editor. Sending needs an id, so nothing can be
+     emailed until it has been saved — and re-saving edits that same issue
+     rather than piling up near-identical drafts in the archive. */
+  let issueId=null, sendPoll=null;
   $('n_save').addEventListener('click',async()=>{
     const st=$('n_status');
     const issue={subject:$('n_sub').value.trim(),preview:$('n_prev').value.trim(),body:$('n_body').value.trim()};
     if(!issue.subject||!issue.body){ say(st,'Subject and body are required.','bad'); return; }
+    if(issueId) issue.id=issueId;
     say(st,'Saving...');
     const out=await api({issue});
-    if(out.ok){ say(st,'✓ Archived — live at /newsletter.html','ok'); $('n_sub').value='';$('n_prev').value='';$('n_body').value=''; }
-    else say(st,'✗ '+(out.error||'Failed'),'bad');
+    if(!out.ok){ say(st,'✗ '+(out.error||'Failed'),'bad'); return; }
+    issueId=out.id;
+    // The fields deliberately stay filled: you save, read it back, test it,
+    // then send. An empty editor above a "send this issue" box reads as a bug.
+    say(st,'✓ Archived — live at /newsletter.html','ok');
+    $('n_sendbox').style.display='block';
+    refreshSendCount();
   });
+
+  async function refreshSendCount(){
+    try{
+      const out=await api({listSubscribers:true});
+      if(out.ok) $('n_sendcount').textContent=out.count+' subscriber'+(out.count===1?'':'s')+' on the list';
+    }catch(e){}
+  }
+
+  $('n_test').addEventListener('click',async()=>{
+    const st=$('n_sendstatus'), to=$('n_testto').value.trim();
+    if(!issueId){ say(st,'Save the issue first.','bad'); return; }
+    if(!to){ say(st,'Which address should the test go to?','bad'); return; }
+    say(st,'Sending test...');
+    const out=await api({testIssue:{id:issueId,to}});
+    say(st, out.ok?('✓ Test sent to '+to+' — check it before you send the real one.'):'✗ '+(out.error||'Failed'), out.ok?'ok':'bad');
+  });
+
+  $('n_send').addEventListener('click',async()=>{
+    const st=$('n_sendstatus');
+    if(!issueId){ say(st,'Save the issue first.','bad'); return; }
+    if(!confirm('Email this issue to every subscriber?\n\nThere is no unsend. If you have not sent yourself a test yet, cancel and do that first.')) return;
+    say(st,'Starting...');
+    // A background function: Netlify accepts it and returns immediately, so
+    // progress comes from polling the issue rather than from this response.
+    let r;
+    try{
+      r=await fetch('/.netlify/functions/send-issue-background',{method:'POST',
+        headers:{'content-type':'application/json','x-studio-key':KEY()},
+        body:JSON.stringify({id:issueId})});
+    }catch(e){ say(st,'✗ Could not reach the sender: '+e.message,'bad'); return; }
+    if(r.status!==202 && !r.ok){
+      let d={}; try{ d=await r.json(); }catch(e){}
+      say(st,'✗ '+(d.error||('Sender returned '+r.status)),'bad'); return;
+    }
+    say(st,'Sending...');
+    pollSend();
+  });
+
+  function pollSend(){
+    if(sendPoll) clearInterval(sendPoll);
+    let quiet=0;
+    sendPoll=setInterval(async()=>{
+      const st=$('n_sendstatus');
+      let out;
+      try{ out=await api({issueStatus:issueId}); }catch(e){ return; }
+      if(!out || !out.ok) return;
+      if(out.sendError){ clearInterval(sendPoll); sendPoll=null; say(st,'✗ '+out.sendError+' — press send again to pick up where it stopped.','bad'); return; }
+      if(out.sending){ quiet=0; say(st,'Sending... '+out.sentCount+' of '+out.total); return; }
+      if(out.sent){ clearInterval(sendPoll); sendPoll=null; say(st,'✓ Sent to '+out.sentCount+' subscriber'+(out.sentCount===1?'':'s')+'.','ok'); return; }
+      // Neither sending nor sent: the background job may not have started yet.
+      // Give it a few rounds before calling it a failure.
+      if(++quiet>10){ clearInterval(sendPoll); sendPoll=null; say(st,'The send never reported back. Check the function log in Netlify before trying again.','bad'); }
+    },2000);
+  }
 
   /* ---- subscribers ---- */
   let subs=[];
@@ -1316,9 +1396,15 @@
     const out=await api({listIssues:true});
     if(!out.ok){ say(st,'\u2717 '+(out.error||'Failed'),'bad'); return; }
     say(st,'\u2713 '+out.issues.length+' issue(s)','ok');
+    // Whether an issue has actually been emailed is the thing you most need to
+    // know before touching anything in this list.
+    const mark=i=> i.sendError ? '<span style="color:#FF4B3E;"> · send stopped at '+i.sentCount+'/'+i.total+'</span>'
+      : i.sending ? '<span style="color:var(--volt);"> · sending '+i.sentCount+'/'+i.total+'</span>'
+      : i.sent ? '<span style="color:var(--volt);"> · emailed to '+i.sentCount+'</span>'
+      : '<span style="color:var(--steel);"> · archive only, not emailed</span>';
     box.innerHTML=out.issues.map(i=>
       '<div class="aline" data-id="'+i.id+'"><div class="t"><div class="t1">'+
-      (i.subject||'').replace(/</g,'&lt;')+'</div><div class="t2">'+i.date+'</div></div>'+
+      (i.subject||'').replace(/</g,'&lt;')+'</div><div class="t2">'+i.date+mark(i)+'</div></div>'+
       '<button class="del" data-id="'+i.id+'">DEL</button></div>').join('')
       || '<div style="padding:16px;color:var(--steel);font-size:13px;">No issues yet.</div>';
     box.querySelectorAll('.del').forEach(b=>b.addEventListener('click',async e=>{

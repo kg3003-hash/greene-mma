@@ -7,6 +7,10 @@
 
 import admin from "firebase-admin";
 import { rebuildStoryIndexes } from "./lib/story-indexes.mjs";
+import {
+  sendMail, sendBatch, emailShell, issueMessage, mailSecret,
+  MAIL_FROM, MAIL_TO, esc as mailEsc,
+} from "./lib/mail.mjs";
 
 if (!admin.apps.length) {
   admin.initializeApp({
@@ -49,6 +53,69 @@ export default async function handler(req) {
       },
       { merge: true }
     );
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  }
+
+  // ---- Public: contact form ----
+  // Open to the internet and it sends mail, so it gets three cheap defences
+  // before Resend is ever touched: a honeypot field no human can see, a
+  // minimum time on the page, and a per-address rate limit. A bot that gets
+  // past all three is welcome to send one message an hour.
+  if (body.contact) {
+    const c = body.contact;
+    const name = String(c.name || "").trim().slice(0, 100);
+    const from = String(c.email || "").trim().toLowerCase().slice(0, 160);
+    const subject = String(c.subject || "").trim().slice(0, 160);
+    const message = String(c.message || "").trim().slice(0, 4000);
+
+    // Bots fill in every field they find, including the one that's hidden.
+    if (String(c.website || "").trim()) return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    if (!name || !from || !message) {
+      return new Response(JSON.stringify({ error: "Name, email and a message, please." }), { status: 400 });
+    }
+    if (!isEmail(from)) {
+      return new Response(JSON.stringify({ error: "That email doesn't look right — it's how you'd get a reply." }), { status: 400 });
+    }
+    if (message.length < 10) {
+      return new Response(JSON.stringify({ error: "Give it a sentence or two more." }), { status: 400 });
+    }
+    // Nobody reads a form and types a real message in under three seconds.
+    if (Number(c.elapsed) >= 0 && Number(c.elapsed) < 3000) {
+      return new Response(JSON.stringify({ error: "That was quick — give it another moment and send again." }), { status: 429 });
+    }
+
+    const gate = db.collection("contactRate").doc(from.replace(/\//g, "_"));
+    const prev = await gate.get();
+    const last = prev.exists && prev.data() && prev.data().at;
+    if (last && Date.now() - last < 60 * 60 * 1000) {
+      return new Response(JSON.stringify({ error: "You've already sent one in the last hour — it came through, it's just not lost." }), { status: 429 });
+    }
+
+    const e = mailEsc;
+    const rows = [["From", `${name} <${from}>`], ["Subject", subject || "(none given)"]]
+      .map(([k, v]) => `<p style="margin:0 0 6px;font-size:14px;color:#9AA194;"><b style="color:#F2F0E9;">${k}:</b> ${e(v)}</p>`)
+      .join("");
+    const sent = await sendMail({
+      from: MAIL_FROM,
+      to: [MAIL_TO],
+      // Replying in the mail client goes straight back to them, not to us.
+      reply_to: from,
+      subject: `Contact form: ${subject || name}`,
+      html: emailShell({
+        title: "Contact form",
+        preview: message.slice(0, 120),
+        bodyHtml: `<h2 style="margin:0 0 14px;font-size:20px;color:#F2F0E9;">Someone used the contact form</h2>${rows}
+          <hr style="border:0;border-top:1px solid #262B1C;margin:18px 0;">
+          <p style="margin:0;font-size:16px;line-height:1.65;color:#F2F0E9;white-space:pre-wrap;">${e(message)}</p>`,
+        footerHtml: `Hit reply to answer ${e(name)} directly.`,
+      }),
+      text: `From: ${name} <${from}>\nSubject: ${subject || "(none given)"}\n\n${message}`,
+    });
+    if (!sent.ok) {
+      console.error("contact send failed:", sent.error);
+      return new Response(JSON.stringify({ error: "Couldn't send that — try again in a minute, or email cedric@greene.bet directly." }), { status: 502 });
+    }
+    await gate.set({ at: Date.now() });
     return new Response(JSON.stringify({ ok: true }), { status: 200 });
   }
 
@@ -748,6 +815,38 @@ Rules:
     return new Response(JSON.stringify({ ok: true, id }), { status: 200 });
   }
 
+  // Send one issue to a single address, through the exact same code path the
+  // real send uses — batch endpoint, template, unsubscribe link and all. A
+  // test that skipped the batch call would prove nothing about the blast.
+  if (body.testIssue) {
+    const to = String(body.testIssue.to || "").trim().toLowerCase();
+    if (!isEmail(to)) return new Response(JSON.stringify({ error: "Where should the test go?" }), { status: 400 });
+    const snap = await db.collection("issues").doc(String(body.testIssue.id || "")).get();
+    if (!snap.exists) return new Response(JSON.stringify({ error: "Save the issue first, then test it." }), { status: 404 });
+    const issue = snap.data();
+    if (!issue.subject || !issue.body) return new Response(JSON.stringify({ error: "That issue has no subject or body." }), { status: 400 });
+    const msg = issueMessage({ issue, email: to, secret: await mailSecret(db) });
+    const res = await sendBatch([{ ...msg, subject: "[TEST] " + msg.subject }]);
+    if (!res.ok) {
+      console.error("test send failed:", res.error);
+      return new Response(JSON.stringify({ error: res.error }), { status: 502 });
+    }
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  }
+
+  // Live progress for a send in flight — the Studio polls this.
+  if (body.issueStatus) {
+    const snap = await db.collection("issues").doc(String(body.issueStatus)).get();
+    if (!snap.exists) return new Response(JSON.stringify({ error: "No such issue" }), { status: 404 });
+    const v = snap.data();
+    return new Response(JSON.stringify({ ok: true,
+      sending: v.sending === true, sent: v.sent === true,
+      sentCount: v.sentCount || 0, total: v.total || 0,
+      sendError: v.sendError || null,
+      sentAt: v.sentAt && v.sentAt.toDate ? v.sentAt.toDate().toISOString() : null,
+    }), { status: 200 });
+  }
+
   // Delete a newsletter issue
   if (body.deleteIssue) {
     await db.collection("issues").doc(String(body.deleteIssue)).delete();
@@ -755,10 +854,16 @@ Rules:
   }
   if (body.listIssues) {
     const snap = await db.collection("issues").orderBy("publishedAt", "desc").limit(60).get();
-    return new Response(JSON.stringify({ ok: true, issues: snap.docs.map((d) => ({
-      id: d.id, subject: d.data().subject,
-      date: d.data().publishedAt ? d.data().publishedAt.toDate().toISOString().slice(0,10) : ""
-    })) }), { status: 200 });
+    return new Response(JSON.stringify({ ok: true, issues: snap.docs.map((d) => {
+      const v = d.data();
+      return {
+        id: d.id, subject: v.subject,
+        date: v.publishedAt ? v.publishedAt.toDate().toISOString().slice(0, 10) : "",
+        sent: v.sent === true, sending: v.sending === true,
+        sentCount: v.sentCount || 0, total: v.total || 0,
+        sendError: v.sendError || null,
+      };
+    }) }), { status: 200 });
   }
   // Remove a subscriber
   if (body.deleteSubscriber) {
