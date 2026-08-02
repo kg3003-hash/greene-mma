@@ -9,7 +9,7 @@ import admin from "firebase-admin";
 import { rebuildStoryIndexes } from "./lib/story-indexes.mjs";
 import {
   sendMail, sendBatch, emailShell, issueMessage, mailSecret,
-  MAIL_FROM, MAIL_TO, esc as mailEsc,
+  MAIL_FROM, MAIL_TO, SITE_URL, esc as mailEsc,
 } from "./lib/mail.mjs";
 
 if (!admin.apps.length) {
@@ -813,6 +813,51 @@ Rules:
       publishedAt: admin.firestore.Timestamp.now(),
     }, { merge: true });
     return new Response(JSON.stringify({ ok: true, id }), { status: 200 });
+  }
+
+  // ---- email setup check ----
+  // The contact form deliberately shows visitors a vague failure, because the
+  // real reason is Resend's internal complaint and none of their business. That
+  // left nobody able to see what actually broke. This is the same send, run on
+  // demand, reporting Resend's exact words. Admin-only, and it never returns
+  // the key itself — only whether one is present and what it looks like.
+  if (body.mailCheck) {
+    const to = String(body.mailCheck.to || "").trim().toLowerCase();
+    const k = process.env.RESEND_API_KEY || "";
+    const report = {
+      ok: true,
+      keySet: !!k,
+      keyShape: k ? `${k.slice(0, 3)}…${k.length} chars` : null,
+      from: MAIL_FROM,
+      contactGoesTo: MAIL_TO,
+      siteUrl: SITE_URL,
+    };
+    if (!k) {
+      report.verdict = "No RESEND_API_KEY on this site. Add it in Netlify under Site configuration → Environment variables, then redeploy — env vars only reach the functions on a fresh deploy.";
+      return new Response(JSON.stringify(report), { status: 200 });
+    }
+    if (!isEmail(to)) {
+      report.verdict = "Key is present. Give me an address to send a probe to and I'll report exactly what Resend says.";
+      return new Response(JSON.stringify(report), { status: 200 });
+    }
+    const probe = await sendMail({
+      from: MAIL_FROM,
+      to: [to],
+      subject: "Greene MMA — email setup check",
+      html: emailShell({
+        title: "Email setup check",
+        preview: "If this arrived, sending works.",
+        bodyHtml: `<p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#F2F0E9;">If you're reading this, Resend accepted a send from <b>${mailEsc(MAIL_FROM)}</b> and delivered it. The contact form and the newsletter both use this exact path.</p>`,
+        footerHtml: "Sent from the Studio's email setup check.",
+      }),
+      text: "If you're reading this, sending works.",
+    });
+    report.probeTo = to;
+    report.probeOk = probe.ok;
+    report.verdict = probe.ok
+      ? `Sent. Check ${to} — if it arrives, the contact form and newsletter will work too.`
+      : probe.error;
+    return new Response(JSON.stringify(report), { status: 200 });
   }
 
   // Send one issue to a single address, through the exact same code path the

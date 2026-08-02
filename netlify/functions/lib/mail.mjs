@@ -28,37 +28,52 @@ export const esc = (s) =>
 
 /* ---------------- Resend ---------------- */
 
-function keyOrThrow() {
-  const k = process.env.RESEND_API_KEY;
-  if (!k) throw new Error("RESEND_API_KEY is not set on this site — add it in Netlify under Site configuration → Environment variables.");
-  return k;
+export const hasKey = () => !!process.env.RESEND_API_KEY;
+
+// Resend puts the useful part in `message`, but not always — keep the status
+// and anything else it said, because "Resend returned 403" alone has never
+// helped anybody work out what to change.
+function resendError(status, data) {
+  const parts = [];
+  if (data && data.message) parts.push(data.message);
+  else if (data && data.name) parts.push(data.name);
+  if (data && data.error && typeof data.error === "string" && data.error !== parts[0]) parts.push(data.error);
+  if (!parts.length) parts.push(typeof data === "string" && data ? data.slice(0, 200) : "no detail given");
+  return `Resend ${status}: ${parts.join(" — ")}`;
 }
 
-// One email. Returns { ok, id?, error? } rather than throwing, so a single bad
-// address can't take down a whole send.
+async function post(path, payload) {
+  if (!hasKey()) {
+    return { ok: false, error: "RESEND_API_KEY is not set on this site. Add it in Netlify under Site configuration → Environment variables, then redeploy." };
+  }
+  let res, data;
+  try {
+    res = await fetch(`${RESEND}${path}`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${process.env.RESEND_API_KEY}`, "content-type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    data = await res.json().catch(() => ({}));
+  } catch (e) {
+    return { ok: false, error: `Could not reach Resend: ${e.message}` };
+  }
+  if (!res.ok) return { ok: false, error: resendError(res.status, data), status: res.status };
+  return { ok: true, data };
+}
+
+// One email. Returns { ok, id?, error? } rather than throwing, so a bad key or
+// a single bad address can't take down a whole send.
 export async function sendMail(msg) {
-  const res = await fetch(`${RESEND}/emails`, {
-    method: "POST",
-    headers: { authorization: `Bearer ${keyOrThrow()}`, "content-type": "application/json" },
-    body: JSON.stringify(msg),
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) return { ok: false, error: (data && (data.message || data.name)) || `Resend returned ${res.status}` };
-  return { ok: true, id: data.id };
+  const r = await post("/emails", msg);
+  return r.ok ? { ok: true, id: r.data && r.data.id } : r;
 }
 
 // Up to BATCH_SIZE emails in one request. Each entry is a full message, so
 // every recipient still gets their own unsubscribe link and headers.
 export async function sendBatch(messages) {
   if (!messages.length) return { ok: true, sent: 0 };
-  const res = await fetch(`${RESEND}/emails/batch`, {
-    method: "POST",
-    headers: { authorization: `Bearer ${keyOrThrow()}`, "content-type": "application/json" },
-    body: JSON.stringify(messages),
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) return { ok: false, sent: 0, error: (data && (data.message || data.name)) || `Resend returned ${res.status}` };
-  return { ok: true, sent: messages.length };
+  const r = await post("/emails/batch", messages);
+  return r.ok ? { ok: true, sent: messages.length } : { ...r, sent: 0 };
 }
 
 /* ---------------- unsubscribe tokens ----------------

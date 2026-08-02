@@ -372,6 +372,17 @@
     </div>
 
 <div class="panel">
+      <h2>Email setup</h2>
+      <p class="hint" style="margin-top:0">The contact form shows visitors a deliberately vague error, because the real reason is between this site and Resend. Run the check here to see exactly what Resend says.</p>
+      <label>Send a probe to</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <input type="email" id="mc_to" placeholder="you@example.com" style="flex:1;min-width:220px;">
+        <button class="btn ghost" id="mc_go" style="white-space:nowrap;">Run check</button>
+      </div>
+      <div id="mc_out" style="margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.8;"></div>
+    </div>
+
+<div class="panel">
       <h2>Past issues</h2>
       <button class="btn ghost" id="is_load">Load issues</button>
       <div class="alist" id="is_list" style="margin-top:10px;"></div>
@@ -592,6 +603,27 @@
     say(st,'✓ Archived — live at /newsletter.html','ok');
     $('n_sendbox').style.display='block';
     refreshSendCount();
+  });
+
+  $('mc_go').addEventListener('click',async()=>{
+    const box=$('mc_out');
+    box.innerHTML='<span style="color:var(--steel)">Checking...</span>';
+    let o;
+    try{ o=await api({mailCheck:{to:$('mc_to').value.trim()}}); }
+    catch(e){ box.innerHTML='<span style="color:#FF4B3E">Could not reach the site function: '+e.message+'</span>'; return; }
+    if(!o || o.ok===false){ box.innerHTML='<span style="color:#FF4B3E">'+((o&&o.error)||'Check failed')+'</span>'; return; }
+    const row=(k,v,cls)=>'<div><span style="color:var(--steel)">'+k+'</span> <span'+(cls?' style="color:'+cls+'"':'')+'>'+
+      String(v==null?'—':v).replace(/</g,'&lt;')+'</span></div>';
+    const good=o.probeOk===true, bad=o.probeOk===false;
+    box.innerHTML=
+      row('API key on this site:', o.keySet?('yes ('+o.keyShape+')'):'NO', o.keySet?'var(--volt)':'#FF4B3E')+
+      row('Sending as:', o.from)+
+      row('Contact form delivers to:', o.contactGoesTo)+
+      row('Unsubscribe links point at:', o.siteUrl)+
+      (o.probeTo?row('Probe sent to:', o.probeTo):'')+
+      '<div style="margin-top:10px;padding:10px 12px;border:1px solid '+(good?'var(--volt)':bad?'#FF4B3E':'var(--hair)')+
+        ';color:'+(good?'var(--volt)':bad?'#FF4B3E':'var(--steel)')+';">'+
+        String(o.verdict||'').replace(/</g,'&lt;')+'</div>';
   });
 
   async function refreshSendCount(){
