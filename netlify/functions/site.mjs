@@ -465,6 +465,82 @@ Rules:
     return new Response(JSON.stringify({ ok: true, card: snap.data() || null }), { status: 200 });
   }
 
+  /* ---- fight order ----
+     The odds feed can't tell a main event from a prelim, so it guesses from
+     start times and sometimes puts the wrong bout on top. The Studio fixes
+     that here. Corrections to a wire card are stored as bout keys in
+     site/cardorder and re-applied by every odds sync, so they survive a
+     refresh; the live doc is rewritten at the same time so the site updates
+     now instead of at the next pull. */
+  // Sorted pair of names: a favourite can become the dog between syncs, and
+  // that must not change a bout's identity. (Kept in step with odds.mjs.)
+  const boutKey = (n1, n2) =>
+    [n1, n2].map((s) => String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "")).sort().join("|");
+  const oddsBoutKey = (b) => boutKey(b && b.favourite && b.favourite.name, b && b.underdog && b.underdog.name);
+  const applyOrder = (bouts, order) => {
+    if (!Array.isArray(order) || !order.length || !Array.isArray(bouts)) return bouts;
+    const rank = new Map(order.map((k, i) => [k, i]));
+    return bouts
+      .map((b, i) => ({ b, i }))
+      .sort((x, y) => {
+        const rx = rank.has(oddsBoutKey(x.b)) ? rank.get(oddsBoutKey(x.b)) : Infinity;
+        const ry = rank.has(oddsBoutKey(y.b)) ? rank.get(oddsBoutKey(y.b)) : Infinity;
+        return rx === ry ? x.i - y.i : rx - ry;
+      })
+      .map((x) => x.b);
+  };
+
+  // Everything the order editor needs, in one round trip.
+  if (body.getCards) {
+    const [localSnap, fwSnap, nameSnap, orderSnap] = await Promise.all([
+      db.collection("site").doc("localcard").get(),
+      db.collection("site").doc("fightweek").get(),
+      db.collection("site").doc("cardnames").get(),
+      db.collection("site").doc("cardorder").get(),
+    ]);
+    const fw = fwSnap.data() || {};
+    return new Response(JSON.stringify({
+      ok: true,
+      localcard: localSnap.data() || null,
+      wireCards: (fw.cards || []).map((c) => ({
+        date: c.date,
+        bouts: (c.bouts || []).map((b) => ({
+          key: oddsBoutKey(b),
+          a: (b.favourite && b.favourite.name) || "",
+          b: (b.underdog && b.underdog.name) || "",
+        })),
+      })),
+      names: (nameSnap.data() || {}).names || {},
+      orders: (orderSnap.data() || {}).orders || {},
+    }), { status: 200 });
+  }
+
+  if (body.setCardOrder) {
+    const key = String(body.setCardOrder.key || "").slice(0, 40);
+    const order = body.setCardOrder.order;
+    if (!key || !Array.isArray(order) || !order.length) {
+      return new Response(JSON.stringify({ error: "Need a card and an order." }), { status: 400 });
+    }
+    const ref = db.collection("site").doc("cardorder");
+    const orders = ((await ref.get()).data() || {}).orders || {};
+    orders[key] = order.slice(0, 40).map((k) => String(k).slice(0, 120));
+    await ref.set({ orders, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+
+    // Rewrite the live card so the change shows on the site immediately.
+    // headline/card both come from the first card, so they follow the reorder.
+    let applied = false;
+    const fwRef = db.collection("site").doc("fightweek");
+    const fw = (await fwRef.get()).data();
+    if (fw && Array.isArray(fw.cards)) {
+      const cards = fw.cards.map((c) =>
+        c.date === key ? { ...c, bouts: applyOrder(c.bouts, orders[key]) } : c);
+      const head = cards[0] && cards[0].bouts ? cards[0].bouts : [];
+      await fwRef.update({ cards, card: head, headline: head[0] || null });
+      applied = cards.some((c) => c.date === key);
+    }
+    return new Response(JSON.stringify({ ok: true, applied }), { status: 200 });
+  }
+
   // Human names for the auto-detected cards (odds feed has no event names)
   if (body.cardNames) {
     await db.collection("site").doc("cardnames").set({

@@ -20,6 +20,35 @@ const API = `https://api.the-odds-api.com/v4/sports/${SPORT}/odds/`;
 // American odds -> implied probability, used to decide who's the dog
 const implied = (odds) => (odds > 0 ? 100 / (odds + 100) : -odds / (-odds + 100));
 
+/* ---- hand-set fight order (site/cardorder), re-applied on every sync ----
+   The feed has no idea which bout is the main event; we guess from start
+   times, and that guess is often wrong. When the Studio corrects a card it
+   stores the order as a list of bout keys, which this run re-applies — so a
+   correction sticks instead of being flattened by the next pull.
+   The key is the two names sorted, because a favourite can become the dog
+   between syncs and that must not change a bout's identity.
+   (Kept in step with the copy in site.mjs.) */
+const boutKey = (n1, n2) =>
+  [n1, n2]
+    .map((s) => String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, ""))
+    .sort()
+    .join("|");
+const oddsBoutKey = (b) => boutKey(b && b.favourite && b.favourite.name, b && b.underdog && b.underdog.name);
+// Bouts named in `order` lead, in that order; anything new keeps its own
+// relative position behind them rather than silently jumping to the top.
+function applyOrder(bouts, order) {
+  if (!Array.isArray(order) || !order.length || !Array.isArray(bouts)) return bouts;
+  const rank = new Map(order.map((k, i) => [k, i]));
+  return bouts
+    .map((b, i) => ({ b, i }))
+    .sort((x, y) => {
+      const rx = rank.has(oddsBoutKey(x.b)) ? rank.get(oddsBoutKey(x.b)) : Infinity;
+      const ry = rank.has(oddsBoutKey(y.b)) ? rank.get(oddsBoutKey(y.b)) : Infinity;
+      return rx === ry ? x.i - y.i : rx - ry;
+    })
+    .map((x) => x.b);
+}
+
 export default async function handler() {
   if (!process.env.ODDS_API_KEY) {
     return new Response(JSON.stringify({ error: "ODDS_API_KEY not set" }), { status: 500 });
@@ -91,18 +120,27 @@ export default async function handler() {
     byDay.get(key).push(b);
   }
 
+  // Any order set by hand in the Studio wins over the start-time guess below.
+  let savedOrders = {};
+  try {
+    savedOrders = ((await db.collection("site").doc("cardorder").get()).data() || {}).orders || {};
+  } catch (e) {
+    console.warn("cardorder read failed, falling back to start times:", e.message);
+  }
+
   const cards = [...byDay.entries()]
     .sort((a, b) => a[0].localeCompare(b[0]))
     .slice(0, 4)
     .map(([date, list]) => {
       // Main event first. Where start times differ the main event is latest;
       // where they are identical we keep the order the book returned.
-      const ordered = [...list].sort(
+      const guessed = [...list].sort(
         (x, y) => new Date(y.startTime) - new Date(x.startTime)
       );
+      const ordered = applyOrder(guessed, savedOrders[date]);
       return {
         date,
-        startTime: ordered[ordered.length - 1].startTime,
+        startTime: guessed[guessed.length - 1].startTime,
         bouts: ordered.slice(0, 16),
         boutCount: ordered.length,
       };

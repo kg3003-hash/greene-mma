@@ -230,6 +230,16 @@
     </div>
 
 <div class="panel">
+      <h2>Fight order</h2>
+      <p class="hint" style="margin-top:0">The odds feed has no idea which bout is the main event — it guesses from start times and gets it wrong often enough. Put the card in the right order here. Top of the list is the main event, second is the co-main. Your order sticks: the odds refresh re-applies it instead of undoing it.</p>
+      <label>Which card</label>
+      <select id="fo_pick"><option value="">Loading cards…</option></select>
+      <div id="fo_list" style="margin-top:12px;"></div>
+      <button class="btn" id="fo_save" style="display:none">Save this order</button>
+      <div id="fo_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+    </div>
+
+<div class="panel">
       <h2>Name the cards</h2>
       <p class="hint" style="margin-top:0">The odds feed gives dates, not event names. Name them here and the Fight Week page uses your name instead. Put "Utah" or a local promotion in the name and the card gets the volt highlight.</p>
       <div id="cn_list"></div>
@@ -725,6 +735,121 @@
     const out=await api({cardNames:names});
     say(st, out.ok?'\u2713 Card names saved.':'\u2717 '+(out.error||'Failed'), out.ok?'ok':'bad');
   });
+
+  /* ---- fight order ----
+     Two kinds of card need reordering and they persist differently.
+     A card imported by hand is ours: reorder the stored bouts and save.
+     A card off the odds wire gets rebuilt on every sync, so the order is
+     saved separately as bout keys and re-applied by the sync — otherwise the
+     next refresh would put the wrong main event back. */
+  (function(){
+    let FO={localcard:null,wireCards:[],names:{},orders:{}}, cur=null, dirty=false;
+    // Same labels the Fight Week page uses, so the Studio reads like the site.
+    const posLabel=(i,total)=> i===0?'Main Event' : i===1?'Co-Main Event' : i>=total-3?'Prelims':'Main Card';
+    const nameOf=f=>((f&&f.first||'')+' '+(f&&f.last||'')).trim();
+
+    function cardOptions(){
+      const opts=[];
+      if(FO.localcard&&(FO.localcard.bouts||[]).length)
+        opts.push({v:'local',label:(FO.localcard.event||'Imported card')+' — '+((FO.localcard.bouts||[]).length)+' bouts'});
+      FO.wireCards.forEach(c=>{
+        if(!(c.bouts||[]).length) return;
+        const nice=new Date(c.date+'T12:00:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
+        opts.push({v:'wire:'+c.date,label:(FO.names[c.date]||nice)+' — '+c.bouts.length+' bouts'});
+      });
+      return opts;
+    }
+
+    function load(val){
+      dirty=false;
+      if(!val){ cur=null; render(); return; }
+      if(val==='local'){
+        cur={kind:'local',key:'local',
+          bouts:(FO.localcard.bouts||[]).map((b,i)=>({i,a:nameOf(b.a),b:nameOf(b.b),weight:b.weight||''}))};
+      } else {
+        const c=FO.wireCards.find(x=>'wire:'+x.date===val);
+        cur=c?{kind:'wire',key:c.date,bouts:c.bouts.map((b,i)=>({i,key:b.key,a:b.a,b:b.b,weight:''}))}:null;
+      }
+      render();
+    }
+
+    function render(){
+      const box=$('fo_list');
+      if(!cur){ box.innerHTML=''; $('fo_save').style.display='none'; return; }
+      const n=cur.bouts.length;
+      box.innerHTML=cur.bouts.map((b,i)=>
+        '<div style="display:flex;align-items:center;gap:10px;border-top:1px solid var(--hair);padding:10px 0;">'+
+          '<span style="font-family:\'JetBrains Mono\',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:'+(i===0?'var(--volt)':'var(--steel)')+';width:96px;flex:none;">'+posLabel(i,n)+'</span>'+
+          '<span style="flex:1;min-width:0;font-size:14px;">'+attr(b.a)+' <span style="color:var(--volt)">vs</span> '+attr(b.b)+
+            (b.weight?' <span style="color:var(--steel);font-size:12px;">· '+attr(b.weight)+'</span>':'')+'</span>'+
+          '<span style="display:flex;gap:4px;flex:none;">'+
+            (i===0?'':'<button type="button" class="btn ghost fo-top" data-i="'+i+'" title="Make this the main event" style="padding:5px 9px;font-size:11px;">Main</button>')+
+            '<button type="button" class="btn ghost fo-up" data-i="'+i+'" aria-label="Move up" title="Move up" style="padding:5px 10px;font-size:11px;"'+(i===0?' disabled':'')+'>&#9650;</button>'+
+            '<button type="button" class="btn ghost fo-dn" data-i="'+i+'" aria-label="Move down" title="Move down" style="padding:5px 10px;font-size:11px;"'+(i===n-1?' disabled':'')+'>&#9660;</button>'+
+          '</span>'+
+        '</div>').join('');
+      $('fo_save').style.display='block';
+      $('fo_save').textContent=dirty?'Save this order':'Save this order (no changes yet)';
+    }
+
+    function move(from,to){
+      if(to<0||to>=cur.bouts.length) return;
+      const [b]=cur.bouts.splice(from,1);
+      cur.bouts.splice(to,0,b);
+      dirty=true; render();
+    }
+
+    $('fo_list').addEventListener('click',e=>{
+      const t=e.target.closest('button'); if(!t||!cur) return;
+      const i=parseInt(t.dataset.i,10);
+      if(t.classList.contains('fo-up')) move(i,i-1);
+      else if(t.classList.contains('fo-dn')) move(i,i+1);
+      else if(t.classList.contains('fo-top')) move(i,0);
+    });
+    $('fo_pick').addEventListener('change',e=>{ load(e.target.value); say($('fo_status'),''); });
+
+    $('fo_save').addEventListener('click',async()=>{
+      const st=$('fo_status');
+      if(!cur){ say(st,'Pick a card first.','bad'); return; }
+      if(!dirty){ say(st,'Nothing moved yet — use the arrows, then save.','bad'); return; }
+      say(st,'Saving...');
+      if(cur.kind==='local'){
+        // Ours outright: reorder the stored bouts and write the card back.
+        const src=FO.localcard;
+        const bouts=cur.bouts.map(b=>src.bouts[b.i]);
+        const out=await api({card:{event:src.event||'',date:src.date||'',venue:src.venue||'',
+          sortDate:src.sortDate||'',bouts}});
+        if(!out.ok){ say(st,'✗ '+(out.error||'Failed'),'bad'); return; }
+        FO.localcard={...src,bouts};
+        cur.bouts=cur.bouts.map((b,i)=>({...b,i}));
+        dirty=false; render();
+        say(st,'✓ Order saved — '+attr(cur.bouts[0].a)+' vs '+attr(cur.bouts[0].b)+' is now the main event.','ok');
+      } else {
+        const out=await api({setCardOrder:{key:cur.key,order:cur.bouts.map(b=>b.key)}});
+        if(!out.ok){ say(st,'✗ '+(out.error||'Failed'),'bad'); return; }
+        const c=FO.wireCards.find(x=>x.date===cur.key);
+        if(c) c.bouts=cur.bouts.map(b=>({key:b.key,a:b.a,b:b.b}));
+        dirty=false; render();
+        say(st,'✓ Order saved — '+attr(cur.bouts[0].a)+' vs '+attr(cur.bouts[0].b)+' is now the main event, and it will survive the next odds refresh.','ok');
+      }
+    });
+
+    (async()=>{
+      try{
+        const o=await api({getCards:true});
+        if(!o.ok) throw new Error(o.error||'load failed');
+        FO={localcard:o.localcard,wireCards:o.wireCards||[],names:o.names||{},orders:o.orders||{}};
+        const opts=cardOptions();
+        $('fo_pick').innerHTML=opts.length
+          ? '<option value="">Pick a card to reorder…</option>'+opts.map(o2=>'<option value="'+o2.v+'">'+attr(o2.label)+'</option>').join('')
+          : '<option value="">No cards to reorder yet</option>';
+        if(!opts.length) say($('fo_status'),'Import a card or run the odds function, then come back.');
+      }catch(e){
+        $('fo_pick').innerHTML='<option value="">Could not load cards</option>';
+        say($('fo_status'),'✗ '+e.message,'bad');
+      }
+    })();
+  })();
 
   /* ---- sponsor slots ---- */
   $('sp_save').addEventListener('click',async()=>{
