@@ -115,10 +115,25 @@ window.GMUi = (function () {
     return b;
   }
 
+  /* Containers marked aria-busy start out saying "Loading…". Once their
+     contents are replaced — with stories, or with an error, either way the
+     wait is over — drop the busy flag so a screen reader is not told the
+     page is still loading forever. */
+  function watchBusy() {
+    if (!window.MutationObserver) return;
+    Array.prototype.forEach.call(document.querySelectorAll('[aria-busy="true"]'), function (el) {
+      var mo = new MutationObserver(function () {
+        el.setAttribute('aria-busy', 'false');
+        mo.disconnect();
+      });
+      mo.observe(el, { childList: true });
+    });
+  }
+
   // long pages get the control automatically
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { backToTop(); });
-  } else { backToTop(); }
+    document.addEventListener('DOMContentLoaded', function () { backToTop(); watchBusy(); });
+  } else { backToTop(); watchBusy(); }
 
   return { stagger: stagger, tabs: tabs, backToTop: backToTop };
 })();

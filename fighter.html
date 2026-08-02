@@ -50,7 +50,7 @@
   .reveal.in{opacity:1;transform:none;}
   /* ad slots — reserved space so nothing jumps when they load */
   .adwrap{margin:44px 0;text-align:center;}
-  .adwrap .lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel);opacity:.55;margin-bottom:8px;}
+  .adwrap .lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel);margin-bottom:8px;}
   .adwrap ins{display:block;min-height:100px;}
   .adwrap:empty{display:none;}
   .hero.fighter{padding:64px 0 44px;}
@@ -65,6 +65,33 @@
   .nextbox{border:1px solid var(--hair);border-left:3px solid var(--volt);background:var(--black-2);padding:24px;margin-top:8px;}
   .nextbox .k{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--volt);font-weight:700;}
   .nextbox .b{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:24px;margin-top:8px;line-height:1.15;}
+  /* fight history: a W/L strip you can read at a glance, then the detail */
+  .formstrip{display:flex;gap:6px;margin-bottom:22px;flex-wrap:wrap;}
+  .fbox{width:34px;height:34px;display:flex;align-items:center;justify-content:center;
+    font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;
+    clip-path:polygon(7px 0,calc(100% - 7px) 0,100% 7px,100% calc(100% - 7px),
+      calc(100% - 7px) 100%,7px 100%,0 calc(100% - 7px),0 7px);}
+  .fbox.w{background:var(--volt);color:var(--black);}
+  .fbox.l{background:#2a1010;color:#ff8f86;box-shadow:inset 0 0 0 1px rgba(255,75,62,.55);}
+  .fbox.d{background:var(--black-2);color:var(--steel);box-shadow:inset 0 0 0 1px var(--hair);}
+  .histlist{border:1px solid var(--hair);background:var(--black-2);}
+  .hrow{display:grid;grid-template-columns:38px minmax(0,1.4fr) minmax(0,1fr) auto;gap:14px;
+    align-items:center;padding:13px 18px;}
+  .hrow+.hrow{border-top:1px solid var(--hair);}
+  .hrow .res{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;}
+  .hrow .res.w{color:var(--volt);} .hrow .res.l{color:#ff8f86;} .hrow .res.d{color:var(--steel);}
+  .hrow .opp{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:18px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .hrow .how,.hrow .when{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--steel);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  @media(max-width:620px){
+    .hrow{grid-template-columns:34px minmax(0,1fr) auto;}
+    .hrow .how{grid-column:2/4;font-size:10.5px;}
+  }
+  .social{display:inline-block;margin-top:22px;padding:12px 22px;border:1px solid rgba(201,247,58,.45);
+    font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--volt);transition:background .15s,color .15s;}
+  .social:hover{background:var(--volt);color:var(--black);}
   .back{display:inline-block;margin-top:30px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--steel);}
   .back:hover{color:var(--volt);}
   .feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
@@ -108,7 +135,7 @@
 
 </style>
 <link rel="alternate" type="application/rss+xml" title="Greene MMA — Original stories" href="/feed.xml">
-<link rel="stylesheet" href="/assets/site.css?v=2">
+<link rel="stylesheet" href="/assets/site.css?v=5">
 </head>
 <body>
 <nav><div class="wrap">
@@ -205,6 +232,17 @@ try{
   if(!can){ can=document.createElement("link"); can.rel="canonical"; document.head.appendChild(can); }
   can.href="https://mma.greene.bet/fighter.html?f="+encodeURIComponent(fSlug);
 
+  // "instagram.com/someone" -> "Instagram", so the link says where it goes
+  function socialLabel(url){
+    const u=String(url||'').toLowerCase();
+    if(u.includes('instagram'))return 'Instagram';
+    if(u.includes('twitter')||u.includes('x.com'))return 'X';
+    if(u.includes('facebook'))return 'Facebook';
+    if(u.includes('tiktok'))return 'TikTok';
+    if(u.includes('youtube'))return 'YouTube';
+    return 'Follow';
+  }
+
   const rows=[["Record",f.record],["Weight class",f.weight],["Gym",f.gym],
               ["City",f.city],["Level",f.pro===false?"Amateur":"Pro"],["Status",f.status]]
              .filter(r=>r[1]);
@@ -234,8 +272,29 @@ try{
         '<div class="r"><div class="l">'+esc(r[0])+'</div><div class="v">'+esc(r[1])+'</div></div>').join('')+
       '</div>'+
       (f.note?'<p style="margin-top:22px;color:var(--steel);font-size:16.5px;max-width:640px;">'+esc(f.note)+'</p>':'')+
-      '<a class="back" href="/fighters.html">\u2190 Full roster</a>'+
-    '</div></section>';
+      (f.social?'<a class="social" href="'+esc(f.social)+'" target="_blank" rel="noopener me">'+
+        esc(socialLabel(f.social))+' \u2192</a>':'')+
+    '</div></section>'+
+    /* The record was a number with nothing behind it. Results give it shape \u2014
+       who, how, when \u2014 and the W/L strip reads at a glance. */
+    (Array.isArray(f.history)&&f.history.length?
+      '<section><div class="wrap"><div class="sechead">'+
+        MARK.replace('<svg','<svg class="sicon" aria-hidden="true"')+
+        '<h2>Fight History</h2>'+
+        '<span class="mono-tag">Last '+f.history.length+'</span></div>'+
+        '<div class="formstrip">'+f.history.slice(0,10).map(h=>
+          '<span class="fbox '+(h.result==='W'?'w':h.result==='L'?'l':'d')+'">'+esc(h.result||'\u2013')+'</span>').join('')+
+        '</div>'+
+        '<div class="histlist">'+f.history.map(h=>
+          '<div class="hrow">'+
+            '<span class="res '+(h.result==='W'?'w':h.result==='L'?'l':'d')+'">'+esc(h.result||'\u2013')+'</span>'+
+            '<span class="opp">'+esc(h.opponent||'')+'</span>'+
+            '<span class="how">'+esc(h.method||'')+'</span>'+
+            '<span class="when">'+esc(h.date||'')+'</span>'+
+          '</div>').join('')+
+        '</div>'+
+      '</div></section>':'')+
+    '<section><div class="wrap"><a class="back" href="/fighters.html">\u2190 Full roster</a></div></section>';
 }catch(e){
   app.innerHTML='<div class="wrap" style="padding:80px 22px;"><div class="empty">Fighter not found.<br><br>'+
     '<a class="back" href="/fighters.html">\u2190 Full roster</a></div></div>';

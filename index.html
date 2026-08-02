@@ -30,6 +30,31 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="alternate" type="application/rss+xml" title="Greene MMA — Original stories" href="/feed.xml">
+<!-- Tells search engines this is a publication rather than a pile of pages,
+     and wires up the sitelinks search box for the archive. -->
+<script type="application/ld+json">{
+  "@context":"https://schema.org",
+  "@graph":[
+    {
+      "@type":"NewsMediaOrganization",
+      "@id":"https://mma.greene.bet/#org",
+      "name":"Greene MMA",
+      "url":"https://mma.greene.bet/",
+      "logo":{"@type":"ImageObject","url":"https://mma.greene.bet/assets/icon-512.png","width":512,"height":512},
+      "description":"MMA news, live underdogs, and the stories the cameras skip. Utah's fight scene covered like it counts.",
+      "areaServed":{"@type":"State","name":"Utah"},
+      "knowsAbout":["Mixed martial arts","UFC","Utah MMA"]
+    },
+    {
+      "@type":"WebSite",
+      "@id":"https://mma.greene.bet/#site",
+      "url":"https://mma.greene.bet/",
+      "name":"Greene MMA",
+      "publisher":{"@id":"https://mma.greene.bet/#org"},
+      "inLanguage":"en-US"
+    }
+  ]
+}</script>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;}
   html{scroll-behavior:smooth;}
@@ -226,7 +251,7 @@
   .newsgrid .feed{grid-template-columns:repeat(auto-fill,minmax(270px,1fr));}
   .colhead{display:flex;align-items:center;gap:13px;padding-bottom:13px;margin-bottom:18px;border-bottom:1px solid var(--hair);}
   .colhead .cmark{width:21px;height:21px;flex-shrink:0;}
-  .colhead h3{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:23px;letter-spacing:.01em;}
+  .colhead h2{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:23px;letter-spacing:.01em;}
   .colhead .mono-tag{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--volt);font-weight:700;}
   .colhead .more{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);white-space:nowrap;}
   .colhead .more:hover{color:var(--volt);}
@@ -371,7 +396,7 @@
 
   /* ad slots — reserved space so nothing jumps when they load */
   .adwrap{margin:44px 0;text-align:center;}
-  .adwrap .lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel);opacity:.55;margin-bottom:8px;}
+  .adwrap .lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel);margin-bottom:8px;}
   .adwrap ins{display:block;min-height:100px;}
   .adwrap:empty{display:none;}
   /* base reduced-motion rules are shared in /assets/site.css; the masthead
@@ -382,7 +407,7 @@
   }
 
 </style>
-<link rel="stylesheet" href="/assets/site.css?v=2">
+<link rel="stylesheet" href="/assets/site.css?v=5">
 <style>
 /* ---- Page overrides — after site.css so equal-specificity rules win. ---- */
 /* Homepage nav: links sit at a fixed gap between the home lockup and the
@@ -396,6 +421,7 @@ footer{padding:56px 0 72px;font-family:'Barlow',sans-serif;font-size:17.5px;lett
 </style>
 </head>
 <body>
+<a class="gm-skip" href="#main">Skip to content</a>
 
 <!-- MARQUEE · populated from the odds feed -->
 <div class="marquee" id="marquee">
@@ -424,6 +450,7 @@ footer{padding:56px 0 72px;font-family:'Barlow',sans-serif;font-size:17.5px;lett
     <a class="gbl" href="https://greene.bet" target="_blank" rel="noopener"><svg viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="13" stroke-linejoin="miter"/></svg>Play the league</a>
   </div>
 </nav>
+<main id="main">
 
 <!-- MASTHEAD · the logo IS the hero -->
 <header class="masthead">
@@ -469,13 +496,13 @@ footer{padding:56px 0 72px;font-family:'Barlow',sans-serif;font-size:17.5px;lett
       <div class="newscol">
         <div class="colhead">
           <svg class="cmark" viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="14" stroke-linejoin="miter"/></svg>
-          <h3>Top News</h3>
+          <h2>Top News</h2>
           <span class="mono-tag">Global</span>
           <a class="more" href="/news.html">All news &rarr;</a>
         </div>
         <!-- Real stories load here. Never ship invented headlines as a
              fallback — an outage must read as empty, not as fake news. -->
-        <div class="feed">
+        <div class="feed" aria-live="polite" aria-busy="true">
           <div class="feedstate">Loading the latest from the corner&hellip;</div>
         </div>
       </div>
@@ -483,10 +510,10 @@ footer{padding:56px 0 72px;font-family:'Barlow',sans-serif;font-size:17.5px;lett
       <div class="newscol">
         <div class="colhead">
           <svg class="cmark" viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="14" stroke-linejoin="miter"/></svg>
-          <h3>The Utah Corner</h3>
+          <h2>The Utah Corner</h2>
           <span class="mono-tag">Local</span>
         </div>
-        <div class="rail" id="urail">
+        <div class="rail" id="urail" aria-live="polite" aria-busy="true">
           <!-- Evergreen until local stories load — never invented news -->
           <a class="ritem" href="/utah.html">
             <span class="c">The scene</span>
@@ -578,10 +605,10 @@ footer{padding:56px 0 72px;font-family:'Barlow',sans-serif;font-size:17.5px;lett
     <h2>The Greene Corner</h2>
     <p>One email a week. Three stories, one live dog, one fighter you don't know yet — but will.</p>
     <form onsubmit="return false;">
-      <input type="email" placeholder="your@email.com" aria-label="Email address">
+      <input type="email" placeholder="your@email.com" aria-label="Email address" autocomplete="email" required>
       <button type="submit">Get in the corner</button>
     </form>
-    <div class="fine">Free forever · No spam · Unsubscribe anytime</div>
+    <div class="fine" role="status">Free forever · No spam · Unsubscribe anytime</div>
   </div>
 </section>
 
@@ -605,6 +632,8 @@ footer{padding:56px 0 72px;font-family:'Barlow',sans-serif;font-size:17.5px;lett
 </div>
 
 <!-- FOOTER -->
+</main>
+
 <footer>
   <div class="wrap">
     <div class="top">
@@ -657,8 +686,8 @@ footer{padding:56px 0 72px;font-family:'Barlow',sans-serif;font-size:17.5px;lett
 </script>
 
 <!-- generated per-story card art, shared with the archive -->
-<script src="/assets/cardart.js?v=2"></script>
-<script src="/assets/ui.js?v=2"></script>
+<script src="/assets/cardart.js?v=3"></script>
+<script src="/assets/ui.js?v=4"></script>
 
 <script type="module">
 // ---- LIVE DATA ----
@@ -964,6 +993,6 @@ if(window.__reveal) window.__reveal();
 })();
 </script>
 <!-- live fight-week chip in the nav -->
-<script src="/assets/fightpulse.js?v=2"></script>
+<script src="/assets/fightpulse.js?v=3"></script>
 </body>
 </html>

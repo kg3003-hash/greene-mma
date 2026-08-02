@@ -52,7 +52,7 @@
   .reveal.in{opacity:1;transform:none;}
   /* ad slots — reserved space so nothing jumps when they load */
   .adwrap{margin:44px 0;text-align:center;}
-  .adwrap .lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel);opacity:.55;margin-bottom:8px;}
+  .adwrap .lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel);margin-bottom:8px;}
   .adwrap ins{display:block;min-height:100px;}
   .adwrap:empty{display:none;}
   .feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
@@ -103,9 +103,10 @@
 
 </style>
 <link rel="alternate" type="application/rss+xml" title="Greene MMA — Original stories" href="/feed.xml">
-<link rel="stylesheet" href="/assets/site.css?v=2">
+<link rel="stylesheet" href="/assets/site.css?v=5">
 </head>
 <body>
+<a class="gm-skip" href="#main">Skip to content</a>
 <nav><div class="wrap">
     <a class="home" href="/" aria-label="Greene MMA home"><svg viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg><span class="wm">Greene <b>MMA</b></span></a><div class="links">
   <a href="/news.html" class="on">News</a>
@@ -115,6 +116,7 @@
       <a href="/fighters.html">Fighters</a>
   <a href="/newsletter.html">The Corner</a>
 </div></div></nav>
+<main id="main">
 
 <header class="hero">
   <svg class="bigmark" aria-hidden="true" viewBox="0 0 120 120"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>
@@ -133,7 +135,7 @@
       <span class="scount" id="scount"></span>
     </div>
     <div class="filters" id="filters"></div>
-    <div class="feed" id="feed"><div class="empty">Loading the archive...</div></div>
+    <div class="feed" id="feed" aria-live="polite" aria-busy="true"><div class="empty">Loading the archive...</div></div>
     <div class="adwrap">
       <div class="lbl">Advertisement</div>
       <!-- <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="0000000000" data-ad-format="auto" data-full-width-responsive="true"></ins>
@@ -142,6 +144,8 @@
     <button id="more" style="display:none">Load more</button>
   </div>
 </section>
+
+</main>
 
 <footer><div class="wrap">
   Greene MMA · <a href="https://greene.bet">Part of the greene.bet family</a><br>
@@ -185,8 +189,8 @@
 </script>
 
 <!-- generated per-story card art, shared with the homepage feed -->
-<script src="/assets/cardart.js?v=2"></script>
-<script src="/assets/ui.js?v=2"></script>
+<script src="/assets/cardart.js?v=3"></script>
+<script src="/assets/ui.js?v=4"></script>
 
 </html>
 <script type="module">
@@ -253,7 +257,7 @@ function render(){
 function buildFilters(){
   const cats=["All","Greene Originals","UFC","Utah",...new Set(all.map(s=>s.category).filter(Boolean))];
   document.getElementById("filters").innerHTML=cats.map(c=>
-    '<button class="fbtn'+(c===active?' on':'')+'" data-c="'+esc(c)+'">'+esc(c)+'</button>').join("");
+    '<button class="fbtn'+(c===active?' on':'')+'" aria-pressed="'+(c===active)+'" data-c="'+esc(c)+'">'+esc(c)+'</button>').join("");
   document.querySelectorAll(".fbtn").forEach(b=>b.addEventListener("click",()=>{
     active=b.dataset.c; buildFilters(); render();
   }));
@@ -319,6 +323,6 @@ if(window.__reveal) window.__reveal();
 })();
 </script>
 <!-- live fight-week chip in the nav -->
-<script src="/assets/fightpulse.js?v=2"></script>
+<script src="/assets/fightpulse.js?v=3"></script>
 </body>
 </html>

@@ -52,7 +52,7 @@
   .reveal.in{opacity:1;transform:none;}
   /* ad slots — reserved space so nothing jumps when they load */
   .adwrap{margin:44px 0;text-align:center;}
-  .adwrap .lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel);opacity:.55;margin-bottom:8px;}
+  .adwrap .lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel);margin-bottom:8px;}
   .adwrap ins{display:block;min-height:100px;}
   .adwrap:empty{display:none;}
   /* rankings */
@@ -176,6 +176,18 @@
   }
   .champ{font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;letter-spacing:.12em;
     background:var(--volt);color:var(--black);padding:3px 7px;white-space:nowrap;}
+  /* recent form inside the fighter modal */
+  .mform{padding:16px 26px 0;}
+  .mform .l{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--steel);margin-bottom:8px;}
+  .mform .s{display:flex;gap:5px;flex-wrap:wrap;}
+  .mform .fbox{width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+    font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:700;cursor:default;
+    clip-path:polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),
+      calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px);}
+  .mform .fbox.w{background:var(--volt);color:var(--black);}
+  .mform .fbox.l{background:#2a1010;color:#ff8f86;box-shadow:inset 0 0 0 1px rgba(255,75,62,.55);}
+  .mform .fbox.d{background:var(--black-2);color:var(--steel);box-shadow:inset 0 0 0 1px var(--hair);}
   .fbtn{padding:9px 16px;border:1px solid var(--hair);background:var(--black-2);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);}
   .fbtn:hover{border-color:var(--volt);color:var(--volt);}
   .fbtn.on{background:var(--volt);border-color:var(--volt);color:var(--black);font-weight:700;}
@@ -230,9 +242,10 @@
 
 </style>
 <link rel="alternate" type="application/rss+xml" title="Greene MMA — Original stories" href="/feed.xml">
-<link rel="stylesheet" href="/assets/site.css?v=2">
+<link rel="stylesheet" href="/assets/site.css?v=5">
 </head>
 <body>
+<a class="gm-skip" href="#main">Skip to content</a>
 <nav><div class="wrap">
     <a class="home" href="/" aria-label="Greene MMA home"><svg viewBox="0 0 120 120" aria-hidden="true"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg><span class="wm">Greene <b>MMA</b></span></a><div class="links">
   <a href="/news.html">News</a>
@@ -242,6 +255,7 @@
       <a href="/fighters.html" class="on">Fighters</a>
   <a href="/newsletter.html">The Corner</a>
 </div></div></nav>
+<main id="main">
 
 <header class="hero">
   <svg class="bigmark" aria-hidden="true" viewBox="0 0 120 120"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg>
@@ -268,7 +282,7 @@
     </div>
     <div class="divtabs" id="divtabs"></div>
     <div class="divnote" id="divnote"></div>
-    <div id="rankbox"><div class="empty">Rankings go up soon.</div></div>
+    <div id="rankbox" aria-live="polite" aria-busy="true"><div class="empty">Rankings go up soon.</div></div>
   </div>
 </section>
 
@@ -280,7 +294,7 @@
       <span class="mono-tag">Who built this here</span>
     </div>
     <p class="divnote">Utah did not get an MMA scene by accident. These are the people who put it on the map — the one who fought more often than almost anyone alive, the ones who carried the state onto national television, the coach building the next wave, and one Olympic gold medalist with the strangest single line on any UFC record.</p>
-    <div class="legends" id="legendbox"></div>
+    <div class="legends" id="legendbox" aria-live="polite" aria-busy="true"></div>
   </div>
 </section>
 
@@ -293,7 +307,7 @@
     </div>
     <div class="searchrow"><input id="fsearch" type="search" placeholder="Search name, nickname, gym, or city&hellip;" autocomplete="off"></div>
     <div class="filters" id="filters"></div>
-    <div class="roster" id="roster"><div class="empty">Loading the roster...</div></div>
+    <div class="roster" id="roster" aria-live="polite" aria-busy="true"><div class="empty">Loading the roster...</div></div>
   </div>
 </section>
 
@@ -310,6 +324,8 @@
     <a href="mailto:hello@greene.bet?subject=Utah%20fighter%20-%20add%20me%20to%20the%20roster">Get on the roster</a>
   </div>
 </section>
+
+</main>
 
 <footer><div class="wrap">
   Greene MMA · <a href="https://greene.bet">Part of the greene.bet family</a><br>
@@ -354,7 +370,7 @@
 
 </html>
 <!-- shared state-change motion (staggered lists, travelling tab pill) -->
-<script src="/assets/ui.js?v=2"></script>
+<script src="/assets/ui.js?v=4"></script>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -455,7 +471,7 @@ function buildFilters(){
     .concat(all.some(f=>/booked/i.test(f.status||"")||f.next)?["Booked"]:[])
     .concat(all.some(isChamp)?["Champions"]:[])
     .concat(promos);
-  const btn=c=>'<button class="fbtn'+(c===active?' on':'')+'" data-c="'+esc(c)+'">'+esc(c)+'</button>';
+  const btn=c=>'<button class="fbtn'+(c===active?' on':'')+'" aria-pressed="'+(c===active)+'" data-c="'+esc(c)+'">'+esc(c)+'</button>';
   document.getElementById("filters").innerHTML=
     '<div class="frow" id="frow-scope">'+scope.map(btn).join("")+'</div>'+
     '<div class="frow" id="frow-div">'+present.map(btn).join("")+'</div>';
@@ -528,7 +544,7 @@ try{
       return;
     }
     document.getElementById("divtabs").innerHTML=divisions.map((d,i)=>
-      '<button class="divtab'+(i===activeDiv?' on':'')+'" data-i="'+i+'">'+esc(d.name)+'</button>').join('');
+      '<button class="divtab'+(i===activeDiv?' on':'')+'" aria-pressed="'+(i===activeDiv)+'" data-i="'+i+'">'+esc(d.name)+'</button>').join('');
     const d=divisions[activeDiv];
     const noteEl=document.getElementById("divnote");
     noteEl.innerHTML=(d.note?esc(d.note):'')+
@@ -727,6 +743,12 @@ window.__fighterModal=(function(){
       (stats.length
         ? '<div class="grid">'+stats.map(r=>'<div class="cell"><div class="l">'+esc(r[0])+'</div><div class="v">'+esc(r[1])+'</div></div>').join('')+'</div>'
         : '<div class="empty-stats">No fight stats recorded for this fighter yet.</div>')+
+      (Array.isArray(f.history)&&f.history.length
+        ? '<div class="mform"><div class="l">Last '+Math.min(f.history.length,8)+'</div><div class="s">'+
+            f.history.slice(0,8).map(h=>'<span class="fbox '+(h.result==='W'?'w':h.result==='L'?'l':'d')+'" '+
+              'title="'+esc([h.opponent,h.method,h.date].filter(Boolean).join(' \u00b7 '))+'">'+
+              esc(h.result||'\u2013')+'</span>').join('')+
+          '</div></div>' : '')+
       (f.note?'<div class="note">'+esc(f.note)+'</div>':'')+
       '<a class="go" href="/fighter.html?f='+encodeURIComponent(slug)+'">Full profile \u2192</a>';
     show();
@@ -763,6 +785,6 @@ window.__fighterModal=(function(){
 })();
 </script>
 <!-- live fight-week chip in the nav -->
-<script src="/assets/fightpulse.js?v=2"></script>
+<script src="/assets/fightpulse.js?v=3"></script>
 </body>
 </html>

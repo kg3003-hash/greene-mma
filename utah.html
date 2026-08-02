@@ -232,7 +232,7 @@
   .corner .cta{transition:background .15s,color .15s,box-shadow .15s;}
   /* ad slots — reserved space so nothing jumps when they load */
   .adwrap{margin:44px 0;text-align:center;}
-  .adwrap .lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel);opacity:.55;margin-bottom:8px;}
+  .adwrap .lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel);margin-bottom:8px;}
   .adwrap ins{display:block;min-height:100px;}
   .adwrap:empty{display:none;}
   /* reduced-motion rules are shared in /assets/site.css
@@ -261,7 +261,7 @@
 
 </style>
 <link rel="alternate" type="application/rss+xml" title="Greene MMA — Original stories" href="/feed.xml">
-<link rel="stylesheet" href="/assets/site.css?v=2">
+<link rel="stylesheet" href="/assets/site.css?v=5">
 <style>
 /* ---- Page overrides — after site.css so equal-specificity rules win. ---- */
 /* Utah nav: taller bar, quieter links, no underline sweep. On small screens
@@ -276,6 +276,7 @@ footer .top{margin-bottom:20px;}
 </style>
 </head>
 <body>
+<a class="gm-skip" href="#main">Skip to content</a>
 
 <nav>
   <div class="wrap">
@@ -290,6 +291,7 @@ footer .top{margin-bottom:20px;}
     </div>
   </div>
 </nav>
+<main id="main">
 
 <header class="hero">
   <!-- Utah, drawn to scale. The octagon marks Salt Lake City — home base. -->
@@ -486,6 +488,8 @@ footer .top{margin-bottom:20px;}
   </div>
 </section>
 
+</main>
+
 <footer>
   <div class="wrap">
     <div class="top">
@@ -536,7 +540,7 @@ footer .top{margin-bottom:20px;}
 })();
 </script>
 <!-- shared state-change motion (staggered lists, travelling tab pill) -->
-<script src="/assets/ui.js?v=2"></script>
+<script src="/assets/ui.js?v=4"></script>
 
 <script type="module">
 // Pulls Utah-tagged stories from Firestore. Falls back to the empty state.
@@ -945,6 +949,6 @@ window.__fighterModal=(function(){
 })();
 </script>
 <!-- live fight-week chip in the nav -->
-<script src="/assets/fightpulse.js?v=2"></script>
+<script src="/assets/fightpulse.js?v=3"></script>
 </body>
 </html>

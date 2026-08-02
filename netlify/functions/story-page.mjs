@@ -233,21 +233,43 @@ export default async function handler(req, context) {
   // otherwise the house card so a link never unfurls broken.
   const shareImg = s.ogCard ? `${SITE}/og/${encodeURIComponent(id)}.jpg` : `${SITE}/assets/share-card.png`;
 
-  const jsonld = original ? `<script type="application/ld+json">${JSON.stringify({
+  /* Every story gets structured data, not just our own writing — an
+     aggregated item is still an article and previously emitted none at all.
+     Ours is credited to its author; a wire item is credited to the outlet
+     that reported it, which is both accurate and the honest signal to send.
+     A breadcrumb sits alongside so the story shows its place in the site. */
+  const articleSchema = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
     headline: s.headline,
     description: desc,
     datePublished: published ? published.toISOString() : undefined,
-    author: [{ "@type": "Person", name: author }],
+    author: original
+      ? [{ "@type": "Person", name: author }]
+      : [{ "@type": "Organization", name: s.sourceName || "Wire report" }],
     publisher: {
       "@type": "Organization",
       name: "Greene MMA",
       logo: { "@type": "ImageObject", url: `${SITE}/assets/icon-512.png` },
     },
     image: [shareImg],
+    articleSection: s.category || "News",
+    isAccessibleForFree: true,
     mainEntityOfPage: url,
-  })}</script>` : "";
+    ...(original ? {} : (s.sourceUrl ? { isBasedOn: s.sourceUrl } : {})),
+  };
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Greene MMA", item: `${SITE}/` },
+      { "@type": "ListItem", position: 2, name: "News", item: `${SITE}/news.html` },
+      { "@type": "ListItem", position: 3, name: s.headline },
+    ],
+  };
+  const jsonld =
+    `<script type="application/ld+json">${JSON.stringify(articleSchema)}</script>` +
+    `<script type="application/ld+json">${JSON.stringify(breadcrumbSchema)}</script>`;
 
   const metaExtra = `
 <meta name="description" content="${esc(desc)}">

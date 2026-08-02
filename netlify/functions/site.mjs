@@ -593,13 +593,15 @@ Rules:
         last: String(f.last || "").trim().slice(0, 40),
         nickname: String(f.nickname || "").trim().slice(0, 60),
         record: String(f.record || "").slice(0, 20),
-        weight: String(f.weight || "").slice(0, 40),
+        // 40 was cutting real values mid-word: "FFC Featherweight
+        // Championship (Pro, 145 lbs)" was being stored as "...(Pro, 145"
+        weight: String(f.weight || "").slice(0, 90),
         gym: String(f.gym || "").slice(0, 80),
         city: String(f.city || "").slice(0, 60),
         status: String(f.status || "Active").slice(0, 30),
         next: String(f.next || "").slice(0, 140),
         note: String(f.note || "").slice(0, 300),
-        social: String(f.social || "").slice(0, 80),
+        social: String(f.social || "").slice(0, 200), // a full profile URL needs the room
         stance: String(f.stance || "").slice(0, 20),
         height: String(f.height || "").slice(0, 20),
         reach: String(f.reach || "").slice(0, 20),
@@ -612,6 +614,15 @@ Rules:
         tdAcc: String(f.tdAcc || "").slice(0, 10),
         tdDef: String(f.tdDef || "").slice(0, 10),
         subAvg: String(f.subAvg || "").slice(0, 10),
+        /* Fight history — up to twelve results, newest first. Entered in the
+           Studio one per line as "W · Opponent · Method · Date", so it stays
+           quick to type and needs no new editor UI. */
+        history: (Array.isArray(f.history) ? f.history : []).slice(0, 12).map((h) => ({
+          result: String((h && h.result) || "").toUpperCase().slice(0, 2),
+          opponent: String((h && h.opponent) || "").slice(0, 60),
+          method: String((h && h.method) || "").slice(0, 60),
+          date: String((h && h.date) || "").slice(0, 30),
+        })).filter((h) => h.opponent || h.result),
         pro: f.pro !== false,
       })),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
