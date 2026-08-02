@@ -42,10 +42,9 @@ export default async function handler(req) {
   const issue = snap.data();
   if (!issue.subject || !issue.body) return json({ error: "That issue has no subject or body." }, 400);
 
-  // Guard against a double-click sending the list twice. A send that died
-  // mid-flight is resumable: `sentCount` says where to pick up.
+  // Guard against a double-click sending the list twice.
   if (issue.sending === true) return json({ error: "That issue is already sending." }, 409);
-  if (issue.sent === true && !body.resume) return json({ error: "That issue has already gone out." }, 409);
+  if (issue.sent === true) return json({ error: "That issue has already gone out." }, 409);
 
   const secret = await mailSecret(db);
   const subs = await db.collection("subscribers").orderBy("createdAt", "desc").limit(5000).get();
@@ -56,7 +55,20 @@ export default async function handler(req) {
     .map((d) => (d.data() || {}).email || d.id)
     .filter(isEmail)
     .sort();
-  const startAt = body.resume ? Math.max(0, Number(issue.sentCount) || 0) : 0;
+  // Where to start is read from the issue, never from the caller: if resuming
+  // were something the client asked for, pressing send again after a failure
+  // would mail the first half of the list a second time, and there is no unsend.
+  //
+  // The mark is the last address delivered to, not a count. A count silently
+  // breaks if the list changes between attempts — one unsubscribe shifts every
+  // later index down and skips somebody, one new signup shifts them up and
+  // sends twice. Resuming at "the first address after this one" is immune to
+  // both, since the list is sorted.
+  let startAt = 0;
+  if (issue.sentUpTo) {
+    const next = all.findIndex((e) => e > issue.sentUpTo);
+    startAt = next === -1 ? all.length : next; // -1 = everyone already had it
+  }
   const queue = all.slice(startAt);
 
   if (!queue.length) {
@@ -81,7 +93,9 @@ export default async function handler(req) {
         return json({ ok: false, error: res.error, sent, total: all.length }, 502);
       }
       sent += slice.length;
-      await ref.set({ sentCount: sent }, { merge: true });
+      // The mark advances only after Resend accepted the batch, so a crash
+      // between here and the next batch costs a repeat of nobody.
+      await ref.set({ sentCount: sent, sentUpTo: slice[slice.length - 1] }, { merge: true });
       if (i + BATCH_SIZE < queue.length) await sleep(BATCH_PAUSE_MS);
     }
   } catch (e) {
