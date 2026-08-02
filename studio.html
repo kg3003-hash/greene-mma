@@ -288,6 +288,11 @@
       <button class="btn ghost" id="rk_deldiv">Delete this division</button>
       <button class="btn" id="rk_save">Save rankings</button>
       <div id="rk_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+
+      <label style="margin-top:22px">Restore rankings from JSON</label>
+      <p class="hint" style="margin-top:0">Paste a full set of divisions to replace what is here — the way back if a save ever goes wrong. Loads them into the editor so you can look before you save.</p>
+      <textarea id="rk_json" style="min-height:96px" placeholder='[{"name":"Pound for Pound","note":"","fighters":["Fighter One","Fighter Two"]}]'></textarea>
+      <button class="btn ghost" id="rk_load">Load into editor</button>
     </div>
 
 <div class="panel">
@@ -785,15 +790,50 @@
     if(!DIVS.length) return;
     DIVS.splice(curDiv,1); curDiv=0; drawDivs();
   });
+  /* Nothing may be saved until the current rankings have actually loaded.
+     This panel used to fall back to a single empty "Pound for Pound" while it
+     was still fetching \u2014 press Save in that window and it wrote that single
+     empty division over the whole list. */
+  let rkReady=false;
   $('rk_save').addEventListener('click',async()=>{
+    const st=$('rk_status');
+    if(!rkReady){ say(st,'\u2717 Rankings have not loaded yet \u2014 nothing saved.','bad'); return; }
     if(DIVS[curDiv]) DIVS[curDiv].note=$('rk_note').value.trim();
-    const st=$('rk_status'); say(st,'Saving...');
+    const total=DIVS.reduce((n,d)=>n+((d.fighters||[]).length),0);
+    if(!total && !confirm('This will save rankings with no fighters in any division. Continue?')) return;
+    say(st,'Saving...');
     const out=await api({rankings:DIVS});
     say(st, out.ok?('\u2713 Saved '+out.saved+' division(s).'):'\u2717 '+(out.error||'Failed'), out.ok?'ok':'bad');
   });
-  (async()=>{ try{ const o=await api({getRankings:true});
-    DIVS=(o.ok&&o.divisions&&o.divisions.length)?o.divisions:[{name:'Pound for Pound',note:'',fighters:[]}];
-  }catch(e){ DIVS=[{name:'Pound for Pound',note:'',fighters:[]}]; } drawDivs(); })();
+  $('rk_load').addEventListener('click',()=>{
+    const st=$('rk_status');
+    let parsed;
+    try{ parsed=JSON.parse($('rk_json').value); }
+    catch(e){ say(st,'\u2717 That is not valid JSON.','bad'); return; }
+    if(!Array.isArray(parsed)||!parsed.length){ say(st,'\u2717 Expected a list of divisions.','bad'); return; }
+    DIVS=parsed.map(d=>({ name:String(d.name||'').trim(), note:String(d.note||''),
+      fighters:(Array.isArray(d.fighters)?d.fighters:[]).map(f=>String(f)) }))
+      .filter(d=>d.name);
+    curDiv=0; rkReady=true; drawDivs();
+    const total=DIVS.reduce((n,d)=>n+d.fighters.length,0);
+    say(st,'\u2713 Loaded '+DIVS.length+' division(s), '+total+' fighters. Check it, then press Save rankings.','ok');
+  });
+  (async()=>{
+    const btn=$('rk_save');
+    btn.disabled=true; btn.textContent='Loading rankings\u2026';
+    try{
+      const o=await api({getRankings:true});
+      if(!o.ok) throw new Error(o.error||'load failed');
+      DIVS=(o.divisions&&o.divisions.length)?o.divisions:[{name:'Pound for Pound',note:'',fighters:[]}];
+      rkReady=true; btn.disabled=false; btn.textContent='Save rankings';
+    }catch(e){
+      // never silently substitute an empty list for the real one
+      DIVS=[];
+      btn.textContent='Rankings unavailable';
+      say($('rk_status'),'\u2717 Could not load the current rankings, so saving is disabled. Reload the page.','bad');
+    }
+    drawDivs();
+  })();
 
   /* ---- pioneers ---- */
   const LEGENDS=adminList({

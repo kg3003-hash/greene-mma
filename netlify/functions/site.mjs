@@ -503,9 +503,28 @@ Rules:
     // movement (▲▼ / NEW). The baseline only advances when the order actually
     // changes — editing a note must not silently wipe the arrows.
     const prevSnap = await db.collection("site").doc("rankings").get();
-    const prevByName = new Map(
-      ((prevSnap.data() || {}).divisions || []).map((d) => [d.name, d]),
-    );
+    const currentDivs = (prevSnap.data() || {}).divisions || [];
+    const prevByName = new Map(currentDivs.map((d) => [d.name, d]));
+
+    /* Refuse to erase a populated list. The Studio could send a single empty
+       division if Save was pressed before the current rankings had loaded,
+       and that overwrote nine divisions with nothing. A wipe is now an
+       explicit act: pass forceRankings when you really mean to clear them. */
+    const countFighters = (list) =>
+      (list || []).reduce((n, d) => n + ((d && d.fighters ? d.fighters.length : 0)), 0);
+    const had = countFighters(currentDivs);
+    const incoming = countFighters(body.rankings);
+    if (had > 0 && incoming === 0 && !body.forceRankings) {
+      return new Response(JSON.stringify({
+        error: `Refusing to save: this would clear all ${had} ranked fighters across ` +
+               `${currentDivs.length} division(s). Reload the Studio so the current ` +
+               `rankings load first, or resend with forceRankings if you truly mean to empty them.`,
+      }), { status: 409 });
+    }
+    // keep the last populated version on the document so a bad save is recoverable
+    const recovery = had > 0
+      ? { backupDivisions: currentDivs, backupAt: admin.firestore.FieldValue.serverTimestamp() }
+      : {};
     await db.collection("site").doc("rankings").set({
       divisions: (body.rankings || []).slice(0, 15).map((d) => {
         const name = String(d.name || "").slice(0, 60);
@@ -521,6 +540,7 @@ Rules:
           prev: moved ? oldFighters : (old.prev || oldFighters),
         };
       }),
+      ...recovery,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
     return new Response(JSON.stringify({ ok: true, saved: body.rankings.length }), { status: 200 });
