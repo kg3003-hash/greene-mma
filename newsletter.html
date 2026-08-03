@@ -77,6 +77,22 @@
   .issue .full{display:none;margin-top:18px;padding-top:18px;border-top:1px solid var(--hair);font-size:17px;line-height:1.7;}
   .issue.open .full{display:block;}
   .issue .full p{color:var(--bone);margin-bottom:18px;font-size:17px;}
+  /* An issue body is markdown now, so dress what the renderer emits. Matches
+     the emailed version as closely as the two mediums allow. */
+  .issue .full h2{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;
+    font-size:23px;line-height:1.14;margin:28px 0 12px;color:var(--bone);}
+  .issue .full h3{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;
+    font-size:18px;line-height:1.16;margin:24px 0 10px;color:var(--volt);letter-spacing:.02em;}
+  .issue .full strong{color:#fff;font-weight:700;}
+  .issue .full em{font-style:italic;}
+  .issue .full u{text-decoration:underline;text-decoration-color:var(--volt);text-underline-offset:3px;}
+  .issue .full a{color:var(--volt);text-decoration:underline;text-underline-offset:3px;}
+  .issue .full a:hover{color:var(--bone);}
+  .issue .full ul,.issue .full ol{margin:0 0 18px 22px;color:var(--bone);}
+  .issue .full li{margin-bottom:8px;font-size:17px;line-height:1.7;}
+  .issue .full blockquote{border-left:3px solid var(--volt);padding:4px 0 4px 18px;margin:22px 0;
+    color:var(--bone);font-style:italic;}
+  .issue .full hr{border:none;border-top:1px solid var(--hair);margin:26px 0;}
   .feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
   a.card{border:1px solid var(--hair);padding:26px;display:flex;flex-direction:column;gap:12px;background:var(--black-2);transition:border-color .18s,transform .18s;}
   a.card:hover{border-color:rgba(201,247,58,.55);transform:translateY(-3px);}
@@ -122,6 +138,7 @@
 <!-- Firestore over plain fetch. Deferred, so it never blocks parsing, but
      still runs before any module script that depends on window.FSCompat. -->
 <script defer src="/assets/fsdata.js?v=1"></script>
+<script defer src="/assets/md.js?v=1"></script>
 </head>
 <body>
 <a class="gm-skip" href="#main">Skip to content</a>
@@ -263,14 +280,26 @@ try{
   } else {
     el.innerHTML=snap.docs.map(d=>{
       const i=d.data();
-      const paras=(i.body||"").split(/\n\s*\n/).filter(Boolean).map(t=>'<p>'+esc(t)+'</p>').join("");
+      // Same markdown subset the emailed version renders, so an issue reads
+      // the same here as it does in a subscriber's inbox. This used to escape
+      // the body and wrap it in <p>, which showed **bold** and ## Heading as
+      // literal characters on the page while the email looked right.
+      const paras=window.GMMarkdown
+        ? GMMarkdown.render(i.body||"")
+        : (i.body||"").split(/\n\s*\n/).filter(Boolean).map(t=>'<p>'+esc(t)+'</p>').join("");
       return '<div class="issue reveal">'+
         '<div class="d">'+new Date(i.publishedAt.seconds*1000).toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})+'</div>'+
         '<h3>'+esc(i.subject)+'</h3>'+
         (i.preview?'<p>'+esc(i.preview)+'</p>':'')+
         '<div class="full">'+paras+'</div></div>';
     }).join("");
-    document.querySelectorAll(".issue").forEach(x=>x.addEventListener("click",()=>x.classList.toggle("open")));
+    // Clicking the card expands it — except on a link. Issue bodies carry
+    // links now, and without this, following one would also collapse the
+    // issue you were reading.
+    document.querySelectorAll(".issue").forEach(x=>x.addEventListener("click",e=>{
+      if(e.target.closest("a")) return;
+      x.classList.toggle("open");
+    }));
   }
 }catch(e){
   document.getElementById("issues").innerHTML='<div class="empty">Couldn\'t load the archive.</div>';
