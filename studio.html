@@ -157,7 +157,6 @@
         Editing a published story \u2014 <span id="a_editid"></span>
         <button class="btn ghost" id="a_cancel" style="margin-top:10px;padding:8px;">Cancel and start fresh</button>
       </div>
-      <label>Byline</label><input type="text" id="a_author" placeholder="Greene MMA">
       <label>Headline</label><input type="text" id="a_head" placeholder="Short. Punchy. Max ~10 words.">
       <label>Standfirst (shows on cards + previews)</label>
       <textarea id="a_sum" placeholder="One or two sentences. 25-45 words."></textarea>
@@ -181,6 +180,10 @@
           <select id="a_utah"><option value="no">No</option><option value="yes">Yes</option></select>
         </div>
       </div>
+      <label>Byline</label>
+      <input type="text" id="a_author" name="a_author" autocomplete="off" spellcheck="false"
+             value="Greene MMA" placeholder="Greene MMA">
+      <div class="fmthelp" style="margin-top:6px">Who gets credited. Leave it as <b>Greene MMA</b> unless a guest wrote the piece.</div>
       <label>Tags (used by the News filters)</label>
       <div class="chips" id="a_tags">
         <div class="chip" data-t="UFC">UFC</div>
@@ -507,7 +510,7 @@
   /* After publishing: the live link, openable and copyable in one tap, so
      sharing your own story doesn't mean retyping a URL from a status line. */
   function showPublished(el,id,carded){
-    const url='https://greenemma.com/s/'+id;
+    const url='https://mma.greene.bet/s/'+id;
     el.className='ok';
     el.innerHTML='✓ Published '+(carded?'· share card ready ':'')+
       '<a href="'+url+'" target="_blank" rel="noopener" style="color:var(--volt);text-decoration:underline;">'+url+'</a> '+
@@ -546,6 +549,7 @@
     editingId=null;
     $('a_editing').style.display='none';
     $('a_head').value='';$('a_sum').value='';$('a_body').value='';
+    $('a_author').value='Greene MMA';
     $('a_pub').textContent='Publish article';
     document.querySelectorAll('#a_tags .chip').forEach(c=>c.classList.remove('on'));
   }
@@ -566,6 +570,18 @@
       utah:$('a_utah').value==='yes'
     };
     if(!article.headline||!article.body){ say(st,'Headline and body are required.','bad'); return; }
+    /* A byline is free text, so nothing else can tell a name from a sentence.
+       These two cases are always a slip: the headline pasted into the wrong
+       box, or a byline long enough that it can only be prose. */
+    const norm=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+    if(norm(article.author)===norm(article.headline)){
+      say(st,'The byline is the same as the headline — it should be a name, like Greene MMA. Fix it and publish again.','bad');
+      $('a_author').focus(); return;
+    }
+    if(article.author.length>40){
+      say(st,'That byline is '+article.author.length+' characters — it should be a name, not a sentence.','bad');
+      $('a_author').focus(); return;
+    }
     say(st,'Publishing...');
     const out=await api({article});
     if(out.ok){
@@ -577,6 +593,7 @@
       }) : false;
       showPublished(st, out.id, carded);
       $('a_head').value='';$('a_sum').value='';$('a_body').value='';
+      $('a_author').value='Greene MMA';
     } else say(st,'✗ '+(out.error||'Failed'),'bad');
   });
 
