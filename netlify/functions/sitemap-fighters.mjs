@@ -19,7 +19,7 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 
-const SITE = "https://mma.greene.bet";
+const SITE = "https://greenemma.com";
 const slugify = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 const fullName = (f) => [f.first, f.last].filter(Boolean).join(" ").trim();
 

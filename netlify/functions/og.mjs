@@ -18,7 +18,7 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 
-const FALLBACK = "https://mma.greene.bet/assets/share-card.png";
+const FALLBACK = "https://greenemma.com/assets/share-card.png";
 
 export default async function handler(req, context) {
   // Same belt-and-braces param read as /s/:id — fall back to the path and

@@ -8,7 +8,7 @@
 
 import crypto from "node:crypto";
 
-export const SITE_URL = (process.env.SITE_URL || "https://mma.greene.bet").replace(/\/+$/, "");
+export const SITE_URL = (process.env.SITE_URL || "https://greenemma.com").replace(/\/+$/, "");
 // The verified sending identity. greene.bet is what's verified in Resend —
 // this address has nothing to do with which site's code is running.
 export const MAIL_FROM = process.env.MAIL_FROM || "Greene MMA <cedric@greene.bet>";
@@ -210,7 +210,7 @@ export function issueMessage({ issue, email, secret }) {
   const link = unsubUrl(email, secret);
   const bodyHtml = mdToEmailHtml(issue.body);
   const footerHtml =
-    `You're getting this because you signed up at <a href="${SITE_URL}" style="color:${STEEL};">mma.greene.bet</a>.<br>` +
+    `You're getting this because you signed up at <a href="${SITE_URL}" style="color:${STEEL};">greenemma.com</a>.<br>` +
     `<a href="${esc(link)}" style="color:${STEEL};text-decoration:underline;">Unsubscribe</a> — one click, no hard feelings.`;
   const text = `${mdToText(issue.body)}\n\n—\nUnsubscribe: ${link}`;
   return {

@@ -36,7 +36,7 @@ function getDb() {
   return _db;
 }
 
-const SITE = "https://mma.greene.bet";
+const SITE = "https://greenemma.com";
 
 const esc = (s) => String(s == null ? "" : s)
   .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")

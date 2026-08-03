@@ -16,7 +16,7 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 
-const SITE = "https://mma.greene.bet";
+const SITE = "https://greenemma.com";
 
 const esc = (s) => String(s == null ? "" : s)
   .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
