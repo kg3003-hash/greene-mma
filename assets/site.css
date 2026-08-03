@@ -236,8 +236,23 @@ nav .fw-chip .bout{display:none;}
 /* ---------- Motion on state change ----------
    Paired with /assets/ui.js. Lists arrive item by item instead of blinking
    into place, and the active-tab fill travels rather than teleporting. */
-.gm-stagger{opacity:0;transform:translateY(9px);animation:gmStagger .36s cubic-bezier(.2,.7,.3,1) forwards;animation-delay:var(--i,0ms);}
-@keyframes gmStagger{to{opacity:1;transform:none;}}
+/* The resting state is VISIBLE, and the entrance is described entirely inside
+   the keyframes with a `both` fill.
+
+   It used to be the other way round: the element sat at opacity:0 and only an
+   animation reaching its end could reveal it. That makes content depend on an
+   animation succeeding, and when one didn't, the whole Utah roster — 71 rows,
+   correctly rendered, correct count above them — was invisible until a filter
+   click rebuilt the list. Nothing was broken except that the reveal never
+   arrived, which is the worst kind of bug: the page looks empty and the data
+   is right there.
+
+   `backwards` fill still holds the from-state through the stagger delay, so
+   the effect is identical when it runs. When it doesn't run for any reason —
+   animation stripped, element never painted, a quirk nobody predicted — the
+   row is simply visible, because that is now what the rule says. */
+.gm-stagger{animation:gmStagger .36s cubic-bezier(.2,.7,.3,1) both;animation-delay:var(--i,0ms);}
+@keyframes gmStagger{from{opacity:0;transform:translateY(9px);}to{opacity:1;transform:none;}}
 
 .gm-tabs{position:relative;}
 .gm-tabs .gm-ind{
