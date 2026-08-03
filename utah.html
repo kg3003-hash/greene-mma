@@ -223,6 +223,16 @@
   .hero .dek{opacity:0;transform:translateY(14px);animation:rise .6s cubic-bezier(.2,.7,.3,1) .6s forwards;}
   .hero .eyebrow{opacity:0;animation:rise .5s ease .15s forwards;}
   @keyframes rise{to{opacity:1;transform:none;}}
+  /* These three start at opacity:0 and are revealed by the animation, so the
+     shared reset in site.css has to put them back. It couldn't: it targets
+     `h1`, `.eyebrow` and `.dek`, which the `.hero `-prefixed selectors above
+     out-specify. With reduced motion on, site.css killed the animation and
+     the whole hero — REGIONAL DESK, the heading and the intro — stayed
+     invisible. Reset here, at matching specificity and after the rules it
+     needs to beat. */
+  @media(prefers-reduced-motion:reduce){
+    .hero h1,.hero .dek,.hero .eyebrow{opacity:1;transform:none;animation:none;}
+  }
   .reveal{opacity:0;transform:translateY(16px);transition:opacity .55s ease,transform .55s ease;}
   .reveal.in{opacity:1;transform:none;}
   .promo{transition:border-color .18s,transform .18s,background .18s;}
