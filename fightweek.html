@@ -371,7 +371,7 @@ window.__fighterModal=(function(){
         ? '<div class="grid">'+stats.map(r=>'<div class="cell"><div class="l">'+esc(r[0])+'</div><div class="v">'+esc(r[1])+'</div></div>').join('')+'</div>'
         : '<div class="empty-stats">No fight stats recorded for this fighter yet.</div>')+
       (f.note?'<div class="note">'+esc(f.note)+'</div>':'')+
-      '<a class="go" href="/fighter.html?f='+encodeURIComponent(slug)+'">Full profile \u2192</a>';
+      '<a class="go" href="/f/'+encodeURIComponent(slug)+'">Full profile \u2192</a>';
     el.classList.add('on');
   }
   return {open,close};

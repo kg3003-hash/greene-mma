@@ -756,7 +756,7 @@ window.__fighterModal=(function(){
               esc(h.result||'\u2013')+'</span>').join('')+
           '</div></div>' : '')+
       (f.note?'<div class="note">'+esc(f.note)+'</div>':'')+
-      '<a class="go" href="/fighter.html?f='+encodeURIComponent(slug)+'">Full profile \u2192</a>';
+      '<a class="go" href="/f/'+encodeURIComponent(slug)+'">Full profile \u2192</a>';
     show();
   }
   return {open,close};

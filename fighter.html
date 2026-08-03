@@ -236,7 +236,9 @@ try{
   setMeta('meta[name="description"]',fDesc);
   let can=document.querySelector('link[rel="canonical"]');
   if(!can){ can=document.createElement("link"); can.rel="canonical"; document.head.appendChild(can); }
-  can.href="https://mma.greene.bet/fighter.html?f="+encodeURIComponent(fSlug);
+  // Canonical points at the server-rendered profile at /f/:slug, not at
+  // this page. Both render the same fighter; only one should be indexed.
+  can.href="https://mma.greene.bet/f/"+encodeURIComponent(fSlug);
 
   // "instagram.com/someone" -> "Instagram", so the link says where it goes
   function socialLabel(url){

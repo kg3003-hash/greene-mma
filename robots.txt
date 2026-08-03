@@ -9,3 +9,4 @@ Disallow: /write
 
 Sitemap: https://mma.greene.bet/sitemap.xml
 Sitemap: https://mma.greene.bet/sitemap-stories.xml
+Sitemap: https://mma.greene.bet/sitemap-fighters.xml

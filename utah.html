@@ -688,7 +688,7 @@ try{
       if(fl.length){
         document.getElementById("fighterstrip").innerHTML=
           '<div class="gyms">'+fl.slice(0,6).map(f=>
-            '<a class="gym reveal" style="display:block" href="/fighter.html?f='+encodeURIComponent(f.slug||((f.first||'')+'-'+(f.last||'')).toLowerCase().replace(/[^a-z0-9]+/g,'-'))+'">'+
+            '<a class="gym reveal" style="display:block" href="/f/'+encodeURIComponent(f.slug||((f.first||'')+'-'+(f.last||'')).toLowerCase().replace(/[^a-z0-9]+/g,'-'))+'">'+
               '<div class="n">'+esc(f.first)+' '+esc(f.last)+'</div>'+
               '<div class="c">'+esc(f.record||"")+(f.weight?" · "+esc(f.weight):"")+'</div>'+
               (f.gym?'<div class="d">'+esc(f.gym)+'</div>':'')+
@@ -933,7 +933,7 @@ window.__fighterModal=(function(){
         ? '<div class="grid">'+stats.map(r=>'<div class="cell"><div class="l">'+esc(r[0])+'</div><div class="v">'+esc(r[1])+'</div></div>').join('')+'</div>'
         : '<div class="empty-stats">No fight stats recorded for this fighter yet.</div>')+
       (f.note?'<div class="note">'+esc(f.note)+'</div>':'')+
-      '<a class="go" href="/fighter.html?f='+encodeURIComponent(slug)+'">Full profile \u2192</a>';
+      '<a class="go" href="/f/'+encodeURIComponent(slug)+'">Full profile \u2192</a>';
     show();
   }
   return {open,close};
