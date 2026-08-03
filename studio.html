@@ -214,8 +214,9 @@
 
 <div class="panel">
       <h2>Manage stories</h2>
-      <p class="hint" style="margin-top:0">Pin any story — yours or from the wire — to the homepage. <b>TOP</b> leads the global news column (your first pin becomes the lead story); <b>UTAH</b> leads the local rail. Newest pin goes first, tap again to unpin. DEL removes stray items.</p>
+      <p class="hint" style="margin-top:0">Pin any story — yours or from the wire — to the homepage. <b>TOP</b> leads the global news column (your first pin becomes the lead story); <b>UTAH</b> leads the local rail. Newest pin goes first, tap again to unpin. <b>EDIT</b> opens one of yours back up in the writer — the link and the publish date stay put. DEL removes stray items.</p>
       <button class="btn ghost" id="s_load">Load recent stories</button>
+      <div id="s_status" style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
       <div id="s_list" style="margin-top:12px;"></div>
     </div>
 
@@ -1498,9 +1499,22 @@
           '<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);margin-top:4px;">'+
           (st.original?'YOURS · ':'')+attr(st.category)+' · '+attr(st.sourceName)+'</div></div>'+
         '<span class="pinbox" style="display:flex;gap:6px;"></span>'+
+        /* Only our own pieces. Re-saving a wire item through the writer would
+           rewrite it as a Greene MMA original and strip its attribution. */
+        (st.original?'<button class="edit" style="background:none;border:1px solid var(--hair);color:var(--volt);padding:6px 10px;cursor:pointer;font-size:11px;font-family:\'JetBrains Mono\',monospace;letter-spacing:.06em;">EDIT</button>':'')+
         '<button class="del" style="background:none;border:1px solid var(--hair);color:#FF4B3E;padding:6px 10px;cursor:pointer;font-size:11px;font-family:\'JetBrains Mono\',monospace;">DEL</button>'+
       '</div>').join('');
     list.querySelectorAll('.srow').forEach(drawPinBtns);
+    list.querySelectorAll('.edit').forEach(b=>b.addEventListener('click',async e=>{
+      const row=e.target.closest('.srow');
+      b.disabled=true; b.textContent='…';
+      try{
+        const r=await api({getStory:row.dataset.id});
+        if(r.ok&&r.story) window.loadStoryIntoEditor(r.story);
+        else say($('s_status'),'✗ '+(r.error||'Could not open that story.'),'bad');
+      }catch(err){ say($('s_status'),'✗ '+err.message,'bad'); }
+      b.disabled=false; b.textContent='EDIT';
+    }));
     list.querySelectorAll('.del').forEach(b=>b.addEventListener('click',async e=>{
       const row=e.target.closest('.srow');
       const r=await api({deleteStory:row.dataset.id});
