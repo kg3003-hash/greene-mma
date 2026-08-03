@@ -425,7 +425,10 @@
   }
 
 </style>
-<link rel="stylesheet" href="/assets/site.css?v=6">
+<link rel="stylesheet" href="/assets/site.css?v=7">
+<!-- Firestore over plain fetch. Deferred, so it never blocks parsing, but
+     still runs before any module script that depends on window.FSCompat. -->
+<script defer src="/assets/fsdata.js?v=1"></script>
 <style>
 /* ---- Page overrides — after site.css so equal-specificity rules win. ---- */
 /* Homepage nav: links sit at a fixed gap between the home lockup and the
@@ -713,8 +716,12 @@ footer{padding:56px 0 72px;font-family:'Barlow',sans-serif;font-size:17.5px;lett
 // Stories from the news bot, fight week + dogs from the odds puller, and
 // written picks from the studio. Anything missing simply hides its section
 // rather than showing invented numbers.
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, doc, getDoc, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+// Reads go over Firestore's REST API (assets/fsdata.js) rather than the Web
+// SDK. The SDK opened a WebChannel, which plenty of networks break; it would
+// then sit on an internal timeout for 10-15 seconds before falling back, which
+// is why this page used to show nothing and then everything at once. These
+// names keep the same shapes so the rendering below is unchanged.
+const { initializeApp, getFirestore, collection, doc, getDoc, query, orderBy, limit, getDocs } = window.FSCompat;
 
 // PASTE YOUR FIREBASE WEB CONFIG HERE (Firebase console -> Project settings -> Your apps)
 const firebaseConfig = {
@@ -798,31 +805,43 @@ try{
   try{
     // Pins saved from the studio: ordered story ids per column.
     // First global pin becomes the lead story.
-    let pins={global:[],utah:[]};
-    try{
-      const p=(await getDoc(doc(db,"site","pins"))).data();
-      if(p) pins={global:(p.global||[]).slice(0,6),utah:(p.utah||[]).slice(0,6)};
-    }catch(e){ console.warn("pins",e); }
+    // These four reads don't depend on each other, so ask for them at once.
+    // Written as sequential awaits they were four round trips stacked end to
+    // end, and on a slow connection that is most of the wait. Each optional
+    // one keeps its own catch so a single missing doc still can't take the
+    // page down. The stories query has none on purpose: if that fails there
+    // is no front page, and the outer catch handles it.
+    const [pinsDoc, snap, origDoc, utahDoc] = await Promise.all([
+      getDoc(doc(db,"site","pins")).catch(e=>{ console.warn("pins",e); return null; }),
+      getDocs(query(collection(db,"stories"),orderBy("publishedAt","desc"),limit(30))),
+      getDoc(doc(db,"site","originals")).catch(e=>{ console.warn("originals",e); return null; }),
+      getDoc(doc(db,"site","utahwire")).catch(e=>{ console.warn("utahwire",e); return null; }),
+    ]);
 
-    const snap=await getDocs(query(collection(db,"stories"),orderBy("publishedAt","desc"),limit(30)));
+    // Pins saved from the studio: ordered story ids per column.
+    // First global pin becomes the lead story.
+    let pins={global:[],utah:[]};
+    const p=pinsDoc&&pinsDoc.data();
+    if(p) pins={global:(p.global||[]).slice(0,6),utah:(p.utah||[]).slice(0,6)};
+
     const byId=new Map();
     clean(snap.docs.map(d=>({id:d.id,...d.data()}))).forEach(s=>byId.set(s.id,s));
 
     // Index docs — maintained server-side on every publish and bot run, so
     // our own writing and Utah coverage stay visible no matter how much wire
     // volume lands on top of them.
-    let originals=[], utahwire=[];
-    try{ originals=clean(((await getDoc(doc(db,"site","originals"))).data()||{}).stories||[]); }catch(e){ console.warn("originals",e); }
-    try{ utahwire=clean(((await getDoc(doc(db,"site","utahwire"))).data()||{}).stories||[]); }catch(e){ console.warn("utahwire",e); }
+    const originals=clean(((origDoc&&origDoc.data())||{}).stories||[]);
+    const utahwire=clean(((utahDoc&&utahDoc.data())||{}).stories||[]);
     [...originals,...utahwire].forEach(s=>{ if(s.id && !byId.has(s.id)) byId.set(s.id,s); });
 
-    // Pinned stories older than the newest batch get fetched directly
-    for(const id of [...pins.global,...pins.utah]){
-      if(byId.has(id)) continue;
-      try{
-        const ds=await getDoc(doc(db,"stories",id));
-        if(ds.exists()){ const s={id:ds.id,...ds.data()}; if(clean([s]).length) byId.set(id,s); }
-      }catch(e){}
+    // Pinned stories older than the newest batch. Deduped first — an id can
+    // sit in both columns — then fetched together instead of one at a time.
+    const missing=[...new Set([...pins.global,...pins.utah])].filter(id=>id&&!byId.has(id));
+    if(missing.length){
+      const fetched=await Promise.all(missing.map(id=>getDoc(doc(db,"stories",id)).catch(()=>null)));
+      fetched.forEach((ds,i)=>{
+        if(ds&&ds.exists()){ const s={id:ds.id,...ds.data()}; if(clean([s]).length) byId.set(missing[i],s); }
+      });
     }
 
     const pinnedG=pins.global.map(id=>byId.get(id)).filter(Boolean);
@@ -971,31 +990,9 @@ document.querySelector(".corner form")?.addEventListener("submit", async e=>{
 if(window.__reveal) window.__reveal();
 </script>
 <script>
-/* Site copy — any element with data-copy gets its text from the studio,
-   falling back to whatever is written in the HTML. */
-(async function(){
-  var nodes=document.querySelectorAll('[data-copy]');
-  if(!nodes.length) return;
-  try{
-    var m=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
-    var f=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-    var app=m.initializeApp({
-      apiKey:"AIzaSyCN2eOBaQBiZDOexipJ-KS7pqkOaNJq7gU",
-      authDomain:"bragging-rights-public.firebaseapp.com",
-      projectId:"bragging-rights-public",
-      storageBucket:"bragging-rights-public.firebasestorage.app",
-      messagingSenderId:"525120309709",
-      appId:"1:525120309709:web:a21f060511e84bb4a91c84"
-    },"copyapp");
-    var db=f.getFirestore(app);
-    var snap=await f.getDoc(f.doc(db,"site","copy"));
-    var blocks=(snap.data()||{}).blocks||{};
-    nodes.forEach(function(el){
-      var v=blocks[el.getAttribute('data-copy')];
-      if(v && String(v).trim()) el.textContent=v;
-    });
-  }catch(e){ /* fallback text stays */ }
-})();
+/* Site copy is applied by /assets/fsdata.js — one fetch, no SDK.
+   It used to stand up a second Firebase app on every page purely to read
+   one document, which meant two Firestore connections per page load. */
 </script>
 <script>
 /* Marquee pause toggle — hover pauses on desktop; this is the touch control */

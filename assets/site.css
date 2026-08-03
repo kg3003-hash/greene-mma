@@ -317,3 +317,15 @@ select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{
 }
 .marquee .pausebtn:hover,.marquee .pausebtn:focus-visible{color:var(--volt);border-color:var(--volt);outline:none;}
 .marquee.paused .track{animation-play-state:paused !important;}
+
+/* V7 — a load that failed, rather than a spinner that never stops.
+   Set by the watchdog in /assets/fsdata.js when a container is still marked
+   aria-busy long after any real read would have finished. */
+.fs-stalled{border:1px dashed var(--hair);padding:38px 24px;text-align:center;}
+.fs-stalled-h{font-family:'Anton',sans-serif;text-transform:uppercase;letter-spacing:.02em;
+  font-size:20px;color:var(--bone);margin:0 0 8px;}
+.fs-stalled-p{font-size:14.5px;line-height:1.6;color:var(--steel);margin:0 auto 18px;max-width:34em;}
+.fs-retry{font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;cursor:pointer;
+  padding:11px 24px;color:var(--black);background:var(--volt);border:2px solid var(--volt);}
+.fs-retry:hover{background:transparent;color:var(--volt);}

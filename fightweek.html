@@ -122,7 +122,10 @@
 
 </style>
 <link rel="alternate" type="application/rss+xml" title="Greene MMA — Original stories" href="/feed.xml">
-<link rel="stylesheet" href="/assets/site.css?v=6">
+<link rel="stylesheet" href="/assets/site.css?v=7">
+<!-- Firestore over plain fetch. Deferred, so it never blocks parsing, but
+     still runs before any module script that depends on window.FSCompat. -->
+<script defer src="/assets/fsdata.js?v=1"></script>
 </head>
 <body>
 <a class="gm-skip" href="#main">Skip to content</a>
@@ -199,8 +202,11 @@
 
 </html>
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+// Reads go over Firestore's REST API (assets/fsdata.js) rather than the Web
+// SDK. The SDK opened a WebChannel, which plenty of networks break; it would
+// then sit on an internal timeout for 10-15 seconds before falling back. These
+// names keep the same shapes, so the rendering below is unchanged.
+const { initializeApp, getFirestore, doc, getDoc } = window.FSCompat;
 const firebaseConfig = {
   apiKey: "AIzaSyCN2eOBaQBiZDOexipJ-KS7pqkOaNJq7gU",
   authDomain: "bragging-rights-public.firebaseapp.com",
@@ -219,6 +225,9 @@ function posLabel(i,total){
   return 'Main Card';
 }
 try{
+  // Every read this page makes, started at once. The awaits below then join
+  // requests already in flight rather than queueing five round trips.
+  FS.prefetch(['site/fightweek','site/fighters','site/cardnames','site/localcard','site/sponsors']);
   const db=getFirestore(initializeApp(firebaseConfig));
   const fw=(await getDoc(doc(db,"site","fightweek"))).data();
   const rosterSnap=await getDoc(doc(db,"site","fighters"));
@@ -370,31 +379,9 @@ window.__fighterModal=(function(){
 
 </script>
 <script>
-/* Site copy — any element with data-copy gets its text from the studio,
-   falling back to whatever is written in the HTML. */
-(async function(){
-  var nodes=document.querySelectorAll('[data-copy]');
-  if(!nodes.length) return;
-  try{
-    var m=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
-    var f=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-    var app=m.initializeApp({
-      apiKey:"AIzaSyCN2eOBaQBiZDOexipJ-KS7pqkOaNJq7gU",
-      authDomain:"bragging-rights-public.firebaseapp.com",
-      projectId:"bragging-rights-public",
-      storageBucket:"bragging-rights-public.firebasestorage.app",
-      messagingSenderId:"525120309709",
-      appId:"1:525120309709:web:a21f060511e84bb4a91c84"
-    },"copyapp");
-    var db=f.getFirestore(app);
-    var snap=await f.getDoc(f.doc(db,"site","copy"));
-    var blocks=(snap.data()||{}).blocks||{};
-    nodes.forEach(function(el){
-      var v=blocks[el.getAttribute('data-copy')];
-      if(v && String(v).trim()) el.textContent=v;
-    });
-  }catch(e){ /* fallback text stays */ }
-})();
+/* Site copy is applied by /assets/fsdata.js — one fetch, no SDK.
+   It used to stand up a second Firebase app on every page purely to read
+   one document, which meant two Firestore connections per page load. */
 </script>
 <!-- live fight-week chip in the nav -->
 <script src="/assets/ui.js?v=4"></script>

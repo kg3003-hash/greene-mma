@@ -89,7 +89,10 @@
   /* reduced-motion rules are shared in /assets/site.css */
 </style>
 <link rel="alternate" type="application/rss+xml" title="Greene MMA — Original stories" href="/feed.xml">
-<link rel="stylesheet" href="/assets/site.css?v=6">
+<link rel="stylesheet" href="/assets/site.css?v=7">
+<!-- Firestore over plain fetch. Deferred, so it never blocks parsing, but
+     still runs before any module script that depends on window.FSCompat. -->
+<script defer src="/assets/fsdata.js?v=1"></script>
 <style>
 /* ---- Page overrides — after site.css so equal-specificity rules win. ---- */
 /* Story nav: taller bar with the mark+wordmark lockup, quieter links,
@@ -169,8 +172,11 @@ footer{border-top:1px solid var(--hair);padding:44px 0 64px;}
 </script>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, doc, getDoc, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+// Reads go over Firestore's REST API (assets/fsdata.js) rather than the Web
+// SDK. The SDK opened a WebChannel, which plenty of networks break; it would
+// then sit on an internal timeout for 10-15 seconds before falling back. These
+// names keep the same shapes, so the rendering below is unchanged.
+const { initializeApp, getFirestore, collection, doc, getDoc, query, orderBy, limit, getDocs } = window.FSCompat;
 
 // SAME CONFIG AS index.html
 const firebaseConfig = {
