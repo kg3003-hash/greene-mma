@@ -529,9 +529,9 @@
   }
 
   /* ---- article ---- */
-  let editingId=null;
+  let editingId=null, editingHeadline='';
   window.loadStoryIntoEditor=function(st){
-    editingId=st.id;
+    editingId=st.id; editingHeadline=st.headline||'';
     $('a_editing').style.display='block';
     $('a_editid').textContent=st.id;
     $('a_head').value=st.headline||'';
@@ -547,7 +547,7 @@
     $('a_head').scrollIntoView({behavior:'smooth',block:'center'});
   };
   function resetArticleEditor(){
-    editingId=null;
+    editingId=null; editingHeadline='';
     $('a_editing').style.display='none';
     $('a_head').value='';$('a_sum').value='';$('a_body').value='';
     $('a_author').value='Greene MMA';
@@ -583,6 +583,17 @@
       say(st,'That byline is '+article.author.length+' characters — it should be a name, not a sentence.','bad');
       $('a_author').focus(); return;
     }
+    /* Saving an edit keeps the same document, so a different headline here
+       means the old story is about to be replaced rather than corrected.
+       That is occasionally intended and never something to do silently. */
+    if(editingId && norm(article.headline)!==norm(editingHeadline)){
+      const ok=confirm(
+        'This will REPLACE the published story:\n\n  "'+editingHeadline+'"\n\n'+
+        'with:\n\n  "'+article.headline+'"\n\n'+
+        'The old text cannot be recovered.\n\n'+
+        'Writing a brand new article? Click Cancel, then "Cancel and start fresh" above the headline.');
+      if(!ok){ say(st,'Nothing saved.',''); return; }
+    }
     say(st,'Publishing...');
     const out=await api({article});
     if(out.ok){
@@ -593,8 +604,10 @@
         original:true, author:article.author,
       }) : false;
       showPublished(st, out.id, carded);
-      $('a_head').value='';$('a_sum').value='';$('a_body').value='';
-      $('a_author').value='Greene MMA';
+      /* Leaving editingId set here meant the NEXT article published straight
+         over the story just edited — same id, and keepDate stamped it with
+         the old date too. Always drop back to a clean, new-article state. */
+      resetArticleEditor();
     } else say(st,'✗ '+(out.error||'Failed'),'bad');
   });
 
