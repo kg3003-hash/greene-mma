@@ -170,8 +170,19 @@ body::after{
   -webkit-mask-image:radial-gradient(ellipse 90% 78% at 50% 0%, #000 22%, transparent 76%);
           mask-image:radial-gradient(ellipse 90% 78% at 50% 0%, #000 22%, transparent 76%);
 }
-/* the header's own content must stay above the cage */
-.hero > *,.masthead > *{position:relative;z-index:1;}
+/* The header's own content must stay above the cage — but only the content.
+   Every header also holds a decorative mark that positions itself absolutely
+   (the Utah map, the big octagon watermark, the homepage octagon field), and
+   this rule used to force all of them back into normal flow: same specificity
+   as the pages' own rules, but site.css loads later, so it won. That put a
+   tall block in the middle of every header. Invisible at opacity .055, and
+   very visible on Utah, whose map is a real graphic — it pushed the heading
+   and intro clean off a phone screen.
+   Decorative children are all aria-hidden, so that is the line. :where()
+   keeps the selector at its original specificity, so nothing else in the
+   cascade shifts. */
+.hero > *:not(:where([aria-hidden="true"])),
+.masthead > *:not(:where([aria-hidden="true"])){position:relative;z-index:1;}
 
 /* ---------- Fight-week pulse ----------
    A live chip in the nav, driven by /assets/fightpulse.js. Quiet when the
