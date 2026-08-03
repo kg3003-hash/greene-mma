@@ -202,6 +202,20 @@
     color:var(--steel);
   }
   .masthead .tag b{color:var(--bone);font-weight:400;}
+  /* Place stamp under the tagline — says where this comes from without
+     spending a headline on it. The flanking rules make it read as a mark
+     rather than a competing second tagline. Editable from the Studio
+     (home.locale), which injects plain text, so all the styling is here. */
+  .masthead .locale{
+    margin-top:14px;
+    display:inline-flex;align-items:center;gap:12px;
+    font-family:'JetBrains Mono',monospace;font-weight:700;
+    font-size:clamp(10px,1.35vw,12px);letter-spacing:.26em;text-transform:uppercase;
+    color:var(--volt);
+  }
+  .masthead .locale::before,.masthead .locale::after{
+    content:'';width:clamp(16px,5vw,40px);height:1px;background:currentColor;opacity:.4;
+  }
 
   /* ---------- LEAD STORY ---------- */
   .lead{padding:72px 0;border-bottom:1px solid var(--hair);}
@@ -383,6 +397,10 @@
     opacity:0;transform:translateY(12px);
     animation:rise .6s cubic-bezier(.2,.7,.3,1) 1.55s forwards;
   }
+  .masthead .locale{
+    opacity:0;transform:translateY(10px);
+    animation:rise .6s cubic-bezier(.2,.7,.3,1) 1.8s forwards;
+  }
   @keyframes rise{to{opacity:1;transform:none;}}
 
   /* ---------- SCROLL REVEALS (added by JS) ---------- */
@@ -403,7 +421,7 @@
      rules stay here because .masthead h1/.tag out-specify the shared reset */
   @media(prefers-reduced-motion:reduce){
     .masthead .mark path{stroke-dashoffset:0;}
-    .masthead h1,.masthead .tag{opacity:1;transform:none;}
+    .masthead h1,.masthead .tag,.masthead .locale{opacity:1;transform:none;}
   }
 
 </style>
@@ -466,6 +484,7 @@ footer{padding:56px 0 72px;font-family:'Barlow',sans-serif;font-size:17.5px;lett
       <svg class="mark" aria-hidden="true" viewBox="0 0 120 120"><path d="M104.35,41.63 78.37,15.65 41.63,15.65 15.65,41.63 15.65,78.37 41.63,104.35 78.37,104.35 104.35,78.37 104.35,64 71,64" fill="none" stroke="#C9F73A" stroke-width="11" stroke-linejoin="miter"/></svg></div>
     <h1>Greene <span>MMA</span></h1>
     <div class="tag" data-copy="home.tagline">Fight news from the <b>Greene corner</b></div>
+    <div class="locale" data-copy="home.locale">Utah's MMA desk · Salt Lake City</div>
   </div>
 </header>
 
