@@ -421,7 +421,17 @@ const promoOf=f=>{
   return m ? (PROMOS.find(p=>p.toLowerCase()===m[1].toLowerCase())||"") : "";
 };
 
+/* Every filter value the page knows how to honour. Anything else can only
+   come from a state we didn't intend, and the cost of not noticing is a
+   roster that reports "0 fighters" while holding 71 — so it self-corrects
+   rather than showing an empty page. */
+const KNOWN_FILTERS=()=>["All","Pro","Amateur","Booked","Champions"].concat(PROMOS).concat(DIVISIONS);
+
 function render(){
+  if(!KNOWN_FILTERS().includes(active)){
+    console.warn('Unknown roster filter "'+active+'" — falling back to All.');
+    active="All";
+  }
   let list = active==="All" ? all
     : active==="Pro" ? all.filter(f=>f.pro!==false)
     : active==="Amateur" ? all.filter(f=>f.pro===false)
@@ -437,7 +447,18 @@ function render(){
   const el=document.getElementById("roster");
   document.getElementById("count").textContent=list.length+" fighter"+(list.length===1?"":"s");
   if(!list.length){
-    el.innerHTML='<div class="empty">'+(q?'No fighter matches that search.':'Nobody on the roster in this filter yet.')+'</div>';
+    /* An empty list while the roster itself has people in it is a dead end:
+       the page looks broken and there is nothing to click. Say which filter
+       is responsible and give a way back to everybody. */
+    const stranded=!q && all.length;
+    el.innerHTML='<div class="empty">'+
+      (q?'No fighter matches that search.'
+        :stranded?'No fighter on the roster matches "'+esc(active)+'".<br>'+
+                  '<button type="button" id="showall" class="fbtn" style="margin-top:14px;">Show all '+all.length+' fighters</button>'
+        :'Nobody on the roster in this filter yet.')+
+      '</div>';
+    const sa=document.getElementById('showall');
+    if(sa) sa.addEventListener('click',()=>{ active="All"; buildFilters(); render(); });
     return;
   }
   el.innerHTML=list.map((f,idx)=>
