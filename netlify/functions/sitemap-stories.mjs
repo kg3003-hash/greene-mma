@@ -15,7 +15,7 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 
-const SITE = "https://mma.greene.bet";
+const SITE = "https://greenemma.com";
 
 export default async function handler() {
   const seen = new Set();

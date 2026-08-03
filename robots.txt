@@ -7,6 +7,6 @@ Disallow: /studio
 Disallow: /cards
 Disallow: /write
 
-Sitemap: https://mma.greene.bet/sitemap.xml
-Sitemap: https://mma.greene.bet/sitemap-stories.xml
-Sitemap: https://mma.greene.bet/sitemap-fighters.xml
+Sitemap: https://greenemma.com/sitemap.xml
+Sitemap: https://greenemma.com/sitemap-stories.xml
+Sitemap: https://greenemma.com/sitemap-fighters.xml

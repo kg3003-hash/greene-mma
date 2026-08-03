@@ -11,6 +11,32 @@
 [functions]
   node_bundler = "esbuild"
 
+# ---- Old home -> new home -------------------------------------------------
+# greenemma.com is the site now. mma.greene.bet keeps answering forever and
+# hands every request on, so nothing that was ever linked, indexed, printed or
+# emailed can rot. These sit above the pretty-path rules below so they win.
+#
+# /u is separated out on purpose. Gmail and Apple Mail POST to it for one-click
+# unsubscribe, and a 301 turns a POST into a GET — which would silently break
+# unsubscribing from every email already delivered. 308 preserves the method.
+[[redirects]]
+  from = "https://mma.greene.bet/u"
+  to = "https://greenemma.com/u"
+  status = 308
+  force = true
+
+[[redirects]]
+  from = "https://mma.greene.bet/*"
+  to = "https://greenemma.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://www.greenemma.com/*"
+  to = "https://greenemma.com/:splat"
+  status = 301
+  force = true
+
 [[redirects]]
   from = "/news"
   to = "/news.html"
