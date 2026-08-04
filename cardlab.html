@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Share Card Lab — Greene MMA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--black:#0C0E0A;--black-2:#13160F;--volt:#C9F73A;--bone:#F2F0E9;--steel:#9AA194;--red:#FF4B3E;--hair:rgba(242,240,233,.14);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--black);color:var(--bone);font-family:'Barlow',sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;padding-bottom:80px;}
+a{color:var(--volt);}
+.wrap{max-width:1160px;margin:0 auto;padding:0 22px;}
+header{border-bottom:1px solid var(--hair);padding:28px 0;margin-bottom:28px;background:radial-gradient(ellipse 70% 120% at 20% 0%, rgba(201,247,58,.08), transparent 60%);}
+h1{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:clamp(30px,5vw,46px);line-height:1;}
+h1 span{color:var(--volt);}
+.sub{color:var(--steel);margin-top:10px;font-size:15px;max-width:70ch;}
+.panel{border:1px solid var(--hair);background:var(--black-2);padding:18px;margin-bottom:30px;}
+label{display:block;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);margin:12px 0 5px;}
+input[type=text],select{width:100%;background:#0a0c07;border:1px solid var(--hair);color:var(--bone);padding:10px 12px;font-family:'Barlow',sans-serif;font-size:15px;}
+input:focus,select:focus{outline:none;border-color:var(--volt);}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:700px){.row{grid-template-columns:1fr;}}
+.btn{display:inline-block;margin-top:16px;background:var(--volt);color:var(--black);border:none;padding:11px 20px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;cursor:pointer;}
+.btn.ghost{background:none;border:1px solid var(--hair);color:var(--steel);}
+.btn:hover{filter:brightness(1.08);}
+.card{margin-bottom:38px;border:1px solid var(--hair);background:var(--black-2);}
+.card .bar{display:flex;align-items:baseline;gap:12px;padding:13px 16px;border-bottom:1px solid var(--hair);flex-wrap:wrap;}
+.num{font-family:'Anton',sans-serif;font-size:26px;color:var(--volt);line-height:1;}
+.nm{font-family:'Anton',sans-serif;font-size:19px;text-transform:uppercase;letter-spacing:.02em;}
+.desc{color:var(--steel);font-size:13.5px;flex:1;min-width:200px;}
+.card canvas{display:block;width:100%;height:auto;}
+.acts{padding:11px 16px;border-top:1px solid var(--hair);display:flex;gap:10px;}
+.acts button{background:none;border:1px solid var(--hair);color:var(--steel);padding:7px 13px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;}
+.acts button:hover{border-color:var(--volt);color:var(--volt);}
+.note{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--steel);letter-spacing:.04em;}
+</style>
+</head>
+<body>
+
+<header><div class="wrap">
+  <h1>Share card <span>lab</span></h1>
+  <p class="sub">Ten directions for the image that unfurls when a link is shared. Type a real headline below and every card redraws. Tell me the number you want and I'll wire it into the Studio so it's what gets made on publish.</p>
+</div></header>
+
+<div class="wrap">
+
+<div class="panel">
+  <label>Headline</label>
+  <input type="text" id="f_head" value="The Utah crowd is about to get loud again">
+  <div class="row">
+    <div>
+      <label>Category</label>
+      <input type="text" id="f_cat" value="The Corner">
+    </div>
+    <div>
+      <label>Byline</label>
+      <input type="text" id="f_by" value="Cedric - Greene MMA">
+    </div>
+  </div>
+  <div class="row">
+    <div>
+      <label>Kind</label>
+      <select id="f_orig">
+        <option value="1">Greene MMA original</option>
+        <option value="0">Wire story (via a source)</option>
+      </select>
+    </div>
+    <div>
+      <label>Try a length</label>
+      <select id="f_preset">
+        <option value="">— pick to test —</option>
+        <option value="Walker vs Parkin">Very short (3 words)</option>
+        <option value="The Utah crowd is about to get loud again">Medium (8 words)</option>
+        <option value="UFC flyweight Allan &quot;Puro Osso&quot; Nascimento has died at age 34">Long (11 words)</option>
+        <option value="Johnny Walker moves to heavyweight against Mick Parkin as UFC 332 begins taking shape in Salt Lake City">Very long (18 words)</option>
+      </select>
+    </div>
+  </div>
+  <button class="btn" id="go">Redraw all ten</button>
+  <button class="btn ghost" id="dlall">Download all</button>
+</div>
+
+<div id="cards"></div>
+
+<p class="note" style="margin-top:30px">Cards are 1200×630 — the size X, Facebook, LinkedIn and iMessage expect. Shown scaled to fit.</p>
+
+</div>
+
+<script>
+/* =====================================================================
+   SHARE CARD LAB
+   Ten complete directions, all fed from the same story object the Studio
+   passes to GMCard.render(). Shared primitives up top; each variant is a
+   self-contained draw function so one can be lifted straight into
+   studio.html once it is chosen.
+   ===================================================================== */
+(function(){
+const VOLT='#C9F73A', INK='#0C0E0A', BONE='#F2F0E9', STEEL='#9AA194', RED='#FF4B3E';
+const W=1200, H=630;
+const SITENAME='GREENEMMA.COM';
+
+const G=[[104.35,41.63],[78.37,15.65],[41.63,15.65],[15.65,41.63],[15.65,78.37],[41.63,104.35],[78.37,104.35],[104.35,78.37],[104.35,64],[71,64]];
+const OCT=[[78.37,15.65],[41.63,15.65],[15.65,41.63],[15.65,78.37],[41.63,104.35],[78.37,104.35],[104.35,78.37],[104.35,41.63]];
+
+function path(ctx,pts,close){ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));if(close)ctx.closePath();}
+function mark(ctx,x,y,size,color,lw){const s=size/120;ctx.save();ctx.translate(x,y);ctx.scale(s,s);
+  ctx.strokeStyle=color;ctx.lineWidth=lw||11;ctx.lineJoin='miter';ctx.miterLimit=10;path(ctx,G);ctx.stroke();ctx.restore();}
+function octa(ctx,cx,cy,size,color,lw,alpha){const s=size/120;ctx.save();ctx.globalAlpha=alpha;
+  ctx.translate(cx-size/2,cy-size/2);ctx.scale(s,s);ctx.strokeStyle=color;ctx.lineWidth=(lw||2)*(120/size);
+  ctx.lineJoin='miter';path(ctx,OCT,true);ctx.stroke();ctx.restore();}
+function octaFill(ctx,cx,cy,size,color,alpha){const s=size/120;ctx.save();ctx.globalAlpha=alpha;
+  ctx.translate(cx-size/2,cy-size/2);ctx.scale(s,s);ctx.fillStyle=color;path(ctx,OCT,true);ctx.fill();ctx.restore();}
+function cage(ctx,w,h,alpha,gap,color){
+  ctx.save();ctx.globalAlpha=alpha;ctx.strokeStyle=color||VOLT;ctx.lineWidth=1;
+  const g=gap||17;
+  for(let i=-h;i<w+h;i+=g){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i+h,h);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(i,h);ctx.lineTo(i+h,0);ctx.stroke();}
+  ctx.restore();
+}
+/* Deterministic grain so a redraw of the same story looks identical —
+   Math.random() made every regeneration a slightly different image. */
+function grain(ctx,w,h,amount,seed){
+  let s=seed||1;
+  const rnd=()=>{s=(s*1664525+1013904223)%4294967296;return s/4294967296;};
+  ctx.save();
+  for(let i=0;i<amount;i++){
+    ctx.fillStyle='rgba(255,255,255,'+(rnd()*0.05)+')';
+    ctx.fillRect(rnd()*w,rnd()*h,1.4,1.4);
+  }
+  ctx.restore();
+}
+function cropMarks(ctx,w,h,pad,len,color){
+  ctx.save();ctx.strokeStyle=color||VOLT;ctx.lineWidth=3;ctx.globalAlpha=.85;
+  [[pad,pad,1,1],[w-pad,pad,-1,1],[pad,h-pad,1,-1],[w-pad,h-pad,-1,-1]]
+    .forEach(([x,y,dx,dy])=>{ctx.beginPath();ctx.moveTo(x,y+dy*len);ctx.lineTo(x,y);ctx.lineTo(x+dx*len,y);ctx.stroke();});
+  ctx.restore();
+}
+function vignette(ctx,w,h,strength){
+  const v=ctx.createRadialGradient(w/2,h/2,h*0.35,w/2,h/2,h*1.05);
+  v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,'+(strength||.55)+')');
+  ctx.fillStyle=v;ctx.fillRect(0,0,w,h);
+}
+/* Fit text to a column AND a vertical band, so a long headline can never
+   grow into the footer. Returns the chosen size and the wrapped lines. */
+function layout(ctx,text,maxW,maxLines,start,min,bandH,font,lhMul){
+  const f=font||'Anton', m=lhMul||1.02;
+  let size=start,lines=[];
+  for(;size>=min;size-=3){
+    ctx.font=size+'px '+f;lines=[];let line='';
+    for(const w of String(text||'').split(/\s+/)){
+      const t=line?line+' '+w:w;
+      if(ctx.measureText(t).width>maxW&&line){lines.push(line);line=w;}else line=t;
+    }
+    if(line)lines.push(line);
+    if(lines.length<=maxLines && lines.length*(size*m)<=bandH) break;
+  }
+  if(lines.length>maxLines){lines=lines.slice(0,maxLines);lines[maxLines-1]=lines[maxLines-1].replace(/\s+\S*$/,'')+'…';}
+  return{lines,size};
+}
+function newCanvas(){const c=document.createElement('canvas');c.width=W;c.height=H;return c;}
+function accentOf(s){return /live|weigh/i.test(s.category||'')?RED:VOLT;}
+function credit(s){return s.original?('BY '+String(s.author||'Greene MMA').toUpperCase())
+                                    :('VIA '+String(s.sourceName||'THE WIRE').toUpperCase());}
+
+/* ---------------------------------------------------------------- 1 */
+function v1(s){ /* Fight Poster — the current card, as the baseline */
+  const c=newCanvas(),ctx=c.getContext('2d'),A=accentOf(s);
+  ctx.fillStyle=INK;ctx.fillRect(0,0,W,H);
+  let g=ctx.createRadialGradient(300,-120,60,300,-120,900);
+  g.addColorStop(0,'rgba(201,247,58,.20)');g.addColorStop(1,'rgba(201,247,58,0)');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  cage(ctx,W,H,.055);
+  octa(ctx,1075,300,620,A,2.5,.16); octa(ctx,1075,300,430,A,2,.10); octa(ctx,980,545,180,A,2,.10);
+  vignette(ctx,W,H);
+  const SP=58;
+  ctx.fillStyle=A;ctx.fillRect(0,0,SP,H);
+  ctx.save();ctx.translate(SP/2,H/2);ctx.rotate(-Math.PI/2);
+  ctx.font='700 26px "JetBrains Mono"';ctx.fillStyle=INK;ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(String(s.category||'Fight news').toUpperCase().slice(0,28),0,1);ctx.restore();
+  ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  const L=112,R=W-84;
+  mark(ctx,L,46,58,A,11);
+  ctx.font='700 25px "JetBrains Mono"';ctx.fillStyle=BONE;ctx.fillText('GREENE',L+78,84);
+  ctx.fillStyle=A;ctx.fillText('MMA',L+78+ctx.measureText('GREENE ').width,84);
+  if(s.original){ ctx.font='700 19px "JetBrains Mono"';
+    const t='GREENE MMA ORIGINAL',tw=ctx.measureText(t).width;
+    ctx.fillStyle=A;ctx.fillRect(L,150,tw+30,38);ctx.fillStyle=INK;ctx.fillText(t,L+15,176);
+  } else { ctx.font='400 19px "JetBrains Mono"';ctx.fillStyle=STEEL;
+    ctx.fillText('VIA '+String(s.sourceName||'THE WIRE').toUpperCase(),L,176); }
+  const FOOT=62,TOP=232,BAND=(H-FOOT)-24-TOP;
+  const {lines,size}=layout(ctx,s.headline,R-L,3,124,52,BAND);
+  const lh=size*1.02,y0=TOP+Math.max(0,(BAND-lines.length*lh)/2);
+  ctx.fillStyle=A;ctx.fillRect(L,y0-30,132,6);
+  ctx.font=size+'px Anton';let y=y0+size*0.80;
+  lines.forEach(ln=>{ctx.fillStyle=BONE;ctx.fillText(ln.toUpperCase(),L,y);y+=lh;});
+  ctx.fillStyle=A;ctx.fillRect(0,H-62,W,62);
+  ctx.font='700 24px "JetBrains Mono"';ctx.fillStyle=INK;ctx.fillText(SITENAME,L,H-22);
+  ctx.font='400 21px "JetBrains Mono"';ctx.textAlign='right';
+  ctx.fillText(s.original?credit(s):'MMA NEWS FROM THE GREENE CORNER',R,H-22);ctx.textAlign='left';
+  cropMarks(ctx,W,H-62,26,20);grain(ctx,W,H,5200,7);
+  return c;
+}
+
+/* ---------------------------------------------------------------- 2 */
+function v2(s){ /* Broadsheet — type is the whole design. Serious, editorial. */
+  const c=newCanvas(),ctx=c.getContext('2d'),A=accentOf(s);
+  ctx.fillStyle=INK;ctx.fillRect(0,0,W,H);
+  cage(ctx,W,H,.03,26);
+  const L=74,R=W-74;
+  // masthead rule
+  ctx.fillStyle=BONE;ctx.fillRect(L,74,R-L,2);
+  ctx.font='700 21px "JetBrains Mono"';ctx.fillStyle=BONE;
+  ctx.fillText('GREENE MMA',L,62);
+  ctx.textAlign='right';ctx.fillStyle=STEEL;ctx.font='400 19px "JetBrains Mono"';
+  ctx.fillText(String(s.category||'Fight news').toUpperCase(),R,62);ctx.textAlign='left';
+  // headline owns the card
+  const {lines,size}=layout(ctx,s.headline,R-L,4,132,46,336);
+  const lh=size*1.0;let y=150+size*0.82;
+  ctx.font=size+'px Anton';
+  lines.forEach(ln=>{ctx.fillStyle=BONE;ctx.fillText(ln.toUpperCase(),L,y);y+=lh;});
+  // thin rule + credit
+  ctx.fillStyle='rgba(242,240,233,.22)';ctx.fillRect(L,H-104,R-L,1);
+  ctx.font='400 20px "JetBrains Mono"';ctx.fillStyle=STEEL;ctx.fillText(credit(s),L,H-66);
+  ctx.textAlign='right';ctx.fillStyle=A;ctx.font='700 20px "JetBrains Mono"';
+  ctx.fillText(SITENAME,R,H-66);ctx.textAlign='left';
+  mark(ctx,R-52,H-56,46,A,11);
+  vignette(ctx,W,H,.4);grain(ctx,W,H,3400,11);
+  return c;
+}
+
+/* ---------------------------------------------------------------- 3 */
+function v3(s){ /* Full-bleed volt — inverted. Stops a dark timeline dead. */
+  const c=newCanvas(),ctx=c.getContext('2d');
+  ctx.fillStyle=VOLT;ctx.fillRect(0,0,W,H);
+  cage(ctx,W,H,.10,22,INK);
+  octa(ctx,1060,315,660,INK,3,.13); octa(ctx,1060,315,450,INK,2.5,.10);
+  const gg=ctx.createLinearGradient(0,0,0,H);
+  gg.addColorStop(0,'rgba(255,255,255,.18)');gg.addColorStop(1,'rgba(0,0,0,.10)');
+  ctx.fillStyle=gg;ctx.fillRect(0,0,W,H);
+  const L=86,R=W-86;
+  mark(ctx,L,44,54,INK,11);
+  ctx.font='700 24px "JetBrains Mono"';ctx.fillStyle=INK;ctx.fillText('GREENE MMA',L+74,80);
+  ctx.textAlign='right';ctx.font='700 22px "JetBrains Mono"';
+  ctx.fillText(String(s.category||'Fight news').toUpperCase(),R,80);ctx.textAlign='left';
+  const {lines,size}=layout(ctx,s.headline,R-L,3,128,52,272);
+  const lh=size*1.01,y0=196+Math.max(0,(272-lines.length*lh)/2);
+  ctx.font=size+'px Anton';let y=y0+size*0.80;
+  lines.forEach(ln=>{ctx.fillStyle=INK;ctx.fillText(ln.toUpperCase(),L,y);y+=lh;});
+  ctx.fillStyle=INK;ctx.fillRect(0,H-64,W,64);
+  ctx.font='700 23px "JetBrains Mono"';ctx.fillStyle=VOLT;ctx.fillText(SITENAME,L,H-23);
+  ctx.font='400 20px "JetBrains Mono"';ctx.textAlign='right';
+  ctx.fillText(credit(s),R,H-23);ctx.textAlign='left';
+  grain(ctx,W,H,3000,3);
+  return c;
+}
+
+/* ---------------------------------------------------------------- 4 */
+function v4(s){ /* Cage floor — perspective mat receding, headline on the canvas */
+  const c=newCanvas(),ctx=c.getContext('2d'),A=accentOf(s);
+  ctx.fillStyle=INK;ctx.fillRect(0,0,W,H);
+  const sky=ctx.createLinearGradient(0,0,0,H*.62);
+  sky.addColorStop(0,'rgba(201,247,58,.16)');sky.addColorStop(1,'rgba(201,247,58,0)');
+  ctx.fillStyle=sky;ctx.fillRect(0,0,W,H*.62);
+  // perspective floor
+  const HZ=H*0.56;
+  ctx.save();ctx.globalAlpha=.30;ctx.strokeStyle=A;ctx.lineWidth=1.5;
+  for(let i=-14;i<=14;i++){ ctx.beginPath();ctx.moveTo(W/2+i*46,HZ);ctx.lineTo(W/2+i*300,H);ctx.stroke(); }
+  for(let r=1;r<=9;r++){ const yy=HZ+Math.pow(r/9,2.1)*(H-HZ);
+    ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(W,yy);ctx.stroke(); }
+  ctx.restore();
+  octa(ctx,W/2,HZ-40,470,A,2.5,.18);
+  vignette(ctx,W,H,.62);
+  const L=86,R=W-86;
+  ctx.textAlign='center';
+  ctx.font='700 22px "JetBrains Mono"';ctx.fillStyle=A;
+  ctx.fillText(String(s.category||'Fight news').toUpperCase(),W/2,80);
+  const {lines,size}=layout(ctx,s.headline,R-L,3,116,48,240);
+  const lh=size*1.02;let y=150+size*0.82;
+  ctx.font=size+'px Anton';
+  lines.forEach(ln=>{
+    ctx.save();ctx.shadowColor='rgba(0,0,0,.8)';ctx.shadowBlur=26;
+    ctx.fillStyle=BONE;ctx.fillText(ln.toUpperCase(),W/2,y);ctx.restore();y+=lh;});
+  ctx.textAlign='left';
+  mark(ctx,W/2-27,H-132,54,A,11);
+  ctx.textAlign='center';ctx.font='400 20px "JetBrains Mono"';ctx.fillStyle=STEEL;
+  ctx.fillText(credit(s),W/2,H-40);
+  ctx.font='700 22px "JetBrains Mono"';ctx.fillStyle=A;ctx.fillText(SITENAME,W/2,H-72);
+  ctx.textAlign='left';
+  grain(ctx,W,H,4200,23);
+  return c;
+}
+
+/* ---------------------------------------------------------------- 5 */
+function v5(s){ /* Diagonal wedge — volt slash, headline held in the dark half */
+  const c=newCanvas(),ctx=c.getContext('2d'),A=accentOf(s);
+  ctx.fillStyle=INK;ctx.fillRect(0,0,W,H);
+  cage(ctx,W,H,.05,19);
+  ctx.save();ctx.beginPath();
+  ctx.moveTo(W*0.62,0);ctx.lineTo(W,0);ctx.lineTo(W,H);ctx.lineTo(W*0.40,H);ctx.closePath();
+  ctx.fillStyle=A;ctx.globalAlpha=.96;ctx.fill();
+  ctx.clip();
+  octa(ctx,1010,320,560,INK,3,.20);octa(ctx,1010,320,360,INK,2.5,.15);
+  ctx.restore();
+  ctx.save();ctx.beginPath();
+  ctx.moveTo(W*0.62,0);ctx.lineTo(W*0.585,0);ctx.lineTo(W*0.365,H);ctx.lineTo(W*0.40,H);ctx.closePath();
+  ctx.fillStyle=BONE;ctx.globalAlpha=.85;ctx.fill();ctx.restore();
+  const L=80,R=W*0.56;
+  mark(ctx,L,42,52,A,11);
+  ctx.font='700 22px "JetBrains Mono"';ctx.fillStyle=BONE;ctx.fillText('GREENE',L+70,76);
+  ctx.fillStyle=A;ctx.fillText('MMA',L+70+ctx.measureText('GREENE ').width,76);
+  ctx.font='700 19px "JetBrains Mono"';ctx.fillStyle=A;
+  ctx.fillText(String(s.category||'Fight news').toUpperCase(),L,140);
+  const {lines,size}=layout(ctx,s.headline,R-L,4,96,40,300);
+  const lh=size*1.03,y0=176+Math.max(0,(300-lines.length*lh)/2);
+  ctx.font=size+'px Anton';let y=y0+size*0.80;
+  lines.forEach(ln=>{ctx.fillStyle=BONE;ctx.fillText(ln.toUpperCase(),L,y);y+=lh;});
+  ctx.font='400 19px "JetBrains Mono"';ctx.fillStyle=STEEL;ctx.fillText(credit(s),L,H-46);
+  ctx.save();ctx.translate(W-52,H/2);ctx.rotate(Math.PI/2);
+  ctx.font='700 25px "JetBrains Mono"';ctx.fillStyle=INK;ctx.textAlign='center';
+  ctx.fillText(SITENAME,0,0);ctx.restore();ctx.textAlign='left';
+  grain(ctx,W,H,3600,31);
+  return c;
+}
+
+/* ---------------------------------------------------------------- 6 */
+function v6(s){ /* Tale of the tape — mono grid, data-forward, broadcast lower-third */
+  const c=newCanvas(),ctx=c.getContext('2d'),A=accentOf(s);
+  ctx.fillStyle=INK;ctx.fillRect(0,0,W,H);
+  ctx.save();ctx.globalAlpha=.16;ctx.strokeStyle=A;ctx.lineWidth=1;
+  for(let x=0;x<=W;x+=48){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<=H;y+=48){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  ctx.restore();
+  octaFill(ctx,1040,150,300,A,.07);
+  vignette(ctx,W,H,.5);
+  const L=76,R=W-76;
+  ctx.fillStyle=A;ctx.fillRect(L,58,10,42);
+  ctx.font='700 27px "JetBrains Mono"';ctx.fillStyle=BONE;ctx.fillText('GREENE MMA',L+26,90);
+  ctx.textAlign='right';ctx.font='400 19px "JetBrains Mono"';ctx.fillStyle=STEEL;
+  ctx.fillText(String(s.category||'FIGHT NEWS').toUpperCase(),R,90);ctx.textAlign='left';
+  // lower-third slab
+  ctx.fillStyle='rgba(19,22,15,.92)';ctx.fillRect(L,168,R-L,300);
+  ctx.fillStyle=A;ctx.fillRect(L,168,R-L,7);
+  const {lines,size}=layout(ctx,s.headline,R-L-64,3,100,42,208);
+  const lh=size*1.03;let y=214+size*0.82;
+  ctx.font=size+'px Anton';
+  lines.forEach(ln=>{ctx.fillStyle=BONE;ctx.fillText(ln.toUpperCase(),L+32,y);y+=lh;});
+  ctx.font='400 18px "JetBrains Mono"';ctx.fillStyle=STEEL;
+  ctx.fillText(credit(s),L+32,442);
+  // footer strip of mono ticks
+  ctx.fillStyle=A;ctx.fillRect(L,H-96,R-L,3);
+  ctx.font='700 23px "JetBrains Mono"';ctx.fillStyle=A;ctx.fillText(SITENAME,L,H-48);
+  ctx.textAlign='right';ctx.font='400 18px "JetBrains Mono"';ctx.fillStyle=STEEL;
+  ctx.fillText('UTAH · MMA · EVERY CARD',R,H-48);ctx.textAlign='left';
+  grain(ctx,W,H,3000,41);
+  return c;
+}
+
+/* ---------------------------------------------------------------- 7 */
+function v7(s){ /* Neon arena — house lights down, spotlight up, heavy glow */
+  const c=newCanvas(),ctx=c.getContext('2d'),A=accentOf(s);
+  ctx.fillStyle='#05070a';ctx.fillRect(0,0,W,H);
+  const beam=ctx.createRadialGradient(W/2,-160,40,W/2,-160,760);
+  beam.addColorStop(0,'rgba(201,247,58,.34)');beam.addColorStop(1,'rgba(201,247,58,0)');
+  ctx.fillStyle=beam;ctx.fillRect(0,0,W,H);
+  ctx.save();ctx.globalAlpha=.5;
+  const cone=ctx.createLinearGradient(0,0,0,H);
+  cone.addColorStop(0,'rgba(255,255,255,.13)');cone.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.beginPath();ctx.moveTo(W/2-90,0);ctx.lineTo(W/2+90,0);ctx.lineTo(W/2+430,H);ctx.lineTo(W/2-430,H);
+  ctx.closePath();ctx.fillStyle=cone;ctx.fill();ctx.restore();
+  ctx.save();ctx.shadowColor=A;ctx.shadowBlur=44;
+  octa(ctx,W/2,300,520,A,3,.62);ctx.restore();
+  vignette(ctx,W,H,.75);
+  const L=86,R=W-86;
+  ctx.textAlign='center';
+  ctx.save();ctx.shadowColor=A;ctx.shadowBlur=22;
+  ctx.font='700 22px "JetBrains Mono"';ctx.fillStyle=A;
+  ctx.fillText(String(s.category||'Fight news').toUpperCase(),W/2,88);ctx.restore();
+  const {lines,size}=layout(ctx,s.headline,R-L,3,118,48,250);
+  const lh=size*1.02,y0=176+Math.max(0,(250-lines.length*lh)/2);
+  ctx.font=size+'px Anton';let y=y0+size*0.82;
+  lines.forEach(ln=>{
+    ctx.save();ctx.shadowColor='rgba(201,247,58,.55)';ctx.shadowBlur=30;
+    ctx.fillStyle=BONE;ctx.fillText(ln.toUpperCase(),W/2,y);ctx.restore();y+=lh;});
+  ctx.save();ctx.shadowColor=A;ctx.shadowBlur=18;
+  ctx.font='700 23px "JetBrains Mono"';ctx.fillStyle=A;ctx.fillText(SITENAME,W/2,H-92);ctx.restore();
+  ctx.font='400 19px "JetBrains Mono"';ctx.fillStyle=STEEL;ctx.fillText(credit(s),W/2,H-56);
+  ctx.textAlign='left';
+  grain(ctx,W,H,5200,53);
+  return c;
+}
+
+/* ---------------------------------------------------------------- 8 */
+function v8(s){ /* Ticket stub — perforation, seat block, event-ticket voice */
+  const c=newCanvas(),ctx=c.getContext('2d'),A=accentOf(s);
+  ctx.fillStyle=INK;ctx.fillRect(0,0,W,H);
+  cage(ctx,W,H,.05,21);
+  const STUB=268;
+  ctx.fillStyle=A;ctx.fillRect(0,0,STUB,H);
+  const sg=ctx.createLinearGradient(0,0,STUB,H);
+  sg.addColorStop(0,'rgba(255,255,255,.16)');sg.addColorStop(1,'rgba(0,0,0,.12)');
+  ctx.fillStyle=sg;ctx.fillRect(0,0,STUB,H);
+  // perforation
+  ctx.save();ctx.fillStyle=INK;
+  for(let y=14;y<H;y+=30){ctx.beginPath();ctx.arc(STUB,y,7,0,Math.PI*2);ctx.fill();}
+  ctx.restore();
+  // stub contents
+  ctx.save();ctx.translate(STUB/2,H/2);ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center';ctx.font='700 46px Anton';ctx.fillStyle=INK;
+  ctx.fillText('GREENE MMA',0,-16);
+  ctx.font='700 19px "JetBrains Mono"';
+  ctx.fillText(String(s.category||'FIGHT NEWS').toUpperCase(),0,22);
+  ctx.restore();ctx.textAlign='left';
+  mark(ctx,STUB/2-30,44,60,INK,12);
+  const L=STUB+64,R=W-70;
+  ctx.font='400 18px "JetBrains Mono"';ctx.fillStyle=STEEL;
+  ctx.fillText('ADMIT ONE  ·  UTAH MMA',L,86);
+  ctx.fillStyle='rgba(242,240,233,.2)';ctx.fillRect(L,104,R-L,1);
+  const {lines,size}=layout(ctx,s.headline,R-L,4,92,38,290);
+  const lh=size*1.03,y0=142+Math.max(0,(290-lines.length*lh)/2);
+  ctx.font=size+'px Anton';let y=y0+size*0.80;
+  lines.forEach(ln=>{ctx.fillStyle=BONE;ctx.fillText(ln.toUpperCase(),L,y);y+=lh;});
+  ctx.fillStyle='rgba(242,240,233,.2)';ctx.fillRect(L,H-104,R-L,1);
+  ctx.font='400 19px "JetBrains Mono"';ctx.fillStyle=STEEL;ctx.fillText(credit(s),L,H-62);
+  ctx.textAlign='right';ctx.font='700 21px "JetBrains Mono"';ctx.fillStyle=A;
+  ctx.fillText(SITENAME,R,H-62);ctx.textAlign='left';
+  grain(ctx,W,H,3400,67);
+  return c;
+}
+
+/* ---------------------------------------------------------------- 9 */
+function v9(s){ /* Octagon lock — the mark blown up as a frame around the type */
+  const c=newCanvas(),ctx=c.getContext('2d'),A=accentOf(s);
+  ctx.fillStyle=INK;ctx.fillRect(0,0,W,H);
+  const g=ctx.createRadialGradient(W/2,H/2,60,W/2,H/2,760);
+  g.addColorStop(0,'rgba(201,247,58,.15)');g.addColorStop(1,'rgba(201,247,58,0)');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  cage(ctx,W,H,.045,24);
+  octaFill(ctx,W/2,H/2,585,INK,.62);
+  octa(ctx,W/2,H/2,585,A,4,.95);
+  octa(ctx,W/2,H/2,545,A,1.5,.35);
+  vignette(ctx,W,H,.55);
+  ctx.textAlign='center';
+  ctx.font='700 20px "JetBrains Mono"';ctx.fillStyle=A;
+  ctx.fillText(String(s.category||'Fight news').toUpperCase(),W/2,132);
+  const {lines,size}=layout(ctx,s.headline,600,3,104,42,214);
+  const lh=size*1.02,y0=176+Math.max(0,(214-lines.length*lh)/2);
+  ctx.font=size+'px Anton';let y=y0+size*0.82;
+  lines.forEach(ln=>{ctx.fillStyle=BONE;ctx.fillText(ln.toUpperCase(),W/2,y);y+=lh;});
+  ctx.fillStyle=A;ctx.fillRect(W/2-58,H-232,116,4);
+  ctx.font='400 18px "JetBrains Mono"';ctx.fillStyle=STEEL;
+  ctx.fillText(credit(s),W/2,H-196);
+  ctx.textAlign='left';
+  mark(ctx,64,H-116,58,A,11);
+  ctx.font='700 23px "JetBrains Mono"';ctx.fillStyle=A;ctx.fillText(SITENAME,64,H-44);
+  ctx.textAlign='right';ctx.font='400 18px "JetBrains Mono"';ctx.fillStyle=STEEL;
+  ctx.fillText('FIGHT NEWS FROM THE GREENE CORNER',W-64,H-44);ctx.textAlign='left';
+  grain(ctx,W,H,4000,71);
+  return c;
+}
+
+/* --------------------------------------------------------------- 10 */
+function v10(s){ /* Stencil — oversized ghost word behind, hard industrial edge */
+  const c=newCanvas(),ctx=c.getContext('2d'),A=accentOf(s);
+  ctx.fillStyle=INK;ctx.fillRect(0,0,W,H);
+  const gg=ctx.createLinearGradient(0,H,W,0);
+  gg.addColorStop(0,'rgba(201,247,58,.13)');gg.addColorStop(1,'rgba(201,247,58,0)');
+  ctx.fillStyle=gg;ctx.fillRect(0,0,W,H);
+  // ghost word from the category, bleeding off both edges
+  ctx.save();
+  ctx.font='300px Anton';ctx.strokeStyle=A;ctx.lineWidth=2;ctx.globalAlpha=.13;
+  ctx.textAlign='center';
+  ctx.strokeText(String(s.category||'MMA').toUpperCase().slice(0,9),W/2,H*0.72);
+  ctx.restore();ctx.textAlign='left';
+  cage(ctx,W,H,.04,30);
+  vignette(ctx,W,H,.5);
+  const L=80,R=W-80;
+  // hard top bar
+  ctx.fillStyle=A;ctx.fillRect(0,0,W,12);
+  mark(ctx,L,52,54,A,11);
+  ctx.font='700 24px "JetBrains Mono"';ctx.fillStyle=BONE;ctx.fillText('GREENE',L+72,88);
+  ctx.fillStyle=A;ctx.fillText('MMA',L+72+ctx.measureText('GREENE ').width,88);
+  ctx.textAlign='right';ctx.font='400 19px "JetBrains Mono"';ctx.fillStyle=STEEL;
+  ctx.fillText(String(s.category||'Fight news').toUpperCase(),R,88);ctx.textAlign='left';
+  const {lines,size}=layout(ctx,s.headline,R-L,3,126,50,262);
+  const lh=size*1.0,y0=178+Math.max(0,(262-lines.length*lh)/2);
+  ctx.font=size+'px Anton';let y=y0+size*0.82;
+  lines.forEach(ln=>{
+    ctx.fillStyle=BONE;ctx.fillText(ln.toUpperCase(),L,y);
+    ctx.fillStyle=A;ctx.fillRect(L,y+10,ctx.measureText(ln.toUpperCase()).width,3);
+    y+=lh;});
+  ctx.font='400 20px "JetBrains Mono"';ctx.fillStyle=STEEL;ctx.fillText(credit(s),L,H-46);
+  ctx.textAlign='right';ctx.font='700 23px "JetBrains Mono"';ctx.fillStyle=A;
+  ctx.fillText(SITENAME,R,H-46);ctx.textAlign='left';
+  cropMarks(ctx,W,H,30,22,A);
+  grain(ctx,W,H,4600,83);
+  return c;
+}
+
+const VARIANTS=[
+  {n:1, name:'Fight Poster',   fn:v1,  desc:'What you have today. Volt spine, octagons bleeding off the right. Here as the thing to beat.'},
+  {n:2, name:'Broadsheet',     fn:v2,  desc:'Type is the whole design. Reads like a serious outlet — best if you want to look established.'},
+  {n:3, name:'Full-Bleed Volt',fn:v3,  desc:'Inverted. A block of volt in a dark timeline is the single loudest thing you can post.'},
+  {n:4, name:'Cage Floor',     fn:v4,  desc:'Perspective mat receding to a horizon. Centred, cinematic, feels like walking out.'},
+  {n:5, name:'Diagonal Wedge', fn:v5,  desc:'Volt slash across the frame. Motion and aggression without shouting.'},
+  {n:6, name:'Tale of the Tape',fn:v6, desc:'Broadcast lower-third over a mono grid. Looks like a graphics package, not a blog.'},
+  {n:7, name:'Neon Arena',     fn:v7,  desc:'House lights down, spotlight up, everything glowing. The most dramatic of the ten.'},
+  {n:8, name:'Ticket Stub',    fn:v8,  desc:'Perforated stub down the side. Collectible feel — the one people screenshot.'},
+  {n:9, name:'Octagon Lock',   fn:v9,  desc:'Your mark blown up into a frame that holds the headline. Most on-brand of the set.'},
+  {n:10,name:'Stencil',        fn:v10, desc:'Giant ghost word behind, underlined headline, hard industrial edges.'}
+];
+
+function story(){
+  const orig=$('f_orig').value==='1';
+  return {
+    headline:$('f_head').value||'Untitled',
+    category:$('f_cat').value||'The Corner',
+    author:$('f_by').value||'Greene MMA',
+    original:orig,
+    sourceName:orig?'Greene MMA':'ESPN MMA'
+  };
+}
+function $(id){return document.getElementById(id);}
+
+function build(){
+  const s=story(), box=$('cards');
+  box.innerHTML='';
+  VARIANTS.forEach(v=>{
+    const card=document.createElement('div');card.className='card';
+    const bar=document.createElement('div');bar.className='bar';
+    bar.innerHTML='<span class="num">'+v.n+'</span><span class="nm">'+v.name+'</span><span class="desc">'+v.desc+'</span>';
+    card.appendChild(bar);
+    let cv;
+    try{ cv=v.fn(s); }catch(e){
+      const d=document.createElement('div');d.style.cssText='padding:26px;color:#FF4B3E;font-family:monospace;font-size:13px;';
+      d.textContent='Variant '+v.n+' failed to draw: '+e.message;card.appendChild(d);box.appendChild(card);return;
+    }
+    card.appendChild(cv);
+    const acts=document.createElement('div');acts.className='acts';
+    const dl=document.createElement('button');dl.textContent='Download PNG';
+    dl.onclick=()=>{const a=document.createElement('a');
+      a.download='greene-card-'+v.n+'-'+v.name.toLowerCase().replace(/\s+/g,'-')+'.png';
+      a.href=cv.toDataURL('image/png');a.click();};
+    acts.appendChild(dl);
+    card.appendChild(acts);
+    box.appendChild(card);
+  });
+}
+
+$('go').addEventListener('click',build);
+$('f_preset').addEventListener('change',e=>{ if(e.target.value){ $('f_head').value=e.target.value; build(); }});
+['f_head','f_cat','f_by'].forEach(id=>$(id).addEventListener('keydown',e=>{ if(e.key==='Enter') build(); }));
+$('f_orig').addEventListener('change',build);
+$('dlall').addEventListener('click',()=>{
+  VARIANTS.forEach((v,i)=>setTimeout(()=>{
+    const cv=v.fn(story());const a=document.createElement('a');
+    a.download='greene-card-'+v.n+'-'+v.name.toLowerCase().replace(/\s+/g,'-')+'.png';
+    a.href=cv.toDataURL('image/png');a.click();
+  }, i*350));
+});
+
+/* Fonts must be loaded before the first measureText, or every headline is
+   fitted against a fallback face and comes out the wrong size. */
+Promise.all([
+  document.fonts.load('124px Anton'),
+  document.fonts.load('300px Anton'),
+  document.fonts.load('700 26px "JetBrains Mono"'),
+  document.fonts.load('400 21px "JetBrains Mono"')
+]).catch(()=>{}).then(()=>document.fonts.ready).then(build).catch(build);
+})();
+</script>
+</body>
+</html>

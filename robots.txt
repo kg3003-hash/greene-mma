@@ -3,6 +3,7 @@ Allow: /
 Disallow: /studio.html
 Disallow: /cards.html
 Disallow: /write.html
+Disallow: /cardlab.html
 Disallow: /studio
 Disallow: /cards
 Disallow: /write

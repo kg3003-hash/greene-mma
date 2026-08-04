@@ -591,7 +591,7 @@ footer{padding:56px 0 72px;font-family:'Barlow',sans-serif;font-size:17.5px;lett
       <span class="mono-tag">Tale of the tape</span>
     </div>
     <div class="tape">
-      <div class="head">Saturday — Main Event <small>MMA.GREENE.BET</small></div>
+      <div class="head">Saturday — Main Event <small>GREENEMMA.COM</small></div>
       <div class="row"><div>"The Problem" Reyes</div><div class="mid">vs</div><div>Dusty Marks</div></div>
       <div class="row"><div>-410 favorite</div><div class="mid">odds</div><div>+340 live dog</div></div>
       <div class="row"><div>15-1-0</div><div class="mid">record</div><div>12-2-0</div></div>
@@ -947,7 +947,7 @@ try{
     if(tape){
       const d=new Date(h.startTime);
       const day=d.toLocaleDateString(undefined,{weekday:"long",month:"short",day:"numeric"});
-      tape.innerHTML='<div class="head">'+esc(day)+' — Main Event <small>MMA.GREENE.BET</small></div>'+
+      tape.innerHTML='<div class="head">'+esc(day)+' — Main Event <small>GREENEMMA.COM</small></div>'+
         '<div class="row"><div>'+esc(h.favourite.name)+'</div><div class="mid">vs</div><div>'+esc(h.underdog.name)+'</div></div>'+
         '<div class="row"><div>'+fmtOdds(h.favourite.odds)+' favourite</div><div class="mid">odds</div><div>'+fmtOdds(h.underdog.odds)+' underdog</div></div>'+
         (fw.boutCount?'<div class="row"><div>'+fw.boutCount+' bouts</div><div class="mid">card</div><div>'+esc(h.eventName||"MMA")+'</div></div>':'')+
