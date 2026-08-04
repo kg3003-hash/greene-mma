@@ -17,7 +17,7 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 
-const SITE = "https://greenemma.com";
+const SITE = "https://mma.greene.bet";
 
 const esc = (s) => String(s == null ? "" : s)
   .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -383,7 +383,11 @@ ${FOOTER}
     status: 200,
     headers: {
       "content-type": "text/html; charset=utf-8",
-      "cache-control": "public, max-age=300",
+      /* max-age=0 so a reader's own refresh always revalidates — editing a
+         story and seeing the old text come back reads as a failed save.
+         The edge still absorbs the traffic: fresh for 30s, then it serves
+         the stale copy while fetching the new one behind it. */
+      "cache-control": "public, max-age=0, s-maxage=30, stale-while-revalidate=300",
     },
   });
 }
