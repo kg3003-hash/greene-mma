@@ -7,6 +7,7 @@
 
 import admin from "firebase-admin";
 import { rebuildStoryIndexes } from "./lib/story-indexes.mjs";
+import { sanitizeEdits, applyEdits, rebuildDerived } from "./lib/cardedits.mjs";
 import {
   sendMail, sendBatch, emailShell, issueMessage, mailSecret,
   MAIL_FROM, MAIL_TO, SITE_URL, esc as mailEsc,
@@ -627,6 +628,65 @@ Rules:
       applied = cards.some((c) => c.date === key);
     }
     return new Response(JSON.stringify({ ok: true, applied }), { status: 200 });
+  }
+
+  /* ---- card corrections ----
+     Full control over the fight-week cards: hide a cancelled bout, move a
+     fight to the card it belongs on, fix names or odds, add a bout the feed
+     does not carry. Corrections live in site/cardedits and are re-applied by
+     every odds sync — the same survival pattern as the fight order — and the
+     live doc is rewritten here so the site changes now, not at the next pull. */
+  if (body.getFightWeek) {
+    if (!isAdmin) return deny();
+    const [fwSnap, editSnap, nameSnap] = await Promise.all([
+      db.collection("site").doc("fightweek").get(),
+      db.collection("site").doc("cardedits").get(),
+      db.collection("site").doc("cardnames").get(),
+    ]);
+    const fw = fwSnap.data() || {};
+    return new Response(JSON.stringify({
+      ok: true,
+      cards: (fw.cards || []).map((c) => ({
+        date: c.date, startTime: c.startTime, boutCount: c.boutCount,
+        bouts: (c.bouts || []).map((b) => ({
+          key: oddsBoutKey(b),
+          favourite: b.favourite, underdog: b.underdog,
+          startTime: b.startTime, book: b.book || "", manual: !!b.manual,
+        })),
+      })),
+      edits: sanitizeEdits(editSnap.data() || {}),
+      names: (nameSnap.data() || {}).names || {},
+      updatedAt: fw.updatedAt || null,
+    }), { status: 200 });
+  }
+
+  if (body.setCardEdits) {
+    if (!isAdmin) return deny();
+    const clean = sanitizeEdits(body.setCardEdits);
+    await db.collection("site").doc("cardedits").set({
+      ...clean,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Rewrite the live doc so the fix is visible immediately. applyEdits is
+    // idempotent, so corrections the sync already applied are simply no-ops
+    // here; ones it has not seen yet take effect now.
+    const fwRef = db.collection("site").doc("fightweek");
+    const fw = (await fwRef.get()).data();
+    let cards = [];
+    if (fw && Array.isArray(fw.cards)) {
+      const orders = ((await db.collection("site").doc("cardorder").get()).data() || {}).orders || {};
+      cards = applyEdits(fw.cards, clean).map((c) => {
+        const utc = new Date(c.startTime).toISOString().slice(0, 10);
+        return { ...c, bouts: applyOrder(c.bouts, orders[c.date] || orders[utc]).slice(0, 16) };
+      });
+      await fwRef.set({
+        ...rebuildDerived(cards),
+        cards,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+    return new Response(JSON.stringify({ ok: true, cards: cards.length }), { status: 200 });
   }
 
   // Human names for the auto-detected cards (odds feed has no event names)

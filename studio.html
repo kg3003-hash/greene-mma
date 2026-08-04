@@ -235,6 +235,16 @@
       <button class="btn ghost" id="imp_save" style="display:none">Save card + add fighters to roster</button>
     </div>
 
+<div class="panel wide">
+      <h2>Fix the cards</h2>
+      <p class="hint" style="margin-top:0">Full control over what Fight Week shows. Move a fight that landed on the wrong card, remove a cancelled bout, fix a name or the odds, or add a fight the feed doesn't carry. Every correction sticks — the odds refresh re-applies it instead of undoing it. Remove a correction below to let the feed's version through again.</p>
+      <button class="btn ghost" id="cd_load" style="margin-top:0">Load the cards</button>
+      <div id="cd_cards" style="margin-top:12px;"></div>
+      <div id="cd_fixes" style="margin-top:4px;"></div>
+      <button class="btn" id="cd_save" style="display:none">Save corrections</button>
+      <div id="cd_status" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+    </div>
+
 <div class="panel">
       <h2>Fight order</h2>
       <p class="hint" style="margin-top:0">The odds feed has no idea which bout is the main event — it guesses from start times and gets it wrong often enough. Put the card in the right order here. Top of the list is the main event, second is the co-main. Your order sticks: the odds refresh re-applies it instead of undoing it.</p>
@@ -995,6 +1005,177 @@
         say($('fo_status'),'✗ '+e.message,'bad');
       }
     })();
+  })();
+
+  /* ---- card doctor ----
+     Complete control over the fight-week cards. Everything here is stored as
+     a correction keyed to the bout (both names, sorted), never as a copy of
+     the card — so the odds sync keeps refreshing prices around your fixes
+     instead of undoing them. The preview below is the corrected result,
+     recomputed after every action, so what you see is what saves. */
+  (function(){
+    let CD=null; // {cards, edits, adds, names}
+    const box=()=>$('cd_cards'), fixes=()=>$('cd_fixes'), st=()=>$('cd_status');
+    const bkey=(n1,n2)=>[n1,n2].map(s=>String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'')).sort().join('|');
+    const rowCss='display:flex;align-items:center;gap:8px;border-top:1px solid var(--hair);padding:8px 0;flex-wrap:wrap;';
+    const miniBtn='background:none;border:1px solid var(--hair);color:var(--steel);padding:5px 9px;cursor:pointer;font-size:10px;font-family:\'JetBrains Mono\',monospace;letter-spacing:.06em;';
+    const inCss='width:120px;background:#0a0c07;border:1px solid var(--hair);color:var(--bone);padding:6px 8px;font-size:13px;';
+    const oddsCss=inCss.replace('width:120px','width:64px');
+    const niceDate=d=>{try{return new Date(d+'T12:00:00Z').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});}catch(e){return d;}};
+
+    /* The same corrections the server applies, replicated for the preview. */
+    function corrected(){
+      const map=new Map();
+      CD.cards.forEach(c=>map.set(c.date,{date:c.date,bouts:c.bouts.map(b=>({...b}))}));
+      const ensure=d=>{ if(!map.has(d)) map.set(d,{date:d,bouts:[]}); return map.get(d); };
+      const E=CD.edits;
+      for(const c of map.values()) c.bouts=c.bouts.filter(b=>!(E[b.key]||{}).drop);
+      for(const c of [...map.values()])
+        for(let i=c.bouts.length-1;i>=0;i--){
+          const mv=(E[c.bouts[i].key]||{}).move;
+          if(mv&&mv!==c.date){ const b=c.bouts.splice(i,1)[0]; ensure(mv).bouts.push(b); }
+        }
+      const present=new Set(); for(const c of map.values()) c.bouts.forEach(b=>present.add(b.key));
+      CD.adds.forEach(a=>{
+        const k=bkey(a.favourite.name,a.underdog.name);
+        if(present.has(k)||(E[k]||{}).drop) return;
+        present.add(k);
+        ensure(a.date).bouts.push({key:k,favourite:{...a.favourite},underdog:{...a.underdog},manual:true});
+      });
+      for(const c of map.values())
+        c.bouts=c.bouts.map(b=>{
+          const p=(E[b.key]||{}).patch; if(!p) return b;
+          return {...b,
+            favourite:{...b.favourite,name:p.favName??b.favourite.name,odds:p.favOdds??b.favourite.odds},
+            underdog:{...b.underdog,name:p.dogName??b.underdog.name,odds:p.dogOdds??b.underdog.odds}};
+        });
+      return [...map.values()].filter(c=>c.bouts.length).sort((a,b)=>a.date.localeCompare(b.date));
+    }
+
+    function fmtOdds(o){return (o>0?'+':'')+o;}
+
+    function render(){
+      const cards=corrected();
+      const dates=cards.map(c=>c.date);
+      box().innerHTML=cards.map(c=>
+        '<div style="border:1px solid var(--hair);padding:12px 14px;margin-bottom:14px;">'+
+          '<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;">'+
+            '<span style="font-family:\'Anton\',sans-serif;font-size:17px;text-transform:uppercase;color:var(--volt);">'+attr(CD.names[c.date]||niceDate(c.date))+'</span>'+
+            '<span style="font-family:\'JetBrains Mono\',monospace;font-size:10.5px;color:var(--steel);">'+attr(c.date)+' · '+c.bouts.length+' bouts</span>'+
+          '</div>'+
+          c.bouts.map(b=>{
+            const editing=CD._open===b.key;
+            const base=
+              '<div class="cdrow" data-k="'+attr(b.key)+'" style="'+rowCss+'">'+
+                '<span style="flex:1;min-width:230px;font-size:14px;">'+
+                  attr(b.favourite.name)+' <span style="color:var(--steel);font-family:\'JetBrains Mono\',monospace;font-size:11px;">'+fmtOdds(b.favourite.odds)+'</span>'+
+                  ' <span style="color:var(--steel);">vs</span> '+
+                  attr(b.underdog.name)+' <span style="color:var(--steel);font-family:\'JetBrains Mono\',monospace;font-size:11px;">'+fmtOdds(b.underdog.odds)+'</span>'+
+                  (b.manual?' <span style="color:var(--volt);font-family:\'JetBrains Mono\',monospace;font-size:9px;letter-spacing:.1em;">ADDED BY YOU</span>':'')+
+                '</span>'+
+                '<button class="cd-edit" style="'+miniBtn+'">EDIT</button>'+
+                '<select class="cd-move" style="'+miniBtn+'max-width:150px;">'+
+                  '<option value="">MOVE TO…</option>'+
+                  dates.filter(d=>d!==c.date).map(d=>'<option value="'+attr(d)+'">'+attr(CD.names[d]||niceDate(d))+'</option>').join('')+
+                  '<option value="__new">a new date…</option>'+
+                '</select>'+
+                '<button class="cd-drop" style="'+miniBtn+'color:var(--red);">REMOVE</button>'+
+              '</div>';
+            if(!editing) return base;
+            return base+
+              '<div class="cdform" data-k="'+attr(b.key)+'" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:8px 0 10px;">'+
+                '<input class="cf-fn" style="'+inCss+'" value="'+attr(b.favourite.name)+'">'+
+                '<input class="cf-fo" style="'+oddsCss+'" value="'+attr(b.favourite.odds)+'">'+
+                '<span style="color:var(--steel);font-size:12px;">vs</span>'+
+                '<input class="cf-dn" style="'+inCss+'" value="'+attr(b.underdog.name)+'">'+
+                '<input class="cf-do" style="'+oddsCss+'" value="'+attr(b.underdog.odds)+'">'+
+                '<button class="cf-ok" style="'+miniBtn+'color:var(--volt);border-color:var(--volt);">APPLY</button>'+
+                '<button class="cf-no" style="'+miniBtn+'">CANCEL</button>'+
+              '</div>';
+          }).join('')+
+          '<button class="cd-add" data-date="'+attr(c.date)+'" style="'+miniBtn+'margin-top:10px;">+ ADD A FIGHT TO THIS CARD</button>'+
+        '</div>').join('')||'<div style="color:var(--steel);font-size:13px;padding:8px 0;">No cards. Run the odds sync, or add a fight below a date once one exists.</div>';
+
+      // the running list of corrections, each removable
+      const E=CD.edits, human=[];
+      Object.entries(E).forEach(([k,e])=>{
+        const label=k.split('|').join(' vs ');
+        if(e.drop) human.push({k,txt:'Removed: '+label});
+        if(e.move) human.push({k,txt:'Moved '+label+' → '+(CD.names[e.move]||niceDate(e.move)),field:'move'});
+        if(e.patch) human.push({k,txt:'Edited: '+label,field:'patch'});
+      });
+      CD.adds.forEach((a,i)=>human.push({add:i,txt:'Added: '+a.favourite.name+' vs '+a.underdog.name+' on '+niceDate(a.date)}));
+      fixes().innerHTML=human.length
+        ? '<div style="font-family:\'JetBrains Mono\',monospace;font-size:10.5px;letter-spacing:.1em;color:var(--steel);margin:14px 0 6px;">ACTIVE CORRECTIONS</div>'+
+          human.map((h,i)=>'<div style="'+rowCss+'"><span style="flex:1;font-size:13px;color:var(--steel);">'+attr(h.txt)+'</span>'+
+            '<button class="cd-undo" data-i="'+i+'" data-k="'+attr(h.k||'')+'" data-field="'+attr(h.field||'')+'" data-add="'+(h.add!==undefined?h.add:'')+'" style="'+miniBtn+'">✕ UNDO</button></div>').join('')
+        : '';
+      $('cd_save').style.display='block';
+      wire(cards);
+    }
+
+    function wire(cards){
+      box().querySelectorAll('.cd-drop').forEach(b=>b.addEventListener('click',e=>{
+        const k=e.target.closest('.cdrow').dataset.k;
+        CD.edits[k]={...(CD.edits[k]||{}),drop:true}; delete CD._open; render();
+      }));
+      box().querySelectorAll('.cd-move').forEach(s=>s.addEventListener('change',e=>{
+        const k=e.target.closest('.cdrow').dataset.k; let v=e.target.value;
+        if(v==='__new'){ v=prompt('Date for the new card (YYYY-MM-DD):','')||''; if(!/^\d{4}-\d{2}-\d{2}$/.test(v)){ e.target.value=''; return; } }
+        if(v){ CD.edits[k]={...(CD.edits[k]||{}),move:v}; delete CD._open; render(); }
+      }));
+      box().querySelectorAll('.cd-edit').forEach(b=>b.addEventListener('click',e=>{
+        CD._open=e.target.closest('.cdrow').dataset.k; render();
+      }));
+      box().querySelectorAll('.cdform').forEach(f=>{
+        f.querySelector('.cf-ok').addEventListener('click',()=>{
+          const k=f.dataset.k;
+          CD.edits[k]={...(CD.edits[k]||{}),patch:{
+            favName:f.querySelector('.cf-fn').value.trim(),
+            favOdds:Math.round(+f.querySelector('.cf-fo').value)||0,
+            dogName:f.querySelector('.cf-dn').value.trim(),
+            dogOdds:Math.round(+f.querySelector('.cf-do').value)||0,
+          }};
+          delete CD._open; render();
+        });
+        f.querySelector('.cf-no').addEventListener('click',()=>{ delete CD._open; render(); });
+      });
+      box().querySelectorAll('.cd-add').forEach(b=>b.addEventListener('click',e=>{
+        const date=e.target.dataset.date;
+        const fav=prompt('Favourite (name):',''); if(!fav) return;
+        const fo=Math.round(+prompt('Favourite odds (e.g. -155):','-150'))||-150;
+        const dog=prompt('Underdog (name):',''); if(!dog) return;
+        const doo=Math.round(+prompt('Underdog odds (e.g. +130):','130'))||130;
+        CD.adds.push({date,favourite:{name:fav.trim(),odds:fo},underdog:{name:dog.trim(),odds:doo}});
+        render();
+      }));
+      fixes().querySelectorAll('.cd-undo').forEach(b=>b.addEventListener('click',e=>{
+        const {k,field,add}=e.target.dataset;
+        if(add!==''){ CD.adds.splice(+add,1); }
+        else if(field){ delete CD.edits[k][field]; if(!Object.keys(CD.edits[k]).length) delete CD.edits[k]; }
+        else { delete CD.edits[k]; }
+        render();
+      }));
+    }
+
+    $('cd_load').addEventListener('click',async()=>{
+      say(st(),'Loading…');
+      try{
+        const o=await api({getFightWeek:true});
+        if(!o.ok) throw new Error(o.error||'load failed');
+        CD={cards:o.cards||[],edits:(o.edits&&o.edits.edits)||{},adds:(o.edits&&o.edits.adds)||[],names:o.names||{}};
+        say(st(),''); render();
+      }catch(e){ say(st(),'✗ '+e.message,'bad'); }
+    });
+
+    $('cd_save').addEventListener('click',async()=>{
+      say(st(),'Saving…');
+      try{
+        const o=await api({setCardEdits:{edits:CD.edits,adds:CD.adds}});
+        if(!o.ok) throw new Error(o.error||'save failed');
+        say(st(),'✓ Saved. The site shows this now, and the odds refresh will keep it.','ok');
+      }catch(e){ say(st(),'✗ '+e.message,'bad'); }
+    });
   })();
 
   /* ---- sponsor slots ---- */

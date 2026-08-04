@@ -6,6 +6,7 @@
 // Env: ODDS_API_KEY, FIREBASE_SERVICE_ACCOUNT
 
 import admin from "firebase-admin";
+import { dayKey, applyEdits, rebuildDerived } from "./lib/cardedits.mjs";
 
 if (!admin.apps.length) {
   admin.initializeApp({
@@ -111,11 +112,14 @@ export default async function handler() {
   // Soonest first
   bouts.sort((x, y) => new Date(x.startTime) - new Date(y.startTime));
 
-  // Group into separate cards by date — a UFC event and a regional show on the
-  // same weekend are different cards and should not be merged.
+  // Group into separate cards by the day in UTAH, not UTC — a Saturday card's
+  // early prelims start before midnight UTC and the rest after, and grouping
+  // on the ISO string split every such event in two: one phantom "card"
+  // holding just the first fight of the night. A UFC event and a regional
+  // show on the same weekend still land on different days and stay separate.
   const byDay = new Map();
   for (const b of bouts) {
-    const key = new Date(b.startTime).toISOString().slice(0, 10);
+    const key = dayKey(b.startTime);
     if (!byDay.has(key)) byDay.set(key, []);
     byDay.get(key).push(b);
   }
@@ -127,8 +131,16 @@ export default async function handler() {
   } catch (e) {
     console.warn("cardorder read failed, falling back to start times:", e.message);
   }
+  // Corrections made in the Studio's card editor — cancelled bouts, moved
+  // fights, fixed names. Applied on every sync so they survive the rebuild.
+  let cardEdits = {};
+  try {
+    cardEdits = (await db.collection("site").doc("cardedits").get()).data() || {};
+  } catch (e) {
+    console.warn("cardedits read failed, publishing uncorrected:", e.message);
+  }
 
-  const cards = [...byDay.entries()]
+  let cards = [...byDay.entries()]
     .sort((a, b) => a[0].localeCompare(b[0]))
     .slice(0, 4)
     .map(([date, list]) => {
@@ -137,36 +149,27 @@ export default async function handler() {
       const guessed = [...list].sort(
         (x, y) => new Date(y.startTime) - new Date(x.startTime)
       );
-      const ordered = applyOrder(guessed, savedOrders[date]);
-      return {
-        date,
-        startTime: guessed[guessed.length - 1].startTime,
-        bouts: ordered.slice(0, 16),
-        boutCount: ordered.length,
-      };
+      return { date, startTime: guessed[guessed.length - 1].startTime, bouts: guessed };
     });
 
-  const headlineCard = cards[0] || null;
-  const headline = headlineCard ? headlineCard.bouts[0] : null;
-
-  // Biggest underdogs across every upcoming card
-  const dogs = bouts
-    .filter((b) => b.underdog.odds > 100)
-    .sort((x, y) => y.underdog.odds - x.underdog.odds)
-    .slice(0, 4);
+  // Corrections first (membership), then per-card order (arrangement).
+  // Orders saved before the Utah-day change were keyed by the UTC date, which
+  // for a US main card is one day later — accept either key so old fixes hold.
+  cards = applyEdits(cards, cardEdits).map((c) => {
+    const utc = new Date(c.startTime).toISOString().slice(0, 10);
+    const ordered = applyOrder(c.bouts, savedOrders[c.date] || savedOrders[utc]);
+    return { ...c, bouts: ordered.slice(0, 16), boutCount: ordered.length };
+  });
 
   await db.collection("site").doc("fightweek").set({
-    headline,
+    ...rebuildDerived(cards),
     cards,
-    card: headlineCard ? headlineCard.bouts : [],
-    dogs,
-    boutCount: headlineCard ? headlineCard.boutCount : 0,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
 
-  console.log(`Wrote ${cards.length} card(s), ${bouts.length} bouts, ${dogs.length} dogs.`);
+  console.log(`Wrote ${cards.length} card(s), ${bouts.length} bouts.`);
   return new Response(
-    JSON.stringify({ cards: cards.length, bouts: bouts.length, dogs: dogs.length, remaining }),
+    JSON.stringify({ cards: cards.length, bouts: bouts.length, remaining }),
     { status: 200 }
   );
 }
