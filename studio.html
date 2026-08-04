@@ -480,7 +480,12 @@
 (function(){
   const gate=document.getElementById('gate');
   const saved=sessionStorage.getItem('gmma_key');
-  async function tryKey(k){
+  /* fresh=true means the passcode was just typed. Every panel's loader fired
+     at parse time with whatever key storage held THEN \u2014 on a first visit,
+     nothing \u2014 so they have all already come back Unauthorized. Reloading once
+     after a fresh login restarts them with the key in place; without it the
+     page sits half-loaded ("Could not load cards") until a manual refresh. */
+  async function tryKey(k,fresh){
     document.getElementById('gateerr').textContent='Checking...';
     try{
       const r=await fetch('/.netlify/functions/publish',{method:'POST',
@@ -494,14 +499,16 @@
         location.href='/write.html';
         return true;
       }
-      sessionStorage.setItem('gmma_key',k); gate.style.display='none'; return true;
+      sessionStorage.setItem('gmma_key',k);
+      if(fresh){ document.getElementById('gateerr').textContent='Loading the Studio...'; location.reload(); return true; }
+      gate.style.display='none'; return true;
     }catch(e){
       document.getElementById('gateerr').textContent='Cannot reach the server.';return false;
     }
   }
-  if(saved) tryKey(saved); 
-  document.getElementById('gatego').addEventListener('click',()=>tryKey(document.getElementById('gatepass').value));
-  document.getElementById('gatepass').addEventListener('keydown',e=>{if(e.key==='Enter')tryKey(e.target.value);});
+  if(saved) tryKey(saved);
+  document.getElementById('gatego').addEventListener('click',()=>tryKey(document.getElementById('gatepass').value,true));
+  document.getElementById('gatepass').addEventListener('keydown',e=>{if(e.key==='Enter')tryKey(e.target.value,true);});
 })();
 
 /* ================= ARTICLES / EVENTS / STORIES ================= */
