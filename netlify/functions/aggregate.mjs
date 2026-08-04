@@ -7,6 +7,7 @@ import Parser from "rss-parser";
 import admin from "firebase-admin";
 import crypto from "node:crypto";
 import { rebuildStoryIndexes } from "./lib/story-indexes.mjs";
+import { dedupeByTopic, topicKey } from "./lib/topic.mjs";
 
 // ---------- CONFIG ----------
 const FEEDS = [
@@ -72,6 +73,12 @@ function isBlocked(item){
 const MAX_NEW_PER_RUN = 4;        // keeps API costs + write volume sane, and
                                   // stops the wire from drowning original work
 const MAX_AGE_HOURS = 36;         // ignore stale items
+
+// How long one topic stays claimed. Inside this window the first outlet to
+// file is the only one that runs; once it lapses the subject is free again, so
+// an ongoing story (an arrest, then the charge, then the release) still moves
+// forward instead of being frozen out by its own first headline.
+const DEDUPE_WINDOW_HOURS = Number(process.env.WIRE_DEDUPE_HOURS) || 8;
 const CATEGORIES = [
   "Fight booked",
   "Results",
@@ -192,9 +199,45 @@ export default async function handler() {
   // Newest first
   candidates.sort((a, b) => b.publishedAt - a.publishedAt);
 
-  // 2. Skip anything we've already published
+  // 2. Collapse different outlets' coverage of the same event.
+  //
+  // The id is a hash of the article URL, so it only ever catches the identical
+  // link twice. When something big breaks, ESPN, Yahoo, Sherdog and Fightful
+  // each file their own version under their own URL and all four land in the
+  // feed. This compares what the headlines are ABOUT, and runs BEFORE the
+  // rewrite so a suppressed duplicate never costs an API call.
+  let priors = [];
+  try {
+    const cutoff = admin.firestore.Timestamp.fromMillis(
+      Date.now() - DEDUPE_WINDOW_HOURS * 36e5);
+    // Range and sort on the same field, so this needs no composite index.
+    const snap = await db.collection("stories")
+      .where("publishedAt", ">=", cutoff)
+      .orderBy("publishedAt", "desc").limit(200).get();
+    priors = snap.docs.map((d) => {
+      const v = d.data();
+      return {
+        // srcTitle is the original wire headline. Compare against that rather
+        // than our rewrite: the rewrite is deliberately reworded, so two of our
+        // versions of one event can look less alike than the sources did.
+        title: v.srcTitle || v.headline || "",
+        publishedAt: v.publishedAt && v.publishedAt.toDate ? v.publishedAt.toDate() : new Date(0),
+      };
+    });
+  } catch (err) {
+    // A dedupe lookup failure must not stop the wire — worst case we publish a
+    // duplicate, which is what happened every time before this existed.
+    console.error("Topic dedupe lookup failed, publishing without it:", err.message);
+  }
+
+  const { kept, dropped } = dedupeByTopic(candidates, priors, DEDUPE_WINDOW_HOURS);
+  for (const d of dropped) {
+    console.log(`Skipped (${d.reason}): "${d.title}" [${d.sourceName}] — matches "${d.matched}"`);
+  }
+
+  // 3. Skip anything we've already published
   const fresh = [];
-  for (const c of candidates) {
+  for (const c of kept) {
     if (fresh.length >= MAX_NEW_PER_RUN) break;
     const doc = await db.collection("stories").doc(c.id).get();
     if (!doc.exists) fresh.push(c);
@@ -211,6 +254,11 @@ export default async function handler() {
         category: take.category,
         sourceName: item.sourceName,
         sourceUrl: item.link,
+        // Kept for the next run's dedupe: the wire's own words, before the
+        // rewrite moved them. topicKey is the comparable form, stored so a
+        // collision can be explained by looking at the two docs.
+        srcTitle: item.title,
+        topicKey: topicKey(item.title),
         utah: item.utah === true,
         ufc: item.ufc === true,
         publishedAt: admin.firestore.Timestamp.fromDate(item.publishedAt),
@@ -232,7 +280,8 @@ export default async function handler() {
   }
 
   console.log(
-    `Run complete: ${candidates.length} candidates, ${fresh.length} new, ${published} published.`
+    `Run complete: ${candidates.length} candidates, ${dropped.length} duplicate topics skipped, ` +
+    `${fresh.length} new, ${published} published.`
   );
   return new Response(JSON.stringify({ published }), { status: 200 });
 }
