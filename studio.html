@@ -207,8 +207,10 @@
 
 <div class="panel" id="cardbackfill">
       <h2>Share cards</h2>
-      <p class="hint" style="margin-top:0">Every story you publish from now on gets its own share image automatically — headline, category and byline, in the site's colours — so a link you text or post shows the story instead of the same house picture. This button makes cards for stories you published <b>before</b> that existed. Safe to run more than once; it skips anything that already has one.</p>
+      <p class="hint" style="margin-top:0">Every story you publish from now on gets its own share image automatically — headline, category and byline, in the site's colours — so a link you text or post shows the story instead of the same house picture.</p>
+      <p class="hint"><b>Make cards for older stories</b> fills gaps only: it skips anything that already has one, so it can never update a card. <b>Rebuild my story cards</b> is the one to use after the design changes — it redraws every Greene MMA original with the current look. Wire stories are left alone; they get the new design as they publish.</p>
       <button class="btn ghost" style="margin-top:0">Make cards for older stories</button>
+      <button class="btn ghost" style="margin-top:0">Rebuild my story cards</button>
       <div class="st" style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
     </div>
 
@@ -1841,27 +1843,45 @@ window.makeShareCard = async function(id, story){
   }catch(e){ console.warn('share card', e); return false; }
 };
 
-/* Backfill: give every already-published story a card, in one click. */
+/* Two jobs off one panel: fill the gaps, or redo our own stories after the
+   card design itself changes. The second overwrites on purpose — the fill
+   path skips anything that already has a card, so it can never update one. */
 (function(){
   const host=document.getElementById('cardbackfill');
   if(!host) return;
-  const btn=host.querySelector('button'), st=host.querySelector('.st');
+  const [btnFill,btnRedo]=host.querySelectorAll('button');
+  const st=host.querySelector('.st');
   const tell=(m,c)=>{ st.textContent=m; st.className='st '+(c||''); };
-  btn.addEventListener('click', async ()=>{
-    btn.disabled=true; tell('Looking for stories without a card…');
+
+  async function run(btn,req,emptyMsg,verb){
+    [btnFill,btnRedo].forEach(b=>b&&(b.disabled=true));
+    tell('Looking up stories…');
     try{
-      const out=await window.__cardApi({ storiesWithoutCard:true });
-      if(!out.ok){ tell('✗ '+(out.error||'Failed'),'bad'); btn.disabled=false; return; }
-      const list=out.stories||[];
-      if(!list.length){ tell('✓ Every recent story already has a card.','ok'); btn.disabled=false; return; }
-      let done=0;
-      for(let i=0;i<list.length;i++){
-        tell('Rendering '+(i+1)+' of '+list.length+'…');
-        if(await window.makeShareCard(list[i].id,list[i])) done++;
+      const out=await window.__cardApi(req);
+      if(!out.ok){ tell('✗ '+(out.error||'Failed'),'bad'); }
+      else{
+        const list=out.stories||[];
+        if(!list.length) tell('✓ '+emptyMsg,'ok');
+        else{
+          let done=0,failed=0;
+          for(let i=0;i<list.length;i++){
+            tell(verb+' '+(i+1)+' of '+list.length+'…');
+            if(await window.makeShareCard(list[i].id,list[i])) done++; else failed++;
+          }
+          tell('✓ '+done+' card'+(done===1?'':'s')+' '+(verb==='Rendering'?'made':'rebuilt')+
+               (failed?(' · '+failed+' failed'):'')+'.', failed?'bad':'ok');
+        }
       }
-      tell('✓ Made '+done+' share card'+(done===1?'':'s')+'. Shared links show the headline now.','ok');
     }catch(e){ tell('✗ '+e.message,'bad'); }
-    btn.disabled=false;
+    [btnFill,btnRedo].forEach(b=>b&&(b.disabled=false));
+  }
+
+  btnFill.addEventListener('click',()=>run(btnFill,{storiesWithoutCard:true},
+    'Every recent story already has a card.','Rendering'));
+
+  if(btnRedo) btnRedo.addEventListener('click',()=>{
+    if(!confirm('Rebuild the share image on every Greene MMA original using the current design?\n\nWire stories are left alone — they pick the new design up as they publish.')) return;
+    run(btnRedo,{originalStories:true},'No original stories found.','Rebuilding');
   });
 })();
 </script>

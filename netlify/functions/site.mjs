@@ -357,6 +357,27 @@ export default async function handler(req) {
     return new Response(JSON.stringify({ ok: true, stories: list }), { status: 200 });
   }
 
+  // Every Greene MMA original, whether or not it already has a card — this is
+  // the re-render path for when the card design itself changes. Wire items are
+  // deliberately excluded: they pick the new design up as they publish, and
+  // re-rendering hundreds of them would spend a lot of writes for stories that
+  // scroll out of the feed in a day. No orderBy filter on `original`, because
+  // combining it with the publishedAt sort needs a composite index; the
+  // collection is small enough to sort and filter here instead.
+  if (body.originalStories) {
+    if (!isAdmin) return deny();
+    const snap = await db.collection("stories")
+      .orderBy("publishedAt", "desc").limit(500).get();
+    const list = snap.docs
+      .map((d) => ({ id: d.id, ...d.data() }))
+      .filter((s) => s.original === true)
+      .map((s) => ({
+        id: s.id, headline: s.headline || "", category: s.category || "",
+        original: true, author: s.author || "", sourceName: s.sourceName || "",
+      }));
+    return new Response(JSON.stringify({ ok: true, stories: list }), { status: 200 });
+  }
+
   if (body.getStory) {    const snap = await db.collection("stories").doc(String(body.getStory)).get();
     if (!snap.exists) return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
     return new Response(JSON.stringify({ ok: true, story: { id: snap.id, ...snap.data() } }), { status: 200 });
